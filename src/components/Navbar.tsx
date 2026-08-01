@@ -53,11 +53,11 @@ export const Navbar: React.FC<NavbarProps> = ({
           <path id="curve-bottom" d="M 85,50 A 35,35 0 0,1 15,50" fill="none" />
           
           <text className="select-none" fontSize="8.5" fontWeight="bold" fill="#0d47a1" textAnchor="middle">
-            <textPath href="#curve-top" startOffset="50%">VENUS TRADERS</textPath>
+            <textPath href="#curve-top" startOffset="50%">Sarguru TRADERS</textPath>
           </text>
           
           <rect x="16" y="41" width="68" height="18" rx="2" fill="#d50000" />
-          <text x="50" y="54" fontSize="11.5" fontWeight="900" fill="#ffffff" textAnchor="middle" letterSpacing="0.8">VENUS</text>
+          <text x="50" y="54" fontSize="11.5" fontWeight="900" fill="#ffffff" textAnchor="middle" letterSpacing="0.8">Sarguru</text>
           
           <text className="select-none" fontSize="8.5" fontWeight="bold" fill="#0d47a1" textAnchor="middle">
             <textPath href="#curve-bottom" startOffset="50%">BRAND</textPath>
@@ -92,8 +92,10 @@ export const Navbar: React.FC<NavbarProps> = ({
           </button>
           <button 
             type="button"
-            onClick={() => setCurrentPage('home')}
-            className="no-underline font-bold text-xs md:text-sm tracking-wide text-gray-500 hover:text-red-600 transition-colors duration-200 bg-transparent border-none cursor-pointer"
+            onClick={() => setCurrentPage('order')}
+            className={`no-underline font-bold text-xs md:text-sm tracking-wide transition-colors duration-200 bg-transparent border-none cursor-pointer ${
+              currentPage === 'order' ? 'text-orange-600' : 'text-gray-500 hover:text-red-600'
+            }`}
           >
             ORDER NOW
           </button>
@@ -106,8 +108,19 @@ export const Navbar: React.FC<NavbarProps> = ({
         </div>
       </div>
 
-      {/* 4. Gray Filter Bar (Only shown on the store home page/pricelist) */}
-      {currentPage === 'home' && (
+      {/* 4. Banner (Shown above the filter bar on home/order page) */}
+      {(currentPage === 'home' || currentPage === 'order') && (
+        <div className="w-full">
+          <img 
+            src="/banner.png" 
+            alt="Diwali Crackers Sale Banner" 
+            className="w-full h-[200px] md:h-[350px] lg:h-[450px] object-cover block shadow-sm"
+          />
+        </div>
+      )}
+
+      {/* 5. Gray Filter Bar (Only shown on the store home page/pricelist) */}
+      {(currentPage === 'home' || currentPage === 'order') && (
         <div className="bg-[#d8d8d8] flex flex-col md:flex-row items-center justify-between p-2 gap-2.5 md:gap-0 border-b border-gray-400">
           <div className="flex items-center justify-between w-full md:w-auto gap-2.5">
             {/* Category Dropdown */}

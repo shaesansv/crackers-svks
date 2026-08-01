@@ -58,7 +58,7 @@ export const Footer: React.FC<FooterProps> = ({
     }
 
     // Assemble WhatsApp order details
-    let message = `*VENUS TRADERS ORDER*\n`;
+    let message = `*Sarguru TRADERS ORDER*\n`;
     message += `=========================\n`;
     message += `*Customer Details:*\n`;
     message += `• *Name:* ${name}\n`;
@@ -287,7 +287,7 @@ export const Footer: React.FC<FooterProps> = ({
               <div className="flex items-start gap-2.5">
                 <span className="text-orange-500">📍</span>
                 <span>
-                  <strong>Venus Crackers</strong><br />
+                  <strong>Sarguru Crackers</strong><br />
                   3/1321 Paraipatti, Sivakasi
                 </span>
               </div>
@@ -397,7 +397,7 @@ export const Footer: React.FC<FooterProps> = ({
                 allowFullScreen={true}
                 loading="lazy" 
                 referrerPolicy="no-referrer-when-downgrade"
-                title="Venus Crackers Location Sivakasi"
+                title="Sarguru Crackers Location Sivakasi"
               ></iframe>
             </div>
           </div>

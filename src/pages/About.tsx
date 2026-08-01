@@ -117,7 +117,7 @@ export const About: React.FC = () => {
         {/* Text Area */}
         <div className="text-center max-w-2xl mx-auto z-10 relative">
           <span className="text-xs uppercase text-gray-500 font-bold tracking-widest block mb-1">About</span>
-          <h2 className="text-3xl font-extrabold text-orange-600 m-0 leading-none">Venus Crackers</h2>
+          <h2 className="text-3xl font-extrabold text-orange-600 m-0 leading-none">Sarguru Crackers</h2>
           <div className="w-16 h-0.5 bg-gray-300 mx-auto mt-4 mb-6"></div>
           
           <p className="text-gray-600 text-sm md:text-[14.5px] leading-relaxed text-justify md:text-center font-normal px-4">

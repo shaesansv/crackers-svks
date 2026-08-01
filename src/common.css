@@ -1,0 +1,170 @@
+/* marquee */
+.marquee {
+    width: 100%;
+    overflow: hidden;
+    font-size: 16px;
+}
+
+/* blink pricelist */
+.fixed{position:fixed; z-index:2;}
+.point3{top:150px; right:10px;}
+.header_pdf .priceicn{width:100px;}
+.pricelist_pdf {
+    padding: 10px 20px !important;
+	background-color: #f00;
+	color: #fff !important;
+	border: 0;
+	border-radius: 10px;
+	font-weight: bold;
+    display: inline-block;
+}
+.pricelist_pdf:hover {
+    color: #fff !important;
+  }
+.blink {
+    -webkit-animation: blink 1s;animation: blink 1s;
+    -webkit-animation-iteration-count: infinite;animation-iteration-count: infinite;
+    -moz-animation: blink 1s;animation: blink 1s;
+    -moz-animation-iteration-count: infinite;
+    -o-animation: blink 1s;animation: blink 1s;
+    -o-animation-iteration-count: infinite;animation-iteration-count: infinite;
+}
+@keyframes blink {
+    0% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+@-webkit-keyframes blink {
+    0% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+@-moz-keyframes blink {
+    0% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+@-o-keyframes blink {
+    0% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+.time-of-year {
+    color: #555;
+    font-size: 24px;
+    margin: 100px 75px 10px 75px;
+    position: relative;
+    text-align: center;
+    transform: translateZ(0); 
+    -webkit-transform: translateZ(0); 
+    -webkit-font-smoothing: antialiased; 
+  }
+.time-of-year .tooltip {
+  background: #D20303;
+  border-radius: 3px;
+  bottom: -49px;
+  font-size: 20px;
+  display: block;
+  left: -67px;
+  opacity: 0;
+  padding: 15px;
+  pointer-events: none;
+  position: absolute;
+  width: 320px;
+  z-index: 1102;
+  -webkit-transform: translateY(10px);
+  -moz-transform: translateY(10px);
+  transform: translateY(10px);
+  -webkit-transition: all .7s ease-out;
+  -moz-transition: all .7s ease-out;
+  transition: all .7s ease-out;
+  height: 100px;
+  }
+.time-of-year .tooltip::after {
+    border-left: solid transparent 10px;
+    border-right: solid transparent 10px;
+    border-top: solid #D20303 10px;
+    bottom: 58px;
+    content: " ";
+    height: 0;
+    left: 0%;
+    margin-left: -13px;
+    position: absolute;
+    width: 0;
+    transform: rotate(92deg);
+}
+.time-of-year:hover .tooltip {
+    opacity: 1;
+    pointer-events: auto;
+    -webkit-transform: translateY(0px);
+    -moz-transform: translateY(0px);
+    transform: translateY(0px);
+}
+
+.terms_conditions .text5 {
+    position: relative;
+    padding: 0 0 0 27px;
+    margin-top: -40px;
+}
+
+.number-qty {
+	width: 50px;
+	text-align: center;
+	padding: 2px;
+  }	
+  .number-qty input {
+	height: 25px;
+	width: 40px;
+	text-align: center;
+	font-size: 13px;
+	border: 1px solid #ddd;
+	border-radius: 4px;
+	display: inline-block;
+  }
+  .smallfnts{font-size: 13px;}
+
+  .highlight_product {
+    box-shadow: 0px 0px 5px 1px;
+  }
+
+  .minimum_order_amount_heading {
+    font-size: 18px;
+    line-height: 20px;
+    font-weight: bold;
+    color: #dc3545;
+  }
+
+  @media (max-width:767px){
+	.buttonhero2 span { font-size: 18px; }
+}
+.terms_conditions .text5 {
+    position: relative;
+    padding: 0 0 0 27px;
+    margin-top: -40px;
+}

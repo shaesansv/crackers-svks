@@ -1,13 +1,28 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Navbar } from './components/Navbar';
 import { Home } from './pages/Home';
 import { About } from './pages/About';
+import { SafetyTips } from './pages/SafetyTips';
+import { ContactUs } from './pages/ContactUs';
 import { Footer } from './components/Footer';
 import { crackerCategories } from './data/products';
 import './App.css';
 
 function App() {
   const [currentPage, setCurrentPage] = useState<string>('home');
+  
+  React.useEffect(() => {
+    const handleHashChange = () => {
+      if (window.location.hash === '#safety') {
+        setCurrentPage('safety');
+      } else if (window.location.hash === '#contact') {
+        setCurrentPage('contact');
+      }
+    };
+    window.addEventListener('hashchange', handleHashChange);
+    handleHashChange();
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
   const [quantities, setQuantities] = useState<Record<string, number>>({});
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -61,7 +76,7 @@ function App() {
   });
 
   return (
-    <div className="w-[1200px] max-w-full mx-auto bg-white shadow flex flex-col min-h-screen">
+    <div className="w-full bg-white flex flex-col min-h-screen">
       {/* Global Navbar */}
       <Navbar
         currentPage={currentPage}
@@ -76,7 +91,7 @@ function App() {
       />
 
       {/* Conditionally Render Pages */}
-      {currentPage === 'home' ? (
+      {(currentPage === 'home' || currentPage === 'order') ? (
         <Home
           quantities={quantities}
           handleQtyChange={handleQtyChange}
@@ -84,13 +99,17 @@ function App() {
           searchTerm={searchTerm}
           selectedCategory={selectedCategory}
         />
+      ) : currentPage === 'safety' ? (
+        <SafetyTips />
+      ) : currentPage === 'contact' ? (
+        <ContactUs />
       ) : (
         <About />
       )}
 
       {/* Global Footer & Checkout Section */}
       <Footer
-        showCheckout={currentPage === 'home'}
+        showCheckout={currentPage === 'home' || currentPage === 'order'}
         quantities={quantities}
         setCurrentPage={setCurrentPage}
       />

@@ -36,29 +36,29 @@ export const Home: React.FC<HomeProps> = ({
   // WhatsApp order submission and details are managed by the unified Footer component
 
   return (
-    <div className="flex-grow">
+    <div className="flex-grow flex flex-col">
       {/* Main Table Container */}
-      <main className="overflow-x-auto flex-grow">
-        <table className="w-full border-collapse border border-gray-200 text-xs md:text-sm">
+      <main className="overflow-x-auto flex-grow px-2 md:px-0 mt-4 md:mt-6 mb-8">
+        <table className="w-full border-collapse text-xs md:text-sm">
           <thead>
-            <tr>
-              <th className="w-20 text-center bg-red-600 text-white font-bold py-2.5 px-2 border border-gray-200 text-xs">Image</th>
-              <th className="text-left bg-red-600 text-white font-bold py-2.5 px-4 border border-gray-200 text-xs">Product Name</th>
-              <th className="w-24 text-center bg-red-600 text-white font-bold py-2.5 px-2 border border-gray-200 text-xs">Unit</th>
-              <th className="w-28 text-center bg-red-600 text-white font-bold py-2.5 px-2 border border-gray-200 text-xs">Actual Price</th>
-              <th className="w-24 text-center bg-red-600 text-white font-bold py-2.5 px-2 border border-gray-200 text-xs">Price</th>
-              <th className="w-40 text-center bg-red-600 text-white font-bold py-2.5 px-2 border border-gray-200 text-xs">Quantity</th>
-              <th className="w-32 text-center bg-red-600 text-white font-bold py-2.5 px-2 border border-gray-200 text-xs">Total</th>
+            <tr className="bg-[#f00] text-white">
+              <th className="w-[10%] md:w-20 text-center font-bold py-2 md:py-3 px-1 md:px-2 border border-[#f00]">Image</th>
+              <th className="text-left font-bold py-2 md:py-3 px-2 md:px-4 border border-[#f00]">Product Name</th>
+              <th className="w-[12%] md:w-24 text-center font-bold py-2 md:py-3 px-1 md:px-2 border border-[#f00] hidden sm:table-cell">Content</th>
+              <th className="w-[15%] md:w-28 text-center font-bold py-2 md:py-3 px-1 md:px-2 border border-[#f00]">Actual Price</th>
+              <th className="w-[12%] md:w-24 text-center font-bold py-2 md:py-3 px-1 md:px-2 border border-[#f00]">Price</th>
+              <th className="w-[18%] md:w-32 text-center font-bold py-2 md:py-3 px-1 md:px-2 border border-[#f00]">Quantity</th>
+              <th className="w-[15%] md:w-28 text-center font-bold py-2 md:py-3 px-1 md:px-2 border border-[#f00]">Total</th>
             </tr>
           </thead>
           <tbody>
             {filteredCategories.length > 0 ? (
               filteredCategories.map((category) => (
-                <span key={category.id} style={{ display: 'contents' }}>
+                <React.Fragment key={category.id}>
                   {/* Category separator header row */}
                   <tr>
-                    <td colSpan={7} className="bg-red-600 text-white font-extrabold text-center py-2 text-xs md:text-sm uppercase tracking-wide border border-gray-200 select-none">
-                      {category.name}
+                    <td colSpan={7} className="bg-[#f00] text-white font-bold text-center py-2.5 text-sm md:text-base border border-[#f00]">
+                      {category.name} (80% Discount)
                     </td>
                   </tr>
                   {/* Category products */}
@@ -67,25 +67,25 @@ export const Home: React.FC<HomeProps> = ({
                     const rowTotal = qty * product.discountPrice;
 
                     return (
-                      <tr key={product.id} className="border-b border-gray-200 hover:bg-sky-50/40 odd:bg-white even:bg-gray-50/20 transition-colors duration-150">
-                        <td className="p-2 border border-gray-200 text-center">
+                      <tr key={product.id} className="border-b border-gray-300 hover:bg-gray-50 transition-colors duration-150 bg-white">
+                        <td className="p-1 md:p-2 border-r border-l border-gray-300 text-center align-middle">
                           <div className="flex justify-center items-center">
                             <ProductImage type={product.imageType} />
                           </div>
                         </td>
-                        <td className="p-2 border border-gray-200 font-medium text-gray-800 pl-4">{product.name}</td>
-                        <td className="p-2 border border-gray-200 text-center text-gray-600">{product.unit}</td>
-                        <td className="p-2 border border-gray-200 text-center font-semibold text-red-600">
-                          <span className="line-through opacity-80">
+                        <td className="p-1 md:p-2 border-r border-gray-300 font-medium text-gray-900 pl-2 md:pl-4 align-middle text-[13px] md:text-sm">{product.name}</td>
+                        <td className="p-1 md:p-2 border-r border-gray-300 text-center text-gray-700 align-middle hidden sm:table-cell text-[13px] md:text-sm">{product.unit}</td>
+                        <td className="p-1 md:p-2 border-r border-gray-300 text-center font-normal text-gray-800 align-middle">
+                          <span className="line-through text-gray-500 text-[13px] md:text-sm">
                             {product.actualPrice}
                           </span>
                         </td>
-                        <td className="p-2 border border-gray-200 text-center font-bold text-gray-800 text-sm">{product.discountPrice}</td>
-                        <td className="p-2 border border-gray-200 text-center">
+                        <td className="p-1 md:p-2 border-r border-gray-300 text-center font-bold text-gray-900 align-middle text-[13px] md:text-sm">{product.discountPrice}</td>
+                        <td className="p-1 md:p-2 border-r border-gray-300 text-center align-middle">
                           <div className="flex items-center justify-center gap-1">
                             <button
                               type="button"
-                              className="w-6 h-6 border border-gray-300 bg-gray-50 text-gray-800 font-bold rounded flex items-center justify-center cursor-pointer hover:bg-gray-200 transition-colors select-none text-sm outline-none"
+                              className="w-6 h-6 md:w-7 md:h-7 border border-gray-300 bg-gray-100 hover:bg-gray-200 font-bold rounded-sm flex items-center justify-center cursor-pointer text-gray-700 transition-colors"
                               onClick={() => adjustQty(product.id, false)}
                             >
                               -
@@ -95,35 +95,35 @@ export const Home: React.FC<HomeProps> = ({
                               min="0"
                               value={quantities[product.id] || ''}
                               onChange={(e) => handleQtyChange(product.id, e.target.value)}
-                              className="w-14 h-6 border border-gray-300 rounded text-center text-xs font-semibold outline-none focus:border-red-500"
-                              placeholder="0"
+                              className="w-10 h-6 md:w-12 md:h-7 border border-gray-300 rounded-sm text-center text-[13px] md:text-sm font-semibold outline-none focus:border-red-500 m-0 p-0"
+                              placeholder=""
                             />
                             <button
                               type="button"
-                              className="w-6 h-6 border border-gray-300 bg-gray-50 text-gray-800 font-bold rounded flex items-center justify-center cursor-pointer hover:bg-gray-200 transition-colors select-none text-sm outline-none"
+                              className="w-6 h-6 md:w-7 md:h-7 border border-gray-300 bg-gray-100 hover:bg-gray-200 font-bold rounded-sm flex items-center justify-center cursor-pointer text-gray-700 transition-colors"
                               onClick={() => adjustQty(product.id, true)}
                             >
                               +
                             </button>
                           </div>
                         </td>
-                        <td className="p-2 border border-gray-200 text-center">
+                        <td className="p-1 md:p-2 border-r border-gray-300 text-center align-middle">
                           <input
                             type="text"
                             readOnly
                             value={rowTotal > 0 ? rowTotal : ''}
-                            placeholder="0"
-                            className="w-20 h-6 border border-gray-300 rounded bg-gray-100 text-center text-xs font-bold text-gray-800 outline-none select-none"
+                            placeholder=""
+                            className="w-14 h-7 md:w-20 md:h-8 border-none bg-transparent text-center text-[13px] md:text-sm font-bold text-gray-900 outline-none select-none"
                           />
                         </td>
                       </tr>
                     );
                   })}
-                </span>
+                </React.Fragment>
               ))
             ) : (
               <tr>
-                <td colSpan={7} className="text-center p-8 text-gray-400 italic text-sm">
+                <td colSpan={7} className="text-center p-8 text-gray-400 italic text-sm border-b border-l border-r border-gray-300">
                   No products matched your search or filters.
                 </td>
               </tr>
