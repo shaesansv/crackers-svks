@@ -38,98 +38,111 @@ export const Home: React.FC<HomeProps> = ({
   return (
     <div className="flex-grow flex flex-col">
       {/* Main Table Container */}
-      <main className="overflow-x-auto flex-grow px-2 md:px-0 mt-4 md:mt-6 mb-8">
-        <table className="w-full border-collapse text-xs md:text-sm">
-          <thead>
-            <tr className="bg-[#f00] text-white">
-              <th className="w-[10%] md:w-20 text-center font-bold py-2 md:py-3 px-1 md:px-2 border border-[#f00]">Image</th>
-              <th className="text-left font-bold py-2 md:py-3 px-2 md:px-4 border border-[#f00]">Product Name</th>
-              <th className="w-[12%] md:w-24 text-center font-bold py-2 md:py-3 px-1 md:px-2 border border-[#f00] hidden sm:table-cell">Content</th>
-              <th className="w-[15%] md:w-28 text-center font-bold py-2 md:py-3 px-1 md:px-2 border border-[#f00]">Actual Price</th>
-              <th className="w-[12%] md:w-24 text-center font-bold py-2 md:py-3 px-1 md:px-2 border border-[#f00]">Price</th>
-              <th className="w-[18%] md:w-32 text-center font-bold py-2 md:py-3 px-1 md:px-2 border border-[#f00]">Quantity</th>
-              <th className="w-[15%] md:w-28 text-center font-bold py-2 md:py-3 px-1 md:px-2 border border-[#f00]">Total</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredCategories.length > 0 ? (
-              filteredCategories.map((category) => (
-                <React.Fragment key={category.id}>
-                  {/* Category separator header row */}
-                  <tr>
-                    <td colSpan={7} className="bg-[#f00] text-white font-bold text-center py-2.5 text-sm md:text-base border border-[#f00]">
-                      {category.name} (80% Discount)
-                    </td>
-                  </tr>
-                  {/* Category products */}
-                  {category.products.map((product) => {
-                    const qty = quantities[product.id] || 0;
-                    const rowTotal = qty * product.discountPrice;
+      <main className="flex-grow px-6 md:px-12 mt-8 md:mt-12 mb-16 max-w-7xl mx-auto w-full">
+        {filteredCategories.length > 0 ? (
+          filteredCategories.map((category) => (
+            <section key={category.id} className="mb-16">
+              {/* Category Header */}
+              <div className="flex items-center gap-4 mb-8">
+                <h2 className="font-poppins font-bold text-2xl md:text-3xl text-dark-navy">
+                  {category.name}
+                </h2>
+                <div className="flex-grow h-px bg-gradient-to-r from-luxury-gold/50 to-transparent"></div>
+                <span className="text-royal-red font-semibold text-sm bg-royal-red/10 px-3 py-1 rounded-full whitespace-nowrap">
+                  80% DISCOUNT
+                </span>
+              </div>
 
-                    return (
-                      <tr key={product.id} className="border-b border-gray-300 hover:bg-gray-50 transition-colors duration-150 bg-white">
-                        <td className="p-1 md:p-2 border-r border-l border-gray-300 text-center align-middle">
-                          <div className="flex justify-center items-center">
-                            <ProductImage type={product.imageType} />
+              {/* Product Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+                {category.products.map((product, index) => {
+                  const qty = quantities[product.id] || 0;
+                  const rowTotal = qty * product.discountPrice;
+                  
+                  return (
+                    <div 
+                      key={product.id} 
+                      className="bg-white rounded-[18px] shadow-[var(--shadow-premium)] hover:shadow-[var(--shadow-premium-hover)] hover:-translate-y-1.5 transition-all duration-400 p-6 flex flex-col relative group animate-slide-up"
+                      style={{ animationDelay: `${index * 50}ms` }}
+                    >
+                      {/* Product Image */}
+                      <div className="flex justify-center items-center h-32 mb-4">
+                        <div className="transform group-hover:scale-110 transition-transform duration-500">
+                          <ProductImage type={product.imageType} />
+                        </div>
+                      </div>
+
+                      {/* Details */}
+                      <div className="flex flex-col flex-grow text-center">
+                        <h3 className="font-poppins font-bold text-dark-navy text-lg mb-1 leading-tight line-clamp-2">
+                          {product.name}
+                        </h3>
+                        <p className="text-gray-500 font-inter text-sm mb-4">
+                          {product.unit}
+                        </p>
+                        
+                        <div className="mt-auto">
+                          <div className="flex items-end justify-center gap-2 mb-5">
+                            <span className="text-gray-400 line-through text-sm font-medium">
+                              ₹{product.actualPrice}
+                            </span>
+                            <span className="text-royal-red font-bold text-2xl font-poppins">
+                              ₹{product.discountPrice}
+                            </span>
                           </div>
-                        </td>
-                        <td className="p-1 md:p-2 border-r border-gray-300 font-medium text-gray-900 pl-2 md:pl-4 align-middle text-[13px] md:text-sm">{product.name}</td>
-                        <td className="p-1 md:p-2 border-r border-gray-300 text-center text-gray-700 align-middle hidden sm:table-cell text-[13px] md:text-sm">{product.unit}</td>
-                        <td className="p-1 md:p-2 border-r border-gray-300 text-center font-normal text-gray-800 align-middle">
-                          <span className="line-through text-gray-500 text-[13px] md:text-sm">
-                            {product.actualPrice}
-                          </span>
-                        </td>
-                        <td className="p-1 md:p-2 border-r border-gray-300 text-center font-bold text-gray-900 align-middle text-[13px] md:text-sm">{product.discountPrice}</td>
-                        <td className="p-1 md:p-2 border-r border-gray-300 text-center align-middle">
-                          <div className="flex items-center justify-center gap-1">
-                            <button
-                              type="button"
-                              className="w-6 h-6 md:w-7 md:h-7 border border-gray-300 bg-gray-100 hover:bg-gray-200 font-bold rounded-sm flex items-center justify-center cursor-pointer text-gray-700 transition-colors"
-                              onClick={() => adjustQty(product.id, false)}
-                            >
-                              -
-                            </button>
-                            <input
-                              type="number"
-                              min="0"
-                              value={quantities[product.id] || ''}
-                              onChange={(e) => handleQtyChange(product.id, e.target.value)}
-                              className="w-10 h-6 md:w-12 md:h-7 border border-gray-300 rounded-sm text-center text-[13px] md:text-sm font-semibold outline-none focus:border-red-500 m-0 p-0"
-                              placeholder=""
-                            />
-                            <button
-                              type="button"
-                              className="w-6 h-6 md:w-7 md:h-7 border border-gray-300 bg-gray-100 hover:bg-gray-200 font-bold rounded-sm flex items-center justify-center cursor-pointer text-gray-700 transition-colors"
-                              onClick={() => adjustQty(product.id, true)}
-                            >
-                              +
-                            </button>
+
+                          {/* Controls */}
+                          <div className="bg-off-white p-3 rounded-2xl border border-gray-100 flex flex-col gap-3">
+                            <div className="flex items-center justify-between bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
+                              <button
+                                type="button"
+                                className="w-10 h-10 flex items-center justify-center text-dark-navy hover:bg-gray-50 hover:text-royal-red transition-colors font-bold text-lg"
+                                onClick={() => adjustQty(product.id, false)}
+                              >
+                                −
+                              </button>
+                              <input
+                                type="number"
+                                min="0"
+                                value={quantities[product.id] || ''}
+                                onChange={(e) => handleQtyChange(product.id, e.target.value)}
+                                className="w-12 h-10 text-center font-inter font-semibold text-dark-navy outline-none bg-transparent"
+                                placeholder="0"
+                              />
+                              <button
+                                type="button"
+                                className="w-10 h-10 flex items-center justify-center text-dark-navy hover:bg-gray-50 hover:text-royal-red transition-colors font-bold text-lg"
+                                onClick={() => adjustQty(product.id, true)}
+                              >
+                                +
+                              </button>
+                            </div>
+                            
+                            {/* Total Line */}
+                            <div className="flex justify-between items-center px-1">
+                              <span className="text-xs text-gray-500 font-medium">Item Total:</span>
+                              <span className="font-bold text-sm text-dark-navy">
+                                ₹{rowTotal > 0 ? rowTotal : '0'}
+                              </span>
+                            </div>
                           </div>
-                        </td>
-                        <td className="p-1 md:p-2 border-r border-gray-300 text-center align-middle">
-                          <input
-                            type="text"
-                            readOnly
-                            value={rowTotal > 0 ? rowTotal : ''}
-                            placeholder=""
-                            className="w-14 h-7 md:w-20 md:h-8 border-none bg-transparent text-center text-[13px] md:text-sm font-bold text-gray-900 outline-none select-none"
-                          />
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </React.Fragment>
-              ))
-            ) : (
-              <tr>
-                <td colSpan={7} className="text-center p-8 text-gray-400 italic text-sm border-b border-l border-r border-gray-300">
-                  No products matched your search or filters.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
+          ))
+        ) : (
+          <div className="flex flex-col items-center justify-center h-64 text-gray-400 font-inter">
+            <svg className="w-16 h-16 mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+            </svg>
+            <p className="text-lg font-medium">No premium products found.</p>
+            <p className="text-sm mt-1">Try adjusting your search or filters.</p>
+          </div>
+        )}
       </main>
     </div>
   );

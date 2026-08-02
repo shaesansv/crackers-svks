@@ -1,9 +1,38 @@
 @import "tailwindcss";
 
+@theme {
+  --color-royal-red: #C8102E;
+  --color-dark-navy: #0F172A;
+  --color-luxury-gold: #F4B400;
+  --color-off-white: #FFFDF8;
+
+  --font-sans: "Inter", sans-serif;
+  --font-poppins: "Poppins", sans-serif;
+
+  --radius-xl: 18px;
+
+  --shadow-premium: 0 10px 40px -10px rgba(0,0,0,0.08), 0 4px 10px -5px rgba(0,0,0,0.04);
+  --shadow-premium-hover: 0 20px 50px -10px rgba(0,0,0,0.12), 0 10px 20px -5px rgba(0,0,0,0.08);
+
+  --animate-fade-in: fade-in 0.8s ease-out forwards;
+  --animate-slide-up: slide-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 body {
-  background-color: #fafafa;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  color: #333333;
+  background-color: var(--color-off-white);
+  font-family: var(--font-sans);
+  color: var(--color-dark-navy);
+  -webkit-font-smoothing: antialiased;
 }
 
 /* Hide scroll/spin buttons in number inputs for cleaner UI */
@@ -15,4 +44,28 @@ input::-webkit-inner-spin-button {
 
 input[type=number] {
   -moz-appearance: textfield;
+}
+
+/* Premium Button Ripple */
+.btn-premium {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.4s ease;
+}
+.btn-premium::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 300%;
+  padding-top: 300%;
+  background: radial-gradient(circle, rgba(244, 180, 0, 0.4) 0%, transparent 70%);
+  transform: translate(-50%, -50%) scale(0);
+  opacity: 0;
+  transition: transform 0.6s ease-out, opacity 0.6s ease-out;
+  pointer-events: none;
+}
+.btn-premium:hover::after {
+  transform: translate(-50%, -50%) scale(1);
+  opacity: 1;
 }

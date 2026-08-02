@@ -1,6 +1,4 @@
 import React from 'react';
-import { Box, Typography, Paper, Container } from '@mui/material';
-import { CheckCircleOutlined, HighlightOff } from '@mui/icons-material';
 
 export const SafetyTips: React.FC = () => {
   const dos = [
@@ -22,155 +20,82 @@ export const SafetyTips: React.FC = () => {
   ];
 
   return (
-    <Box sx={{ width: '100%', bgcolor: '#ffffff', minHeight: '100vh', pb: 8 }}>
+    <div className="flex-grow bg-off-white pb-20">
       {/* Hero Banner Section */}
-      <Box
-        sx={{
-          width: '100%',
-          height: { xs: '200px', md: '250px' },
-          backgroundImage: 'url(/banner.png), linear-gradient(to right, #4a0000, #900000)',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          position: 'relative'
-        }}
-      >
-        {/* Overlay to darken background if image is present */}
-        <Box sx={{ position: 'absolute', inset: 0, bgcolor: 'rgba(0,0,0,0.5)' }} />
-        <Typography
-          variant="h3"
-          component="h1"
-          sx={{
-            color: 'white',
-            fontWeight: 700,
-            zIndex: 1,
-            textShadow: '2px 2px 4px rgba(0,0,0,0.5)'
-          }}
-        >
-          Safety Tips
-        </Typography>
-      </Box>
+      <section className="relative w-full h-[250px] md:h-[320px] bg-dark-navy overflow-hidden flex items-center justify-center px-10 md:px-20 select-none">
+        {/* Subtle luxury glow background */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-64 bg-royal-red/10 blur-[100px] rounded-full pointer-events-none"></div>
+        <div className="absolute -right-20 -top-20 w-96 h-96 border-[40px] border-luxury-gold/5 rounded-full pointer-events-none"></div>
+        <div className="absolute -left-20 -bottom-20 w-80 h-80 border-[30px] border-royal-red/5 rounded-full pointer-events-none"></div>
+        
+        {/* Center: Premium Text */}
+        <div className="relative z-10 flex flex-col items-center text-center gap-2 animate-slide-up">
+          <div className="bg-luxury-gold/20 text-luxury-gold font-poppins font-bold text-[10px] md:text-xs px-4 py-1.5 uppercase tracking-[0.3em] rounded-full backdrop-blur-sm border border-luxury-gold/30">
+            PROTECT YOUR LOVED ONES
+          </div>
+          <h1 className="text-4xl md:text-6xl font-poppins font-black text-white tracking-tight drop-shadow-md select-none mt-2">
+            Safety <span className="text-royal-red">Tips</span>
+          </h1>
+          <div className="w-24 h-1 bg-gradient-to-r from-transparent via-luxury-gold to-transparent mt-4"></div>
+        </div>
+      </section>
 
-      <Container maxWidth="lg" sx={{ mt: 6 }}>
+      <section className="max-w-6xl mx-auto px-6 mt-16 md:mt-20 relative">
         {/* Intro text */}
-        <Box sx={{ mb: 6 }}>
-          <Typography
-            variant="h5"
-            sx={{
-              color: '#ff6f00',
-              fontWeight: 700,
-              mb: 2,
-              fontFamily: 'sans-serif'
-            }}
-          >
-            Sarguru Crackers
-          </Typography>
-          <Typography
-            variant="body1"
-            sx={{
-              color: '#555',
-              fontSize: '14px',
-              lineHeight: 1.6
-            }}
-          >
+        <div className="bg-white rounded-[24px] shadow-[var(--shadow-premium)] p-8 md:p-10 mb-16 text-center border border-gray-100 relative overflow-hidden">
+          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-luxury-gold to-royal-red"></div>
+          <h2 className="text-2xl font-poppins font-bold text-dark-navy mb-4">Sarguru Crackers</h2>
+          <p className="text-gray-600 font-inter text-sm md:text-base leading-relaxed max-w-3xl mx-auto">
             There are certain Do's & Don'ts to follow while purchasing, bursting and storing crackers. Thus, it is very important to follow the precautions while bursting crackers.
-            <br />
-            A little negligence, ignorance and carelessness can cause a fatal injury.
-          </Typography>
-        </Box>
+            <br className="hidden md:block" />
+            <strong className="text-royal-red mt-2 block">A little negligence, ignorance and carelessness can cause a fatal injury.</strong>
+          </p>
+        </div>
 
-        {/* Do's Section */}
-        <Box sx={{ mb: 8 }}>
-          <Box sx={{ borderBottom: '2px solid #eee', mb: 4, pb: 1, display: 'inline-block' }}>
-            <Typography variant="h4" sx={{ color: '#333', fontWeight: 600, borderBottom: '3px solid #d32f2f', paddingBottom: '4px' }}>
-              Do's
-            </Typography>
-          </Box>
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: '1fr 1fr 1fr' }, gap: 4 }}>
-            {dos.map((item, index) => (
-              <Box key={`do-${index}`}>
-                <Paper
-                  elevation={0}
-                  sx={{
-                    p: 3,
-                    height: '100%',
-                    display: 'flex',
-                    alignItems: 'flex-start',
-                    gap: 2,
-                    border: '1px solid #eaeaea',
-                    borderRadius: '8px',
-                    boxShadow: '0 2px 10px rgba(0,0,0,0.03)'
-                  }}
-                >
-                  <Box
-                    sx={{
-                      minWidth: '40px',
-                      height: '40px',
-                      borderRadius: '50%',
-                      bgcolor: '#f5f5f5',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center'
-                    }}
-                  >
-                    <CheckCircleOutlined sx={{ color: '#4caf50' }} />
-                  </Box>
-                  <Typography variant="body2" sx={{ color: '#444', lineHeight: 1.5, fontSize: '13px' }}>
-                    {item}
-                  </Typography>
-                </Paper>
-              </Box>
-            ))}
-          </Box>
-        </Box>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16">
+          {/* Do's Section */}
+          <div>
+            <div className="flex items-center gap-4 mb-8">
+              <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center border border-green-200">
+                <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7"></path></svg>
+              </div>
+              <h3 className="text-3xl font-poppins font-black text-dark-navy">Do's</h3>
+            </div>
+            
+            <div className="flex flex-col gap-5">
+              {dos.map((item, index) => (
+                <div key={`do-${index}`} className="bg-white rounded-[18px] p-5 shadow-sm border border-gray-100 flex items-start gap-4 hover:shadow-md transition-shadow group">
+                  <div className="w-8 h-8 rounded-full bg-green-50 flex items-center justify-center flex-shrink-0 group-hover:bg-green-100 transition-colors">
+                    <span className="text-green-600 font-bold text-sm font-poppins">{index + 1}</span>
+                  </div>
+                  <p className="text-gray-700 font-inter text-sm leading-relaxed pt-1.5">{item}</p>
+                </div>
+              ))}
+            </div>
+          </div>
 
-        {/* Don'ts Section */}
-        <Box>
-          <Box sx={{ borderBottom: '2px solid #eee', mb: 4, pb: 1, display: 'inline-block' }}>
-            <Typography variant="h4" sx={{ color: '#333', fontWeight: 600, borderBottom: '3px solid #d32f2f', paddingBottom: '4px' }}>
-              Don'ts
-            </Typography>
-          </Box>
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: '1fr 1fr 1fr' }, gap: 4 }}>
-            {donts.map((item, index) => (
-              <Box key={`dont-${index}`}>
-                <Paper
-                  elevation={0}
-                  sx={{
-                    p: 3,
-                    height: '100%',
-                    display: 'flex',
-                    alignItems: 'flex-start',
-                    gap: 2,
-                    border: '1px solid #eaeaea',
-                    borderRadius: '8px',
-                    boxShadow: '0 2px 10px rgba(0,0,0,0.03)'
-                  }}
-                >
-                  <Box
-                    sx={{
-                      minWidth: '40px',
-                      height: '40px',
-                      borderRadius: '50%',
-                      bgcolor: '#f5f5f5',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center'
-                    }}
-                  >
-                    <HighlightOff sx={{ color: '#d32f2f' }} />
-                  </Box>
-                  <Typography variant="body2" sx={{ color: '#444', lineHeight: 1.5, fontSize: '13px' }}>
-                    {item}
-                  </Typography>
-                </Paper>
-              </Box>
-            ))}
-          </Box>
-        </Box>
-      </Container>
-    </Box>
+          {/* Don'ts Section */}
+          <div>
+            <div className="flex items-center gap-4 mb-8">
+              <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center border border-red-200">
+                <svg className="w-6 h-6 text-royal-red" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12"></path></svg>
+              </div>
+              <h3 className="text-3xl font-poppins font-black text-dark-navy">Don'ts</h3>
+            </div>
+            
+            <div className="flex flex-col gap-5">
+              {donts.map((item, index) => (
+                <div key={`dont-${index}`} className="bg-white rounded-[18px] p-5 shadow-sm border border-gray-100 flex items-start gap-4 hover:shadow-md transition-shadow group">
+                  <div className="w-8 h-8 rounded-full bg-red-50 flex items-center justify-center flex-shrink-0 group-hover:bg-red-100 transition-colors">
+                    <span className="text-royal-red font-bold text-sm font-poppins">{index + 1}</span>
+                  </div>
+                  <p className="text-gray-700 font-inter text-sm leading-relaxed pt-1.5">{item}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
   );
 };
