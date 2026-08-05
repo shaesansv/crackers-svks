@@ -46,7 +46,7 @@ export const Footer: React.FC<FooterProps> = ({
   const isMinOrderMet = subTotal >= 3000;
   const isFormValid = name.trim() !== '' && mobile.trim() !== '' && address.trim() !== '';
 
-  const handleCheckout = (e: React.FormEvent) => {
+  const handleCheckout = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!isMinOrderMet) {
       alert('Minimum order value is Rs. 3000. Please add more items to your cart.');
@@ -57,9 +57,48 @@ export const Footer: React.FC<FooterProps> = ({
       return;
     }
 
+    let orderIdStr = '';
+    try {
+      const orderItems = Object.entries(quantities).map(([productId, qty]) => {
+        const p = allProducts.find((product) => product.id === productId);
+        return {
+          name: p ? p.name : 'Unknown Product',
+          qty: qty,
+          price: p ? p.discountPrice : 0
+        };
+      });
+
+      const response = await fetch('http://localhost:5000/api/orders', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          customerName: name,
+          customerEmail: email,
+          customerPhone: mobile,
+          items: orderItems,
+          total: subTotal,
+          packingCharge: packingCharges,
+          overallTotal: overallAmount
+        }),
+      });
+
+      if (response.ok) {
+        const savedOrder = await response.json();
+        orderIdStr = `• *Order ID:* #${savedOrder.orderId}\n`;
+      }
+    } catch (err) {
+      console.log('Failed to save order to local database server', err);
+    }
+
     // Assemble WhatsApp order details
     let message = `*Sarguru TRADERS ORDER*\n`;
     message += `=========================\n`;
+    if (orderIdStr) {
+      message += orderIdStr;
+      message += `=========================\n`;
+    }
     message += `*Customer Details:*\n`;
     message += `• *Name:* ${name}\n`;
     message += `• *Mobile:* ${mobile}\n`;
@@ -89,9 +128,11 @@ export const Footer: React.FC<FooterProps> = ({
     message += `=========================\n`;
     message += `Please confirm my order. Thank you!`;
 
+    // Fetch the merchant phone number from settings if saved
+    const savedMerchantPhone = localStorage.getItem('merchantPhone') || '917868077818';
+
     const encodedMessage = encodeURIComponent(message);
-    const phoneNumber = '917868077818'; // Merchant phone number from new banner
-    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodedMessage}`;
+    const whatsappUrl = `https://wa.me/${savedMerchantPhone}?text=${encodedMessage}`;
     window.open(whatsappUrl, '_blank');
   };
 
@@ -99,7 +140,7 @@ export const Footer: React.FC<FooterProps> = ({
     <div className="w-full mt-auto">
       {/* Checkout Form Container (Only visible on home page) */}
       {showCheckout && (
-        <section className="bg-white border-t border-gray-100 pt-10 pb-16 px-6 md:px-12 select-none relative z-10">
+        <section id="checkout-section" className="bg-white border-t border-gray-100 pt-10 pb-16 px-6 md:px-12 select-none relative z-10">
           {/* Red Title Banner */}
           <div className="flex justify-center mb-10">
             <h2 className="text-2xl md:text-3xl font-poppins font-bold text-text-primary relative inline-block">
@@ -359,6 +400,19 @@ export const Footer: React.FC<FooterProps> = ({
                 <a href="#contact" className="hover:text-secondary-gold font-medium flex items-center gap-2 no-underline transition-colors">
                   <span className="w-1.5 h-1.5 rounded-full bg-secondary-gold"></span> Contact Us
                 </a>
+              </li>
+              <li>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const token = localStorage.getItem('adminToken');
+                    setCurrentPage(token ? 'admin-dashboard' : 'admin-login');
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  }}
+                  className="bg-transparent border-0 hover:text-luxury-gold cursor-pointer font-medium p-0 flex items-center gap-2 outline-none text-left transition-colors"
+                >
+                  <span className="w-1.5 h-1.5 rounded-full bg-royal-red"></span> Admin Panel
+                </button>
               </li>
             </ul>
           </div>

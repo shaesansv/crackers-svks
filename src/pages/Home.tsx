@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { crackerCategories } from '../data/products';
 import { ProductImage } from '../components/ProductImage';
 import { Fireworks } from '@fireworks-js/react';
@@ -8,22 +8,72 @@ interface HomeProps {
   handleQtyChange: (productId: string, value: string) => void;
   adjustQty: (productId: string, increment: boolean) => void;
   searchTerm: string;
+  setSearchTerm: (s: string) => void;
   selectedCategory: string;
+  setSelectedCategory: (s: string) => void;
+  cartCount: number;
+  cartTotal: number;
 }
 
 export const Home: React.FC<HomeProps> = ({
   quantities,
   handleQtyChange,
   searchTerm,
-  selectedCategory
+  setSearchTerm,
+  selectedCategory,
+  setSelectedCategory,
+  cartCount,
+  cartTotal
 }) => {
-  // Filter products and categories based on search & filter state
+  const [selectedBrand, setSelectedBrand] = useState('all');
+
+  // Helper to generate deterministic product codes
+  const getProductCode = (id: string) => {
+    let hash = 0;
+    for (let i = 0; i < id.length; i++) {
+      hash = id.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const codeNum = 1100 + Math.abs(hash % 900);
+    return `#NPK${codeNum}`;
+  };
+
+  // Helper to parse product name and extract count badge text
+  const parseProductName = (fullName: string) => {
+    const match = fullName.match(/\(([^)]+)\)/);
+    const countBadgeText = match ? match[1].trim().replace(/\s+/g, '') : '10Pcs';
+    
+    // Clean display name by removing the parenthetical part
+    const displayName = fullName.replace(/\s*\([^)]+\)/g, '').trim().toUpperCase();
+    
+    return { displayName, countBadgeText };
+  };
+
+  // Helper to format category names for headers (e.g. SPARKLERS, FAMILY PACK'S)
+  const parseCategoryName = (fullName: string) => {
+    const cleanName = fullName.replace(/\s*\([^)]+\)/g, '').trim().toUpperCase();
+    if (cleanName === 'KIDS SPECIAL') return "KIDS SPECIAL'S";
+    if (cleanName === 'FLOWER POTS') return "FLOWER POT'S";
+    if (cleanName === 'GROUND CHAKKARS') return "GROUND CHAKKAR'S";
+    if (cleanName === 'BOMBS & SOUND CRACKERS') return "BOMBS & SOUNDS";
+    if (cleanName === 'SOUND GARLANDS') return "SOUND GARLAND'S";
+    return cleanName;
+  };
+
+  // Filter products and categories based on search, category, and brand state
   const filteredCategories = crackerCategories
     .map((category) => {
       const matchedProducts = category.products.filter((product) => {
         const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase());
         const matchesCategory = selectedCategory === 'all' || selectedCategory === category.id;
-        return matchesSearch && matchesCategory;
+        
+        let matchesBrand = true;
+        if (selectedBrand === 'laxmi') {
+          matchesBrand = product.name.toLowerCase().includes('laxmi');
+        } else if (selectedBrand === 'standard') {
+          matchesBrand = !product.name.toLowerCase().includes('laxmi');
+        }
+        
+        return matchesSearch && matchesCategory && matchesBrand;
       });
 
       return {
