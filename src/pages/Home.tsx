@@ -1,6 +1,7 @@
 import React from 'react';
 import { crackerCategories } from '../data/products';
 import { ProductImage } from '../components/ProductImage';
+import { Fireworks } from '@fireworks-js/react';
 
 interface HomeProps {
   quantities: Record<string, number>;
@@ -13,7 +14,6 @@ interface HomeProps {
 export const Home: React.FC<HomeProps> = ({
   quantities,
   handleQtyChange,
-  adjustQty,
   searchTerm,
   selectedCategory
 }) => {
@@ -33,117 +33,193 @@ export const Home: React.FC<HomeProps> = ({
     })
     .filter((category) => category.products.length > 0);
 
-  // WhatsApp order submission and details are managed by the unified Footer component
+  const allProducts = filteredCategories.flatMap(c => c.products);
+  const totalProducts = allProducts.length;
 
   return (
-    <div className="flex-grow flex flex-col">
-      {/* Main Table Container */}
-      <main className="flex-grow px-6 md:px-12 mt-8 md:mt-12 mb-16 max-w-7xl mx-auto w-full">
-        {filteredCategories.length > 0 ? (
-          filteredCategories.map((category) => (
-            <section key={category.id} className="mb-16">
-              {/* Category Header */}
-              <div className="flex items-center gap-4 mb-8">
-                <h2 className="font-poppins font-bold text-2xl md:text-3xl text-dark-navy">
-                  {category.name}
-                </h2>
-                <div className="flex-grow h-px bg-gradient-to-r from-luxury-gold/50 to-transparent"></div>
-                <span className="text-royal-red font-semibold text-sm bg-royal-red/10 px-3 py-1 rounded-full whitespace-nowrap">
-                  80% DISCOUNT
-                </span>
-              </div>
+    <div className="flex-grow flex flex-col bg-bg-light font-sans">
+      {/* Hero Section with Fireworks */}
+      <div 
+        className="w-full h-[300px] md:h-[400px] relative overflow-hidden flex-shrink-0"
+        style={{
+          backgroundImage: `linear-gradient(to bottom right, rgba(15, 76, 129, 0.85), rgba(30, 58, 138, 0.95)), url('/banner.png')`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundAttachment: 'fixed'
+        }}
+      >
+        <Fireworks
+          options={{
+            rocketsPoint: { min: 10, max: 90 },
+            hue: { min: 40, max: 60 },
+            delay: { min: 30, max: 60 },
+            acceleration: 1.02,
+            friction: 0.95,
+            gravity: 1,
+            particles: 90,
+            traceLength: 3,
+            traceSpeed: 2,
+            explosion: 5,
+            intensity: 20,
+            flickering: 50,
+            lineStyle: 'round',
+            brightness: { min: 50, max: 80 },
+            decay: { min: 0.015, max: 0.03 },
+            mouse: { click: false, move: false, max: 1 }
+          }}
+          style={{
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            position: 'absolute',
+            zIndex: 10,
+            pointerEvents: 'none'
+          }}
+        />
+        <div className="absolute inset-0 flex flex-col items-center justify-center z-20 bg-black/20">
+          <h1 className="text-3xl md:text-5xl font-bold text-white text-center px-4 tracking-wide shadow-black drop-shadow-md">
+            Celebrate with Premium Fireworks
+          </h1>
+          <p className="text-gray-200 mt-4 text-sm md:text-base max-w-lg text-center px-4 drop-shadow-md">
+            Sivakasi's finest crackers at wholesale prices. Light up your celebrations!
+          </p>
+        </div>
+      </div>
 
-              {/* Product Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-                {category.products.map((product, index) => {
-                  const qty = quantities[product.id] || 0;
-                  const rowTotal = qty * product.discountPrice;
-                  
-                  return (
-                    <div 
-                      key={product.id} 
-                      className="bg-white rounded-[18px] shadow-[var(--shadow-premium)] hover:shadow-[var(--shadow-premium-hover)] hover:-translate-y-1.5 transition-all duration-400 p-6 flex flex-col relative group animate-slide-up"
-                      style={{ animationDelay: `${index * 50}ms` }}
-                    >
-                      {/* Product Image */}
-                      <div className="flex justify-center items-center h-32 mb-4">
-                        <div className="transform group-hover:scale-110 transition-transform duration-500">
-                          <ProductImage type={product.imageType} />
+      <main className="flex-grow w-full max-w-[1200px] mx-auto bg-white shadow-sm mt-6 mb-10 relative z-40 rounded-lg">
+        
+        {/* Table Header (Hidden on Mobile) */}
+        <div className="hidden md:grid grid-cols-[3fr_1fr_1fr_1fr_1fr_1fr] items-center bg-[#F8F9FA] border-b border-gray-200 px-6 py-4 sticky top-[185px] lg:top-[205px] z-50 shadow-sm rounded-t-lg">
+          <div className="text-[13px] font-bold text-gray-500 tracking-wider">PRODUCT DETAILS</div>
+          <div className="text-[13px] font-bold text-gray-500 tracking-wider text-center">UNIT/SIZE</div>
+          <div className="text-[13px] font-bold text-gray-500 tracking-wider text-center">IN STOCK</div>
+          <div className="text-[13px] font-bold text-gray-500 tracking-wider text-center">PRICE</div>
+          <div className="text-[13px] font-bold text-gray-500 tracking-wider text-center">QUANTITY</div>
+          <div className="text-[13px] font-bold text-gray-500 tracking-wider text-center">ACTION</div>
+        </div>
+
+        {/* Product List */}
+        <div className="flex flex-col">
+          {filteredCategories.length > 0 ? (
+            filteredCategories.map((category) => (
+              <div key={category.id} className="mb-6">
+                {/* Category Header */}
+                <div className="bg-white px-6 py-4 border-b border-gray-100 flex items-center gap-3 rounded-t-[18px]">
+                  <div className="w-8 h-8 rounded-full bg-primary-blue/10 flex items-center justify-center text-primary-blue font-bold">
+                    ✨
+                  </div>
+                  <h2 className="text-primary-blue text-[18px] font-bold uppercase tracking-wide">
+                    {category.name.replace(' (80% DISCOUNT)', '')}
+                  </h2>
+                </div>
+
+                {/* Category Products */}
+                <div className="flex flex-col bg-white rounded-b-[18px] shadow-[var(--shadow-premium)]">
+                  {category.products.map((product) => {
+                    const qty = quantities[product.id] || '';
+                    // Randomize stock status slightly for realism, or just default to Yes
+                    const isLow = product.id === 'sp3' || product.id === 'gc2';
+
+                    return (
+                      <div 
+                        key={product.id} 
+                        className="flex flex-col md:grid md:grid-cols-[3fr_1fr_1fr_1fr_1fr_1fr] items-center px-4 md:px-6 py-5 md:py-4 border-b border-gray-100 hover:bg-white hover:shadow-[var(--shadow-premium-hover)] hover:-translate-y-1 transition-all duration-300 gap-4 md:gap-0 bg-white"
+                      >
+                        {/* Product Details */}
+                        <div className="flex items-center gap-4 w-full md:w-auto">
+                          <div className="w-[60px] h-[60px] md:w-[60px] md:h-[60px] flex-shrink-0 flex items-center justify-center bg-white border border-border-gray rounded-[18px] overflow-hidden group-hover:scale-105 transition-transform duration-300 shadow-sm">
+                            <ProductImage type={product.imageType} />
+                          </div>
+                          <div className="flex flex-col flex-grow">
+                            <span className="text-[15px] font-bold text-text-primary mb-0.5">{product.name}</span>
+                            {product.name.includes('Discount') ? (
+                              <span className="text-[11px] font-bold bg-danger-red text-white px-2 py-0.5 rounded-full inline-block w-max">Special Offer</span>
+                            ) : (
+                              <span className="text-[13px] text-text-secondary">Premium Standard</span>
+                            )}
+                          </div>
                         </div>
-                      </div>
 
-                      {/* Details */}
-                      <div className="flex flex-col flex-grow text-center">
-                        <h3 className="font-poppins font-bold text-dark-navy text-lg mb-1 leading-tight line-clamp-2">
-                          {product.name}
-                        </h3>
-                        <p className="text-gray-500 font-inter text-sm mb-4">
+                        {/* Mobile Details Row */}
+                        <div className="flex items-center justify-between w-full md:hidden text-sm text-text-secondary bg-bg-light p-2 rounded-[12px]">
+                          <div className="font-medium">Unit: <span className="font-normal">{product.unit}</span></div>
+                          <div className={`font-bold ${isLow ? 'text-accent-orange' : 'text-success-green'}`}>{isLow ? 'Low Stock' : 'In Stock'}</div>
+                          <div className="font-bold text-secondary-gold">₹{product.discountPrice.toFixed(2)}</div>
+                        </div>
+
+                        {/* Desktop Unit / Size */}
+                        <div className="hidden md:block text-[14px] text-text-secondary text-center">
                           {product.unit}
-                        </p>
-                        
-                        <div className="mt-auto">
-                          <div className="flex items-end justify-center gap-2 mb-5">
-                            <span className="text-gray-400 line-through text-sm font-medium">
-                              ₹{product.actualPrice}
-                            </span>
-                            <span className="text-royal-red font-bold text-2xl font-poppins">
-                              ₹{product.discountPrice}
-                            </span>
+                        </div>
+
+                        {/* Desktop In Stock */}
+                        <div className={`hidden md:block text-[14px] font-bold text-center ${isLow ? 'text-accent-orange' : 'text-success-green'}`}>
+                          {isLow ? 'Low' : 'Yes'}
+                        </div>
+
+                        {/* Desktop Price */}
+                        <div className="hidden md:block text-[15px] font-bold text-secondary-gold text-center">
+                          ₹{product.discountPrice.toFixed(2)}
+                        </div>
+
+                        {/* Actions Row (Quantity & Add Button) */}
+                        <div className="flex items-center justify-between w-full md:contents mt-2 md:mt-0">
+                          {/* Quantity */}
+                          <div className="flex justify-center items-center w-1/2 md:w-auto pr-2 md:pr-0 border-r md:border-r-0 border-gray-200">
+                            <span className="text-xs font-bold text-gray-500 mr-2 md:hidden">QTY:</span>
+                            <input
+                              type="number"
+                              min="1"
+                              value={qty}
+                              onChange={(e) => handleQtyChange(product.id, e.target.value)}
+                              className="w-[60px] h-[36px] border border-gray-300 rounded-[4px] text-center text-[14px] outline-none focus:border-[#B71C1C]"
+                            />
                           </div>
 
-                          {/* Controls */}
-                          <div className="bg-off-white p-3 rounded-2xl border border-gray-100 flex flex-col gap-3">
-                            <div className="flex items-center justify-between bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
-                              <button
-                                type="button"
-                                className="w-10 h-10 flex items-center justify-center text-dark-navy hover:bg-gray-50 hover:text-royal-red transition-colors font-bold text-lg"
-                                onClick={() => adjustQty(product.id, false)}
-                              >
-                                −
-                              </button>
-                              <input
-                                type="number"
-                                min="0"
-                                value={quantities[product.id] || ''}
-                                onChange={(e) => handleQtyChange(product.id, e.target.value)}
-                                className="w-12 h-10 text-center font-inter font-semibold text-dark-navy outline-none bg-transparent"
-                                placeholder="0"
-                              />
-                              <button
-                                type="button"
-                                className="w-10 h-10 flex items-center justify-center text-dark-navy hover:bg-gray-50 hover:text-royal-red transition-colors font-bold text-lg"
-                                onClick={() => adjustQty(product.id, true)}
-                              >
-                                +
-                              </button>
-                            </div>
-                            
-                            {/* Total Line */}
-                            <div className="flex justify-between items-center px-1">
-                              <span className="text-xs text-gray-500 font-medium">Item Total:</span>
-                              <span className="font-bold text-sm text-dark-navy">
-                                ₹{rowTotal > 0 ? rowTotal : '0'}
-                              </span>
-                            </div>
+                          {/* Action */}
+                          <div className="flex justify-center items-center w-1/2 md:w-auto pl-2 md:pl-0">
+                            <button
+                              onClick={() => {
+                                if (!qty) handleQtyChange(product.id, '1');
+                              }}
+                              className="w-full md:w-[70px] max-w-[120px] btn-primary flex items-center justify-center text-[13px] !h-[36px] shadow-sm"
+                            >
+                              ADD
+                            </button>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
+                </div>
               </div>
-            </section>
-          ))
-        ) : (
-          <div className="flex flex-col items-center justify-center h-64 text-gray-400 font-inter">
-            <svg className="w-16 h-16 mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
-            </svg>
-            <p className="text-lg font-medium">No premium products found.</p>
-            <p className="text-sm mt-1">Try adjusting your search or filters.</p>
+            ))
+          ) : (
+            <div className="flex flex-col items-center justify-center h-64 text-gray-400">
+              <p className="text-lg font-medium">No products found.</p>
+            </div>
+          )}
+        </div>
+
+        {/* Pagination Footer */}
+        {filteredCategories.length > 0 && (
+          <div className="flex items-center justify-between px-6 py-4 border-t border-gray-200 bg-white">
+            <div className="text-[14px] text-gray-500 font-medium">
+              Showing 1 - {totalProducts} of {totalProducts} products
+            </div>
+            <div className="flex items-center gap-1">
+              <button className="px-3 py-1.5 text-[14px] text-gray-500 border border-transparent hover:bg-gray-100 rounded">Prev</button>
+              <button className="w-8 h-8 flex items-center justify-center text-[14px] text-white bg-[#B71C1C] rounded font-bold">1</button>
+              <button className="w-8 h-8 flex items-center justify-center text-[14px] text-gray-600 hover:bg-gray-100 rounded border border-gray-200">2</button>
+              <button className="w-8 h-8 flex items-center justify-center text-[14px] text-gray-600 hover:bg-gray-100 rounded border border-gray-200">3</button>
+              <button className="px-3 py-1.5 text-[14px] text-gray-700 font-medium border border-transparent hover:bg-gray-100 rounded">Next</button>
+            </div>
           </div>
         )}
+
       </main>
     </div>
   );
 };
+

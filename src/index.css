@@ -1,10 +1,21 @@
 @import "tailwindcss";
 
 @theme {
-  --color-royal-red: #C8102E;
-  --color-dark-navy: #0F172A;
-  --color-luxury-gold: #F4B400;
-  --color-off-white: #FFFDF8;
+  --color-primary-blue: #0F4C81;
+  --color-secondary-gold: #D4AF37;
+  --color-accent-orange: #FF8C42;
+  --color-success-green: #22C55E;
+  --color-danger-red: #DC2626;
+  --color-bg-light: #F8FAFC;
+  --color-section-bg: #FFFFFF;
+  --color-dark-section: #0F172A;
+  --color-border-gray: #E5E7EB;
+  --color-text-primary: #111827;
+  --color-text-secondary: #6B7280;
+  
+  --color-royal-red: #0F4C81; /* Aliased for backward compatibility */
+  --color-luxury-gold: #D4AF37; /* Aliased for backward compatibility */
+  --color-off-white: #F8FAFC; /* Aliased for backward compatibility */
 
   --font-sans: "Inter", sans-serif;
   --font-poppins: "Poppins", sans-serif;
@@ -29,9 +40,9 @@
 }
 
 body {
-  background-color: var(--color-off-white);
+  background-color: var(--color-bg-light);
   font-family: var(--font-sans);
-  color: var(--color-dark-navy);
+  color: var(--color-text-primary);
   -webkit-font-smoothing: antialiased;
 }
 
@@ -39,18 +50,48 @@ body {
 input::-webkit-outer-spin-button,
 input::-webkit-inner-spin-button {
   -webkit-appearance: none;
+  appearance: none;
   margin: 0;
 }
 
 input[type=number] {
   -moz-appearance: textfield;
+  appearance: textfield;
 }
 
-/* Premium Button Ripple */
+/* Premium Buttons */
+.btn-primary {
+  background-color: var(--color-primary-blue);
+  color: #ffffff;
+  border-radius: 12px;
+  height: 48px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+.btn-primary:hover {
+  background-color: #0B3A63;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(15, 76, 129, 0.3);
+}
+
+.btn-secondary {
+  background-color: var(--color-secondary-gold);
+  color: var(--color-text-primary);
+  border-radius: 12px;
+  height: 48px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+.btn-secondary:hover {
+  background-color: #B8860B;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
+}
+
 .btn-premium {
   position: relative;
   overflow: hidden;
-  transition: all 0.4s ease;
+  transition: all 0.3s ease;
 }
 .btn-premium::after {
   content: '';

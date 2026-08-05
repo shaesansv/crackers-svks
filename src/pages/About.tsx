@@ -14,23 +14,31 @@ export const About: React.FC = () => {
   ];
 
   return (
-    <div className="flex-grow bg-off-white pb-20">
+    <div className="flex-grow bg-bg-light pb-20">
       {/* 1. Styled Hero Banner */}
-      <section className="relative w-full h-[320px] bg-dark-navy overflow-hidden flex items-center justify-center px-10 md:px-20 select-none">
+      <section 
+        className="relative w-full h-[320px] overflow-hidden flex items-center justify-center px-10 md:px-20 select-none"
+        style={{
+          backgroundImage: `linear-gradient(to bottom right, rgba(15, 76, 129, 0.85), rgba(30, 58, 138, 0.95)), url('/shop_shelf_1.png')`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundAttachment: 'fixed'
+        }}
+      >
         {/* Subtle luxury glow background */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-64 bg-luxury-gold/10 blur-[100px] rounded-full pointer-events-none"></div>
-        <div className="absolute -right-20 -top-20 w-96 h-96 border-[40px] border-luxury-gold/5 rounded-full pointer-events-none"></div>
-        <div className="absolute -left-20 -bottom-20 w-80 h-80 border-[30px] border-royal-red/5 rounded-full pointer-events-none"></div>
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-64 bg-secondary-gold/10 blur-[100px] rounded-full pointer-events-none"></div>
+        <div className="absolute -right-20 -top-20 w-96 h-96 border-[40px] border-secondary-gold/10 rounded-full pointer-events-none"></div>
+        <div className="absolute -left-20 -bottom-20 w-80 h-80 border-[30px] border-secondary-gold/5 rounded-full pointer-events-none"></div>
         
         {/* Center: Premium Text */}
         <div className="relative z-10 flex flex-col items-center text-center gap-2 animate-slide-up">
-          <div className="bg-luxury-gold/20 text-luxury-gold font-poppins font-bold text-[10px] md:text-xs px-4 py-1.5 uppercase tracking-[0.3em] rounded-full backdrop-blur-sm border border-luxury-gold/30">
+          <div className="bg-secondary-gold/20 text-secondary-gold font-poppins font-bold text-[10px] md:text-xs px-4 py-1.5 uppercase tracking-[0.3em] rounded-full backdrop-blur-sm border border-secondary-gold/30">
             ESTABLISHED 1994
           </div>
           <h1 className="text-4xl md:text-6xl font-poppins font-black text-white tracking-tight drop-shadow-md select-none mt-2">
-            About <span className="text-luxury-gold">Us</span>
+            About <span className="text-secondary-gold">Us</span>
           </h1>
-          <div className="w-24 h-1 bg-gradient-to-r from-transparent via-royal-red to-transparent mt-4"></div>
+          <div className="w-24 h-1 bg-gradient-to-r from-transparent via-secondary-gold to-transparent mt-4"></div>
         </div>
       </section>
 
@@ -38,11 +46,11 @@ export const About: React.FC = () => {
       <section className="max-w-5xl mx-auto px-6 mt-16 relative">
         <div className="bg-white rounded-[24px] shadow-[var(--shadow-premium)] p-8 md:p-12 relative z-10 border border-gray-100">
           <div className="text-center max-w-3xl mx-auto">
-            <span className="text-xs uppercase text-royal-red font-bold tracking-widest block mb-2 font-poppins">Our Story</span>
-            <h2 className="text-3xl font-poppins font-extrabold text-dark-navy m-0 leading-tight">
+            <span className="text-xs uppercase text-primary-blue font-bold tracking-widest block mb-2 font-poppins">Our Story</span>
+            <h2 className="text-3xl font-poppins font-extrabold text-text-primary m-0 leading-tight">
               Sarguru Crackers
             </h2>
-            <div className="w-16 h-1 bg-luxury-gold mx-auto mt-4 mb-8 rounded-full"></div>
+            <div className="w-16 h-1 bg-secondary-gold mx-auto mt-4 mb-8 rounded-full"></div>
             
             <p className="text-gray-600 text-sm md:text-base leading-relaxed text-justify md:text-center font-inter px-4 mb-6">
               We are in the field of <strong>manufacturing & selling crackers since 1994</strong>. We have direct buying customers from Maharashtra, Kerala, Karnataka, and Tamil Nadu. We have 2 manufacturing units in Sivakasi and an exclusive showroom with 2 licensed godowns to stock crackers for our customer needs for all occasions throughout the year. 
@@ -57,9 +65,9 @@ export const About: React.FC = () => {
       {/* 3. Shop & Gift Boxes Grid */}
       <section className="max-w-6xl mx-auto px-6 mt-24">
         <div className="text-center mb-12">
-          <span className="text-xs uppercase text-royal-red font-bold tracking-widest block mb-2 font-poppins">Gallery</span>
-          <h2 className="text-3xl font-poppins font-black text-dark-navy m-0">Our Shop & Gift Boxes</h2>
-          <div className="w-24 h-1 bg-luxury-gold mx-auto mt-4 rounded-full"></div>
+          <span className="text-xs uppercase text-primary-blue font-bold tracking-widest block mb-2 font-poppins">Gallery</span>
+          <h2 className="text-3xl font-poppins font-black text-text-primary m-0">Our Shop & Gift Boxes</h2>
+          <div className="w-24 h-1 bg-secondary-gold mx-auto mt-4 rounded-full"></div>
         </div>
 
         {/* 4x2 Grid Gallery Layout */}
@@ -82,17 +90,17 @@ export const About: React.FC = () => {
       {/* 4. Vision & Mission Statement */}
       <section className="max-w-4xl mx-auto px-6 mt-24">
         <div className="text-center mb-12">
-          <span className="text-xs uppercase text-royal-red font-bold tracking-widest block mb-2 font-poppins">Core Values</span>
-          <h2 className="text-3xl font-poppins font-black text-dark-navy m-0">Our Vision & Mission</h2>
-          <div className="w-24 h-1 bg-luxury-gold mx-auto mt-4 rounded-full"></div>
+          <span className="text-xs uppercase text-primary-blue font-bold tracking-widest block mb-2 font-poppins">Core Values</span>
+          <h2 className="text-3xl font-poppins font-black text-text-primary m-0">Our Vision & Mission</h2>
+          <div className="w-24 h-1 bg-secondary-gold mx-auto mt-4 rounded-full"></div>
         </div>
 
-        <div className="bg-white border-t-[6px] border-luxury-gold rounded-[24px] p-10 md:p-12 text-center shadow-[var(--shadow-premium)]">
+        <div className="bg-white border-t-[6px] border-secondary-gold rounded-[24px] p-10 md:p-12 text-center shadow-[var(--shadow-premium)]">
           <div className="mb-10 relative">
             <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-8 bg-white px-4">
-              <svg className="w-8 h-8 text-luxury-gold" fill="currentColor" viewBox="0 0 24 24"><path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z" /></svg>
+              <svg className="w-8 h-8 text-secondary-gold" fill="currentColor" viewBox="0 0 24 24"><path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z" /></svg>
             </div>
-            <h4 className="text-royal-red font-poppins font-bold text-lg mb-3">Vision</h4>
+            <h4 className="text-primary-blue font-poppins font-bold text-lg mb-3">Vision</h4>
             <p className="text-gray-700 font-inter text-base leading-relaxed max-w-2xl mx-auto italic">
               "To be the best wholesale & retail dealer for all kinds of fancy crackers & gift boxes to our beloved customers."
             </p>
@@ -101,7 +109,7 @@ export const About: React.FC = () => {
           <div className="w-1/2 h-px bg-gray-200 mx-auto mb-10"></div>
           
           <div className="relative">
-            <h4 className="text-royal-red font-poppins font-bold text-lg mb-3">Mission</h4>
+            <h4 className="text-primary-blue font-poppins font-bold text-lg mb-3">Mission</h4>
             <p className="text-gray-700 font-inter text-base leading-relaxed max-w-2xl mx-auto italic">
               "Our Mission is to provide Quality & Innovative Fireworks products to our valuable customers at reasonable prices and light up all their celebrations."
             </p>
