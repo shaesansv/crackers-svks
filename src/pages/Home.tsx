@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { crackerCategories } from '../data/products';
 import { ProductImage } from '../components/ProductImage';
 import { Fireworks } from '@fireworks-js/react';
+import type { Category, Product } from '../types';
 
 interface HomeProps {
   quantities: Record<string, number>;
@@ -13,6 +13,7 @@ interface HomeProps {
   setSelectedCategory: (s: string) => void;
   cartCount: number;
   cartTotal: number;
+  categories: Category[];
 }
 
 export const Home: React.FC<HomeProps> = ({
@@ -22,47 +23,14 @@ export const Home: React.FC<HomeProps> = ({
   setSearchTerm,
   selectedCategory,
   setSelectedCategory,
-  cartCount,
-  cartTotal
+  categories
 }) => {
   const [selectedBrand, setSelectedBrand] = useState('all');
 
-  // Helper to generate deterministic product codes
-  const getProductCode = (id: string) => {
-    let hash = 0;
-    for (let i = 0; i < id.length; i++) {
-      hash = id.charCodeAt(i) + ((hash << 5) - hash);
-    }
-    const codeNum = 1100 + Math.abs(hash % 900);
-    return `#NPK${codeNum}`;
-  };
-
-  // Helper to parse product name and extract count badge text
-  const parseProductName = (fullName: string) => {
-    const match = fullName.match(/\(([^)]+)\)/);
-    const countBadgeText = match ? match[1].trim().replace(/\s+/g, '') : '10Pcs';
-    
-    // Clean display name by removing the parenthetical part
-    const displayName = fullName.replace(/\s*\([^)]+\)/g, '').trim().toUpperCase();
-    
-    return { displayName, countBadgeText };
-  };
-
-  // Helper to format category names for headers (e.g. SPARKLERS, FAMILY PACK'S)
-  const parseCategoryName = (fullName: string) => {
-    const cleanName = fullName.replace(/\s*\([^)]+\)/g, '').trim().toUpperCase();
-    if (cleanName === 'KIDS SPECIAL') return "KIDS SPECIAL'S";
-    if (cleanName === 'FLOWER POTS') return "FLOWER POT'S";
-    if (cleanName === 'GROUND CHAKKARS') return "GROUND CHAKKAR'S";
-    if (cleanName === 'BOMBS & SOUND CRACKERS') return "BOMBS & SOUNDS";
-    if (cleanName === 'SOUND GARLANDS') return "SOUND GARLAND'S";
-    return cleanName;
-  };
-
   // Filter products and categories based on search, category, and brand state
-  const filteredCategories = crackerCategories
+  const filteredCategories = categories
     .map((category) => {
-      const matchedProducts = category.products.filter((product) => {
+      const matchedProducts = category.products.filter((product: Product) => {
         const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase());
         const matchesCategory = selectedCategory === 'all' || selectedCategory === category.id;
         
@@ -139,14 +107,59 @@ export const Home: React.FC<HomeProps> = ({
 
       <main className="flex-grow w-full max-w-[1200px] mx-auto bg-white shadow-sm mt-6 mb-10 relative z-40 rounded-lg">
         
-        {/* Table Header (Hidden on Mobile) */}
-        <div className="hidden md:grid grid-cols-[3fr_1fr_1fr_1fr_1fr_1fr] items-center bg-[#F8F9FA] border-b border-gray-200 px-6 py-4 sticky top-[185px] lg:top-[205px] z-50 shadow-sm rounded-t-lg">
-          <div className="text-[13px] font-bold text-gray-500 tracking-wider">PRODUCT DETAILS</div>
-          <div className="text-[13px] font-bold text-gray-500 tracking-wider text-center">UNIT/SIZE</div>
-          <div className="text-[13px] font-bold text-gray-500 tracking-wider text-center">IN STOCK</div>
-          <div className="text-[13px] font-bold text-gray-500 tracking-wider text-center">PRICE</div>
-          <div className="text-[13px] font-bold text-gray-500 tracking-wider text-center">QUANTITY</div>
-          <div className="text-[13px] font-bold text-gray-500 tracking-wider text-center">ACTION</div>
+        {/* 1. Top Filters & Search Box */}
+        <div className="bg-white border border-gray-100 rounded-[20px] p-5 shadow-[0_8px_30px_rgb(0,0,0,0.02)] mb-6 flex flex-col gap-3.5">
+          {/* Dropdowns */}
+          <div className="grid grid-cols-2 gap-3.5">
+            {/* Brand Dropdown */}
+            <div className="relative">
+              <select
+                value={selectedBrand}
+                onChange={(e) => setSelectedBrand(e.target.value)}
+                className="w-full py-3 pl-4 pr-10 border border-gray-200 rounded-[14px] text-sm bg-white text-dark-navy font-semibold outline-none transition-all duration-300 focus:border-violet-500 focus:ring-1 focus:ring-violet-100 cursor-pointer appearance-none"
+              >
+                <option value="all">All Brands</option>
+                <option value="laxmi">Laxmi Brand</option>
+                <option value="standard">Standard Quality</option>
+              </select>
+              <div className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+              </div>
+            </div>
+
+            {/* Category Dropdown */}
+            <div className="relative">
+              <select
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                className="w-full py-3 pl-4 pr-10 border border-gray-200 rounded-[14px] text-sm bg-white text-dark-navy font-semibold outline-none transition-all duration-300 focus:border-violet-500 focus:ring-1 focus:ring-violet-100 cursor-pointer appearance-none"
+              >
+                <option value="all">All Categories</option>
+                {categories.map((cat: Category) => (
+                  <option key={cat.id} value={cat.id}>
+                    {cat.name.replace(' (80% DISCOUNT)', '')}
+                  </option>
+                ))}
+              </select>
+              <div className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+              </div>
+            </div>
+          </div>
+
+          {/* Search Field */}
+          <div className="relative">
+            <input
+              type="text"
+              placeholder="Search products..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full py-3 pl-11 pr-4 border border-gray-200 rounded-[14px] text-sm bg-gray-50/50 focus:bg-white text-dark-navy outline-none transition-all duration-300 focus:border-violet-500 focus:ring-1 focus:ring-violet-100 font-inter"
+            />
+            <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+            </div>
+          </div>
         </div>
 
         {/* Product List */}
@@ -166,7 +179,7 @@ export const Home: React.FC<HomeProps> = ({
 
                 {/* Category Products */}
                 <div className="flex flex-col bg-white rounded-b-[18px] shadow-[var(--shadow-premium)]">
-                  {category.products.map((product) => {
+                  {category.products.map((product: Product) => {
                     const qty = quantities[product.id] || '';
                     // Randomize stock status slightly for realism, or just default to Yes
                     const isLow = product.id === 'sp3' || product.id === 'gc2';

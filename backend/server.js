@@ -1,39 +1,27 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
-const jwt = require('jsonwebtoken');
-const cloudinary = require('cloudinary').v2;
-const multer = require('multer');
 require('dotenv').config();
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Cloudinary Configuration
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME || 'dyd2rwp5t',
-  api_key: process.env.CLOUDINARY_API_KEY || '123456789012345',
-  api_secret: process.env.CLOUDINARY_API_SECRET || 'your_cloudinary_api_secret'
-});
+// Import Models
+const Product = require('./models/Product');
+const Order = require('./models/Order');
+const Category = require('./models/Category');
+const Settings = require('./models/Settings');
+const Admin = require('./models/Admin');
+const bcrypt = require('bcryptjs');
 
-// Multer memory storage setup
-const storage = multer.memoryStorage();
-const upload = multer({ storage });
+// Import Routes
+const adminRoutes = require('./routes/admin');
+const userRoutes = require('./routes/user');
 
-// Helper to upload file buffer to Cloudinary
-const uploadToCloudinary = (fileBuffer) => {
-  return new Promise((resolve, reject) => {
-    const uploadStream = cloudinary.uploader.upload_stream(
-      { folder: 'sarguru-crackers' },
-      (error, result) => {
-        if (error) return reject(error);
-        resolve(result);
-      }
-    );
-    uploadStream.end(fileBuffer);
-  });
-};
+// Use Routes
+app.use('/api', adminRoutes);
+app.use('/api', userRoutes);
 
 // MongoDB connection
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/sargurucrackers';
@@ -44,77 +32,51 @@ mongoose.connect(MONGODB_URI)
   })
   .catch(err => console.log('MongoDB connection error:', err));
 
-// --- Database Schemas ---
-
-// 1. Product Schema
-const productSchema = new mongoose.Schema({
-  name: { type: String, required: true },
-  unit: { type: String, required: true },
-  actualPrice: { type: Number, required: true },
-  discountPrice: { type: Number, required: true },
-  imageType: { type: String, required: true },
-  imageUrl: { type: String }
-}, { timestamps: true });
-
-productSchema.set('toJSON', {
-  transform: (document, returnedObject) => {
-    returnedObject.id = returnedObject._id.toString();
-    delete returnedObject._id;
-    delete returnedObject.__v;
-  }
-});
-
-const Product = mongoose.model('Product', productSchema);
-
-// 2. Order Schema
-const orderSchema = new mongoose.Schema({
-  orderId: { type: String, required: true },
-  customerName: { type: String, required: true },
-  customerEmail: { type: String },
-  customerPhone: { type: String, required: true },
-  items: [{
-    name: String,
-    qty: Number,
-    price: Number
-  }],
-  total: { type: Number, required: true },
-  packingCharge: { type: Number, default: 0 },
-  overallTotal: { type: Number, required: true },
-  approved: { type: String, enum: ['Pending', 'Approved', 'Packed', 'On Hold'], default: 'Pending' },
-  holdStatus: { type: String, default: '' },
-  date: { type: String, required: true }
-}, { timestamps: true });
-
-orderSchema.set('toJSON', {
-  transform: (document, returnedObject) => {
-    returnedObject.id = returnedObject._id.toString();
-    delete returnedObject._id;
-    delete returnedObject.__v;
-  }
-});
-
-const Order = mongoose.model('Order', orderSchema);
-
-// Admin Auth Middleware
-const authMiddleware = (req, res, next) => {
-  const authHeader = req.headers.authorization;
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return res.status(401).json({ message: 'Unauthorized access. Token missing.' });
-  }
-  const token = authHeader.split(' ')[1];
-  try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'sarguru_jwt_secret_key_2026');
-    req.user = decoded;
-    next();
-  } catch (err) {
-    return res.status(401).json({ message: 'Invalid or expired token.' });
-  }
-};
-
 // Seeding logic
 async function seedDatabase() {
   try {
-    // 1. Seed Products
+    // 0. Seed Admin Account
+    const adminCount = await Admin.countDocuments();
+    if (adminCount === 0) {
+      console.log('Seeding default admin user...');
+      const hashedPassword = await bcrypt.hash(process.env.ADMIN_PASSWORD || 'adminpassword', 10);
+      const defaultAdmin = new Admin({
+        username: process.env.ADMIN_USERNAME || 'admin',
+        password: hashedPassword
+      });
+      await defaultAdmin.save();
+    }
+
+    // 1. Seed Settings
+    const settingsCount = await Settings.countDocuments();
+    if (settingsCount === 0) {
+      console.log('Seeding default settings...');
+      const defaultSettings = new Settings({
+        minOrderValue: 3000,
+        merchantPhone: '917868077818',
+        storeAddress: '3/1321 Paraipatti, Sivakasi, Tamil Nadu'
+      });
+      await defaultSettings.save();
+    }
+
+    // 2. Seed Categories
+    const categoriesCount = await Category.countDocuments();
+    if (categoriesCount === 0) {
+      console.log('Seeding initial categories...');
+      const defaultCategories = [
+        { id: 'sparklers', code: '140', name: 'SPARKLERS (80% DISCOUNT)', discountText: '80% DISCOUNT', imageType: 'sparkler' },
+        { id: 'flowerpots', code: '100', name: 'FLOWER POTS (80% DISCOUNT)', discountText: '80% DISCOUNT', imageType: 'pot' },
+        { id: 'chakkars', code: '110', name: 'GROUND CHAKKARS (80% DISCOUNT)', discountText: '80% DISCOUNT', imageType: 'chakkar' },
+        { id: 'bombs', code: '170', name: 'BOMBS & SOUND CRACKERS (80% DISCOUNT)', discountText: '80% DISCOUNT', imageType: 'bomb' },
+        { id: 'kids', code: '130', name: 'KIDS SPECIAL (80% DISCOUNT)', discountText: '80% DISCOUNT', imageType: 'kids' },
+        { id: 'garlands', code: '150', name: 'SOUND GARLANDS (80% DISCOUNT)', discountText: '80% DISCOUNT', imageType: 'garland' },
+        { id: 'skyshots', code: '120', name: 'SKYSHOT (80% DISCOUNT)', discountText: '80% DISCOUNT', imageType: 'rocket' },
+        { id: 'fountains', code: '160', name: 'FANCY FOUNTAINS (80% DISCOUNT)', discountText: '80% DISCOUNT', imageType: 'pot' }
+      ];
+      await Category.insertMany(defaultCategories);
+    }
+
+    // 3. Seed Products
     const count = await Product.countDocuments();
     if (count === 0) {
       console.log('Seeding initial products...');
@@ -163,7 +125,7 @@ async function seedDatabase() {
       console.log('Seeding complete. Seeded ' + defaultProducts.length + ' products.');
     }
 
-    // 2. Seed Orders (to populate the Orders tab with mock data from user's screen)
+    // 4. Seed Orders
     const orderCount = await Order.countDocuments();
     if (orderCount === 0) {
       console.log('Seeding initial mock orders...');
@@ -244,219 +206,6 @@ async function seedDatabase() {
     console.error('Seeding failed:', err);
   }
 }
-
-// ================= API ROUTES =================
-
-// 1. Admin Login API
-app.post('/api/admin/login', (req, res) => {
-  const { username, password } = req.body;
-  const envUsername = process.env.ADMIN_USERNAME || 'admin';
-  const envPassword = process.env.ADMIN_PASSWORD || 'adminpassword';
-
-  if (username === envUsername && password === envPassword) {
-    const token = jwt.sign(
-      { role: 'admin', username },
-      process.env.JWT_SECRET || 'sarguru_jwt_secret_key_2026',
-      { expiresIn: '7d' }
-    );
-    return res.json({ success: true, token });
-  } else {
-    return res.status(401).json({ success: false, message: 'Invalid username or password' });
-  }
-});
-
-// 2. GET all products
-app.get('/api/products', async (req, res) => {
-  try {
-    const products = await Product.find().sort({ createdAt: -1 });
-    res.json(products);
-  } catch (err) {
-    res.status(500).json({ message: 'Error retrieving products', error: err.message });
-  }
-});
-
-// 3. POST create new product (admin required)
-app.post('/api/products', authMiddleware, upload.single('image'), async (req, res) => {
-  try {
-    const { name, unit, actualPrice, discountPrice, imageType } = req.body;
-    let imageUrl = '';
-
-    if (req.file) {
-      const result = await uploadToCloudinary(req.file.buffer);
-      imageUrl = result.secure_url;
-    }
-
-    const newProduct = new Product({
-      name,
-      unit,
-      actualPrice: Number(actualPrice),
-      discountPrice: Number(discountPrice),
-      imageType,
-      imageUrl
-    });
-
-    const savedProduct = await newProduct.save();
-    res.status(201).json(savedProduct);
-  } catch (err) {
-    res.status(500).json({ message: 'Error creating product', error: err.message });
-  }
-});
-
-// 4. PUT update product (admin required)
-app.put('/api/products/:id', authMiddleware, upload.single('image'), async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { name, unit, actualPrice, discountPrice, imageType } = req.body;
-    
-    const updateData = {
-      name,
-      unit,
-      actualPrice: Number(actualPrice),
-      discountPrice: Number(discountPrice),
-      imageType
-    };
-
-    if (req.file) {
-      const result = await uploadToCloudinary(req.file.buffer);
-      updateData.imageUrl = result.secure_url;
-    }
-
-    const updatedProduct = await Product.findByIdAndUpdate(id, updateData, { new: true });
-    if (!updatedProduct) {
-      return res.status(404).json({ message: 'Product not found' });
-    }
-    res.json(updatedProduct);
-  } catch (err) {
-    res.status(500).json({ message: 'Error updating product', error: err.message });
-  }
-});
-
-// 5. DELETE product (admin required)
-app.delete('/api/products/:id', authMiddleware, async (req, res) => {
-  try {
-    const { id } = req.params;
-    const deletedProduct = await Product.findByIdAndDelete(id);
-    if (!deletedProduct) {
-      return res.status(404).json({ message: 'Product not found' });
-    }
-    res.json({ success: true, message: 'Product deleted successfully' });
-  } catch (err) {
-    res.status(500).json({ message: 'Error deleting product', error: err.message });
-  }
-});
-
-// 6. GET all orders (admin required)
-app.get('/api/orders', authMiddleware, async (req, res) => {
-  try {
-    const orders = await Order.find().sort({ createdAt: -1 });
-    res.json(orders);
-  } catch (err) {
-    res.status(500).json({ message: 'Error retrieving orders', error: err.message });
-  }
-});
-
-// 7. POST create new order (public checkout)
-app.post('/api/orders', async (req, res) => {
-  try {
-    const { customerName, customerEmail, customerPhone, items, total, packingCharge, overallTotal } = req.body;
-    
-    // Auto-generate order ID
-    const count = await Order.countDocuments();
-    const orderId = String(count + 1).padStart(5, '0');
-    
-    // Today's date formatted as DD/MM/YYYY
-    const today = new Date();
-    const dd = String(today.getDate()).padStart(2, '0');
-    const mm = String(today.getMonth() + 1).padStart(2, '0');
-    const yyyy = today.getFullYear();
-    const formattedDate = `${dd}/${mm}/${yyyy}`;
-
-    const newOrder = new Order({
-      orderId,
-      customerName,
-      customerEmail,
-      customerPhone,
-      items,
-      total: Number(total),
-      packingCharge: Number(packingCharge),
-      overallTotal: Number(overallTotal),
-      approved: 'Pending',
-      holdStatus: '',
-      date: formattedDate
-    });
-
-    const savedOrder = await newOrder.save();
-    res.status(201).json(savedOrder);
-  } catch (err) {
-    res.status(500).json({ message: 'Error creating order', error: err.message });
-  }
-});
-
-// 8. PUT update order approval status (admin required)
-app.put('/api/orders/:id', authMiddleware, async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { approved, holdStatus } = req.body;
-    
-    const updatedOrder = await Order.findByIdAndUpdate(
-      id,
-      { approved, holdStatus },
-      { new: true }
-    );
-    
-    if (!updatedOrder) {
-      return res.status(404).json({ message: 'Order not found' });
-    }
-    res.json(updatedOrder);
-  } catch (err) {
-    res.status(500).json({ message: 'Error updating order', error: err.message });
-  }
-});
-
-// 9. DELETE order (admin required)
-app.delete('/api/orders/:id', authMiddleware, async (req, res) => {
-  try {
-    const { id } = req.params;
-    const deletedOrder = await Order.findByIdAndDelete(id);
-    if (!deletedOrder) {
-      return res.status(404).json({ message: 'Order not found' });
-    }
-    res.json({ success: true, message: 'Order deleted successfully' });
-  } catch (err) {
-    res.status(500).json({ message: 'Error deleting order', error: err.message });
-  }
-});
-
-// 10. GET customer analytics list (admin required)
-app.get('/api/customers', authMiddleware, async (req, res) => {
-  try {
-    const orders = await Order.find();
-    const customerMap = {};
-    
-    orders.forEach(order => {
-      const phone = order.customerPhone;
-      if (!customerMap[phone]) {
-        customerMap[phone] = {
-          name: order.customerName,
-          phone: phone,
-          location: 'Dindigul, Tamil Nadu', // Default mock location to match screenshot
-          orders: 0,
-          totalSpent: 0,
-          lastOrder: order.date
-        };
-      }
-      
-      customerMap[phone].orders += 1;
-      customerMap[phone].totalSpent += order.total;
-      customerMap[phone].lastOrder = order.date;
-    });
-    
-    const customers = Object.values(customerMap);
-    res.json(customers);
-  } catch (err) {
-    res.status(500).json({ message: 'Error retrieving customers', error: err.message });
-  }
-});
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {

@@ -32,7 +32,7 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ setCurrentPage }) => {
       } else {
         setError(data.message || 'Invalid credentials');
       }
-    } catch (err) {
+    } catch {
       setError('Cannot connect to admin server. Please ensure the backend is running.');
     } finally {
       setLoading(false);

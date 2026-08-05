@@ -1,16 +1,32 @@
 import React, { useState } from 'react';
-import { crackerCategories } from '../data/products';
+interface Product {
+  id: string;
+  name: string;
+  unit: string;
+  actualPrice: number;
+  discountPrice: number;
+  imageType: string;
+  imageUrl?: string;
+}
 
 interface FooterProps {
   showCheckout: boolean;
   quantities: Record<string, number>;
   setCurrentPage: (p: string) => void;
+  products: Product[];
+  settings: {
+    minOrderValue?: number;
+    merchantPhone?: string;
+    storeAddress?: string;
+  } | null;
 }
 
 export const Footer: React.FC<FooterProps> = ({
   showCheckout,
   quantities,
-  setCurrentPage
+  setCurrentPage,
+  products,
+  settings
 }) => {
   // Customer Details Form State
   const [state, setState] = useState('Tamil Nadu');
@@ -21,15 +37,13 @@ export const Footer: React.FC<FooterProps> = ({
   const [address, setAddress] = useState('');
 
   // Cart math calculations
-  const allProducts = crackerCategories.flatMap((cat) => cat.products);
-  let totalItems = 0;
+  const allProducts = products;
   let mktTotal = 0; // Actual price retail
   let subTotal = 0; // Discounted price
 
   Object.entries(quantities).forEach(([productId, qty]) => {
     const product = allProducts.find((p) => p.id === productId);
     if (product) {
-      totalItems += qty;
       mktTotal += product.actualPrice * qty;
       subTotal += product.discountPrice * qty;
     }
@@ -43,13 +57,14 @@ export const Footer: React.FC<FooterProps> = ({
   const overallAmount = Math.round(rawOverallAmount);
   const roundOff = Math.round((overallAmount - rawOverallAmount) * 100) / 100;
 
-  const isMinOrderMet = subTotal >= 3000;
+  const minOrderValue = settings?.minOrderValue ?? 3000;
+  const isMinOrderMet = subTotal >= minOrderValue;
   const isFormValid = name.trim() !== '' && mobile.trim() !== '' && address.trim() !== '';
 
   const handleCheckout = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!isMinOrderMet) {
-      alert('Minimum order value is Rs. 3000. Please add more items to your cart.');
+      alert(`Minimum order value is Rs. ${minOrderValue}. Please add more items to your cart.`);
       return;
     }
     if (!isFormValid) {
@@ -129,7 +144,7 @@ export const Footer: React.FC<FooterProps> = ({
     message += `Please confirm my order. Thank you!`;
 
     // Fetch the merchant phone number from settings if saved
-    const savedMerchantPhone = localStorage.getItem('merchantPhone') || '917868077818';
+    const savedMerchantPhone = settings?.merchantPhone || '917868077818';
 
     const encodedMessage = encodeURIComponent(message);
     const whatsappUrl = `https://wa.me/${savedMerchantPhone}?text=${encodedMessage}`;

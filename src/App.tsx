@@ -5,85 +5,128 @@ import { About } from './pages/About';
 import { SafetyTips } from './pages/SafetyTips';
 import { ContactUs } from './pages/ContactUs';
 import { Footer } from './components/Footer';
-import { crackerCategories } from './data/products';
 import { AdminLogin } from './pages/AdminLogin';
 import { AdminDashboard } from './pages/AdminDashboard';
 import './App.css';
-
-interface Product {
-  id: string;
-  name: string;
-  unit: string;
-  actualPrice: number;
-  discountPrice: number;
-  imageType: 'sparkler' | 'pot' | 'chakkar' | 'bomb' | 'kids' | 'garland' | 'rocket';
-  imageUrl?: string;
-}
+import type { Product, Category } from './types';
 
 function App() {
   const [currentPage, setCurrentPage] = useState<string>('home');
-  const [categories, setCategories] = useState<any[]>(crackerCategories);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [dbProducts, setDbProducts] = useState<Product[]>([]);
+  const [settings, setSettings] = useState<{
+    minOrderValue?: number;
+    merchantPhone?: string;
+    storeAddress?: string;
+  } | null>(null);
 
-  const fetchProducts = async () => {
+  const fetchSettings = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/products');
+      const response = await fetch('http://localhost:5000/api/settings');
       if (response.ok) {
-        const productsData = await response.json();
-        setDbProducts(productsData);
-        
-        if (productsData && productsData.length > 0) {
-          const grouped = crackerCategories.map((staticCat) => {
-            const catId = staticCat.id;
-            const matched = productsData.filter((product: any) => {
-              if (product.id.startsWith('sp') || product.imageType === 'sparkler') return catId === 'sparklers';
-              if (product.id.startsWith('fp') || product.imageType === 'pot') return catId === 'flowerpots';
-              if (product.id.startsWith('gc') || product.imageType === 'chakkar') return catId === 'chakkars';
-              if (product.id.startsWith('bm') || product.imageType === 'bomb') return catId === 'bombs';
-              if (product.id.startsWith('kd') || product.imageType === 'kids') return catId === 'kids';
-              if (product.id.startsWith('gl') || product.imageType === 'garland') return catId === 'garlands';
-              return false;
-            });
-            
-            return {
-              ...staticCat,
-              products: matched
-            };
-          });
-          setCategories(grouped.filter(cat => cat.products.length > 0));
-        } else {
-          setCategories(crackerCategories);
-        }
-      } else {
-        setCategories(crackerCategories);
+        const settingsData = await response.json();
+        setSettings(settingsData);
       }
     } catch (err) {
-      console.log('Backend connection failed, using static fallback products.', err);
-      setCategories(crackerCategories);
+      console.log('Failed to fetch settings from backend', err);
+    }
+  };
+
+  const fetchProductsAndCategories = async () => {
+    try {
+      // 1. Fetch Categories
+      const catResponse = await fetch('http://localhost:5000/api/categories');
+      let categoriesData: Category[] = [];
+      if (catResponse.ok) {
+        categoriesData = await catResponse.json();
+      }
+
+      // 2. Fetch Products
+      const prodResponse = await fetch('http://localhost:5000/api/products');
+      let productsData: Product[] = [];
+      if (prodResponse.ok) {
+        productsData = await prodResponse.json();
+        setDbProducts(productsData);
+      }
+
+      // Group products dynamically
+      if (categoriesData.length > 0) {
+        const grouped = categoriesData.map((cat) => {
+          const matched = productsData.filter((p) => p.imageType === cat.imageType || p.imageType === cat.id);
+          return {
+            ...cat,
+            products: matched
+          };
+        });
+        setCategories(grouped.filter(cat => cat.products.length > 0));
+      } else {
+        setCategories([]);
+      }
+    } catch (err) {
+      console.log('Backend connection failed', err);
     }
   };
 
   React.useEffect(() => {
-    fetchProducts();
+    setTimeout(() => {
+      fetchSettings();
+      fetchProductsAndCategories();
+    }, 0);
   }, []);
 
+  // Synchronize state with history path/hash
   React.useEffect(() => {
-    const handleHashChange = () => {
-      if (window.location.hash === '#safety') {
-        setCurrentPage('safety');
-      } else if (window.location.hash === '#contact') {
-        setCurrentPage('contact');
-      } else if (window.location.hash === '#admin' || window.location.hash === '#admin-login') {
+    const handleUrlChange = () => {
+      const path = window.location.pathname;
+      const hash = window.location.hash;
+
+      if (path === '/admin' || path === '/admin/') {
         setCurrentPage('admin-login');
-      } else if (window.location.hash === '#admin-dashboard') {
+      } else if (hash === '#safety') {
+        setCurrentPage('safety');
+      } else if (hash === '#contact') {
+        setCurrentPage('contact');
+      } else if (hash === '#admin' || hash === '#admin-login') {
         const token = localStorage.getItem('adminToken');
         setCurrentPage(token ? 'admin-dashboard' : 'admin-login');
+      } else if (hash === '#admin-dashboard') {
+        const token = localStorage.getItem('adminToken');
+        setCurrentPage(token ? 'admin-dashboard' : 'admin-login');
+      } else {
+        setCurrentPage('home');
       }
     };
-    window.addEventListener('hashchange', handleHashChange);
-    handleHashChange();
-    return () => window.removeEventListener('hashchange', handleHashChange);
+
+    window.addEventListener('popstate', handleUrlChange);
+    window.addEventListener('hashchange', handleUrlChange);
+    handleUrlChange();
+
+    return () => {
+      window.removeEventListener('popstate', handleUrlChange);
+      window.removeEventListener('hashchange', handleUrlChange);
+    };
   }, []);
+
+  // Sync state changes back to URL path/hash
+  React.useEffect(() => {
+    if (currentPage === 'admin-login' || currentPage === 'admin-dashboard') {
+      if (window.location.pathname !== '/admin') {
+        window.history.pushState(null, '', '/admin');
+      }
+    } else if (currentPage === 'home') {
+      if (window.location.pathname !== '/') {
+        window.history.pushState(null, '', '/');
+      }
+    } else if (currentPage === 'safety') {
+      if (window.location.hash !== '#safety') {
+        window.history.pushState(null, '', '/#safety');
+      }
+    } else if (currentPage === 'contact') {
+      if (window.location.hash !== '#contact') {
+        window.history.pushState(null, '', '/#contact');
+      }
+    }
+  }, [currentPage]);
 
   const [quantities, setQuantities] = useState<Record<string, number>>({});
   const [searchTerm, setSearchTerm] = useState('');
@@ -134,20 +177,24 @@ function App() {
     }
   });
 
+  const isAdminPage = currentPage === 'admin-login' || currentPage === 'admin-dashboard';
+
   return (
     <div className="w-full bg-white flex flex-col min-h-screen">
       {/* Global Navbar */}
-      <Navbar
-        currentPage={currentPage}
-        setCurrentPage={setCurrentPage}
-        searchTerm={searchTerm}
-        setSearchTerm={setSearchTerm}
-        selectedCategory={selectedCategory}
-        setSelectedCategory={setSelectedCategory}
-        categories={crackerCategories}
-        cartCount={totalItems}
-        cartTotal={totalDiscountedCost}
-      />
+      {!isAdminPage && (
+        <Navbar
+          currentPage={currentPage}
+          setCurrentPage={setCurrentPage}
+          searchTerm={searchTerm}
+          setSearchTerm={setSearchTerm}
+          selectedCategory={selectedCategory}
+          setSelectedCategory={setSelectedCategory}
+          categories={categories}
+          cartCount={totalItems}
+          cartTotal={totalDiscountedCost}
+        />
+      )}
 
       {/* Conditionally Render Pages */}
       {(currentPage === 'home' || currentPage === 'order') ? (
@@ -161,6 +208,7 @@ function App() {
           setSelectedCategory={setSelectedCategory}
           cartCount={totalItems}
           cartTotal={totalDiscountedCost}
+          categories={categories}
         />
       ) : currentPage === 'safety' ? (
         <SafetyTips />
@@ -172,7 +220,7 @@ function App() {
         <AdminDashboard 
           setCurrentPage={setCurrentPage}
           products={dbProducts}
-          refreshProducts={fetchProducts}
+          refreshProducts={fetchProductsAndCategories}
         />
       ) : (
         <About />
@@ -183,6 +231,8 @@ function App() {
         showCheckout={currentPage === 'home' || currentPage === 'order'}
         quantities={quantities}
         setCurrentPage={setCurrentPage}
+        products={dbProducts}
+        settings={settings}
       />
     </div>
   );
