@@ -1,12 +1,17 @@
 export interface Product {
   id: string;
+  _id?: string;
   name: string;
   unit: string;
   actualPrice: number;
   discountPrice: number;
-  imageType: 'sparkler' | 'pot' | 'chakkar' | 'bomb' | 'kids' | 'garland' | 'rocket';
+  imageType: 'sparkler' | 'pot' | 'chakkar' | 'bomb' | 'kids' | 'garland' | 'rocket' | string;
   imageUrl?: string;
+  category?: any;
+  brand?: string;
+  description?: string;
 }
+
 
 export interface Category {
   uid?: string;

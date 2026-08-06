@@ -77,8 +77,8 @@ export const Footer: React.FC<FooterProps> = ({
       const orderItems = Object.entries(quantities).map(([productId, qty]) => {
         const p = allProducts.find((product) => product.id === productId);
         return {
-          name: p ? p.name : 'Unknown Product',
-          qty: qty,
+          product: productId,
+          quantity: qty,
           price: p ? p.discountPrice : 0
         };
       });

@@ -236,7 +236,7 @@ export const Home: React.FC<HomeProps> = ({
                               min="1"
                               value={qty}
                               onChange={(e) => handleQtyChange(product.id, e.target.value)}
-                              className="w-[60px] h-[36px] border border-gray-300 rounded-[4px] text-center text-[14px] outline-none focus:border-[#B71C1C]"
+                              className="w-[60px] h-[36px] border border-gray-300 rounded-[4px] text-center text-[14px] outline-none focus:border-primary-blue"
                             />
                           </div>
 
@@ -273,7 +273,7 @@ export const Home: React.FC<HomeProps> = ({
             </div>
             <div className="flex items-center gap-1">
               <button className="px-3 py-1.5 text-[14px] text-gray-500 border border-transparent hover:bg-gray-100 rounded">Prev</button>
-              <button className="w-8 h-8 flex items-center justify-center text-[14px] text-white bg-[#B71C1C] rounded font-bold">1</button>
+              <button className="w-8 h-8 flex items-center justify-center text-[14px] text-white bg-primary-blue rounded font-bold">1</button>
               <button className="w-8 h-8 flex items-center justify-center text-[14px] text-gray-600 hover:bg-gray-100 rounded border border-gray-200">2</button>
               <button className="w-8 h-8 flex items-center justify-center text-[14px] text-gray-600 hover:bg-gray-100 rounded border border-gray-200">3</button>
               <button className="px-3 py-1.5 text-[14px] text-gray-700 font-medium border border-transparent hover:bg-gray-100 rounded">Next</button>

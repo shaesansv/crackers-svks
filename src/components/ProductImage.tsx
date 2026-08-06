@@ -1,7 +1,7 @@
 import React from 'react';
 
 interface ProductImageProps {
-  type: 'sparkler' | 'pot' | 'chakkar' | 'bomb' | 'kids' | 'garland' | 'rocket';
+  type: string;
 }
 
 export const ProductImage: React.FC<ProductImageProps> = ({ type }) => {

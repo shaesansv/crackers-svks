@@ -1,83 +1,201 @@
-import React from 'react';
-import type { Order, Product, Customer } from '../AdminDashboard';
+import { ShoppingBag, DollarSign, AlertTriangle, TrendingUp } from "lucide-react";
+import AdminSidebar from "@/components/layout/AdminSidebar";
+import AdminNavbar from "@/components/layout/AdminNavbar";
+import { useEffect, useState } from "react";
+import { getProducts, getOrders } from "@/lib/api";
+import type { Product } from "@/data/products";
+import { Link } from "react-router-dom";
 
-interface DashboardProps {
-  orders: Order[];
-  products: Product[];
-  customers: Customer[];
-}
+// Stats will be computed from live data
 
-export const Dashboard: React.FC<DashboardProps> = ({ orders, products, customers }) => {
+const Dashboard = () => {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [orders, setOrders] = useState<any[]>([]);
+
+  useEffect(() => {
+    getProducts()
+      .then((data) => {
+        console.log('Products loaded (Dashboard):', data, Array.isArray(data));
+        setProducts(Array.isArray(data) ? data : []);
+      })
+      .catch((err) => {
+        console.error('Failed to fetch products (Dashboard):', err);
+        setProducts([]);
+      });
+
+    getOrders()
+      .then((data) => {
+        console.log('Orders loaded (Dashboard):', data, Array.isArray(data));
+        setOrders(Array.isArray(data) ? data : []);
+      })
+      .catch((err) => {
+        console.error('Failed to fetch orders (Dashboard):', err);
+        setOrders([]);
+      });
+  }, []);
+
+  const lowStock = products.filter((p) => (p.storeStockPieces || 0) < (p.minimumStock || 10));
+  // Sort orders by date descending
+  const sortedOrders = [...orders].sort((a, b) => {
+    const da = new Date(a.createdAt || 0).getTime();
+    const db = new Date(b.createdAt || 0).getTime();
+    return db - da;
+  });
+
+  const totalOrders = sortedOrders.length;
+  const today = new Date();
+  const todaysOrders = sortedOrders.filter((o) => {
+    try {
+      const d = new Date(o.createdAt);
+      return d.getFullYear() === today.getFullYear() &&
+             d.getMonth() === today.getMonth() &&
+             d.getDate() === today.getDate();
+    } catch {
+      return false;
+    }
+  }).length;
+  const totalRevenue = sortedOrders.reduce((s, o) => s + (Number(o.subtotal) + (Number(o.packingCharge) || 0)), 0);
+
+  // Calculate actual top selling products from orders
+  const productSalesMap = new Map<string, number>();
+  orders.forEach(order => {
+    order.items?.forEach((item: any) => {
+      const id = item.product;
+      if (id) {
+        productSalesMap.set(id, (productSalesMap.get(id) || 0) + (item.quantity || 0));
+      }
+    });
+  });
+
+  const topSelling = [...products]
+    .map(p => ({
+      ...p,
+      soldCount: productSalesMap.get(p._id || p.id || "") || 0
+    }))
+    .sort((a, b) => b.soldCount - a.soldCount)
+    .slice(0, 5);
+
+  const fmt = (v: number) => new Intl.NumberFormat('en-IN').format(v);
+
   return (
-    <div className="flex flex-col gap-8 animate-fade-in">
-      {/* Summary Cards Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        {[
-          {
-            label: 'Total Revenue',
-            value: `₹${orders.reduce((acc, curr) => acc + curr.total, 0).toLocaleString()}`,
-            color: 'border-l-violet-500 text-violet-600 bg-violet-50/20'
-          },
-          {
-            label: 'Total Orders',
-            value: orders.length,
-            color: 'border-l-blue-500 text-blue-600 bg-blue-50/20'
-          },
-          {
-            label: 'Total Catalog Products',
-            value: products.length,
-            color: 'border-l-orange-500 text-orange-600 bg-orange-50/20'
-          },
-          {
-            label: 'Unique Customers',
-            value: customers.length,
-            color: 'border-l-emerald-500 text-emerald-600 bg-emerald-50/20'
-          }
-        ].map((card, idx) => (
-          <div key={idx} className={`bg-white border border-gray-150 border-l-[5px] rounded-[16px] p-5 shadow-sm ${card.color.split(' ')[0]}`}>
-            <span className="text-xs font-semibold text-gray-400 tracking-wider uppercase font-inter">{card.label}</span>
-            <h3 className="text-2xl font-extrabold font-poppins mt-2 text-dark-navy">{card.value}</h3>
+    <>
+      <AdminNavbar />
+      <div className="flex min-h-screen">
+      <AdminSidebar />
+      <main className="flex-1 p-6 lg:p-8 overflow-auto">
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h1 className="font-display text-2xl font-bold">Dashboard</h1>
+            <p className="text-sm text-muted-foreground">Welcome back, Admin 🎆</p>
           </div>
-        ))}
-      </div>
-
-      {/* Recent Orders table */}
-      <div className="bg-white border border-gray-100 rounded-[20px] p-6 shadow-sm">
-        <h3 className="text-lg font-bold font-poppins text-dark-navy mb-4 border-b border-gray-100 pb-3">Recent Sales Activity</h3>
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="border-b border-gray-100 text-xs font-bold text-gray-400 uppercase tracking-wide">
-                <th className="pb-3">Order ID</th>
-                <th className="pb-3">Customer</th>
-                <th className="pb-3">Date</th>
-                <th className="pb-3">Total Amount</th>
-                <th className="pb-3 text-center">Status</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100 text-sm font-medium text-gray-600">
-              {orders.slice(0, 5).map((order) => (
-                <tr key={order.id} className="hover:bg-gray-50/50 transition-colors">
-                  <td className="py-3.5 text-violet-600 font-bold font-inter">#{order.orderId}</td>
-                  <td className="py-3.5 text-dark-navy font-bold">{order.customerName}</td>
-                  <td className="py-3.5 font-inter text-gray-400">{order.date}</td>
-                  <td className="py-3.5 font-poppins font-extrabold text-[#EA580C]">₹{order.total.toLocaleString()}</td>
-                  <td className="py-3.5 text-center">
-                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
-                      order.approved === 'Approved' ? 'bg-green-50 text-green-700 border-green-100' :
-                      order.approved === 'Packed' ? 'bg-blue-50 text-blue-700 border-blue-100' :
-                      order.approved === 'On Hold' ? 'bg-orange-50 text-orange-700 border-orange-100' :
-                      'bg-gray-50 text-gray-500 border-gray-100'
-                    }`}>
-                      {order.approved}
-                    </span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <Link to="/" className="text-sm text-primary hover:underline lg:hidden">← Store</Link>
         </div>
-      </div>
+
+        {/* Stats */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          <div className="bg-card border border-border rounded-lg p-4 glow-card">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm text-muted-foreground">Total Orders</span>
+              <ShoppingBag className="h-5 w-5 text-primary" />
+            </div>
+            <p className="text-2xl font-bold">{fmt(totalOrders)}</p>
+            <span className="text-xs text-green-500">{todaysOrders} today</span>
+          </div>
+
+          <div className="bg-card border border-border rounded-lg p-4 glow-card">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm text-muted-foreground">Today's Orders</span>
+              <TrendingUp className="h-5 w-5 text-green-500" />
+            </div>
+            <p className="text-2xl font-bold">{fmt(todaysOrders)}</p>
+            <span className="text-xs text-muted-foreground">Orders placed today</span>
+          </div>
+
+          <div className="bg-card border border-border rounded-lg p-4 glow-card">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm text-muted-foreground">Total Revenue</span>
+              <DollarSign className="h-5 w-5 text-primary" />
+            </div>
+            <p className="text-2xl font-bold">₹{fmt(totalRevenue)}</p>
+            <span className="text-xs text-green-500">Calculated from orders</span>
+          </div>
+
+          <div className="bg-card border border-border rounded-lg p-4 glow-card">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm text-muted-foreground">Low Stock Alerts</span>
+              <AlertTriangle className="h-5 w-5 text-accent" />
+            </div>
+            <p className="text-2xl font-bold">{fmt(lowStock.length)}</p>
+            <span className="text-xs text-muted-foreground">Products low on stock</span>
+          </div>
+        </div>
+
+        <div className="grid lg:grid-cols-2 gap-6">
+          {/* Recent Orders */}
+          <div className="bg-card border border-border rounded-lg p-6">
+            <h2 className="font-display text-lg font-bold mb-4">Recent Orders</h2>
+            <div className="space-y-3">
+              {sortedOrders.slice(0, 5).map((order, idx) => (
+                <div key={order._id || order.id || idx} className="flex items-center justify-between py-2 border-b border-border last:border-0">
+                  <div>
+                    <p className="font-semibold text-sm">{order.orderNumber || (order._id ? order._id.slice(-8) : 'Unknown')}</p>
+                    <p className="text-xs text-muted-foreground">{order.customerName}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-semibold text-sm">₹{Number(order.subtotal) + (Number(order.packingCharge) || 0)}</p>
+                    <span className={`text-xs px-2 py-0.5 rounded-full ${
+                      order.status === "delivered" ? "bg-green-500/20 text-green-500" :
+                      order.status === "shipped" ? "bg-blue-500/20 text-blue-500" :
+                      order.status === "processing" ? "bg-primary/20 text-primary" :
+                      order.status === "cancelled" ? "bg-destructive/20 text-destructive" :
+                      "bg-muted text-muted-foreground"
+                    }`}>{order.status}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Top Selling */}
+          <div className="bg-card border border-border rounded-lg p-6">
+            <h2 className="font-display text-lg font-bold mb-4">Top Selling Products</h2>
+            <div className="space-y-3">
+              {topSelling.map((p, i) => (
+                <div key={p._id || p.id || i} className="flex items-center gap-3 py-2 border-b border-border last:border-0">
+                  <span className="text-lg font-bold text-muted-foreground w-6">{i + 1}</span>
+                  <img src={p.image} alt={p.name} className="w-10 h-10 rounded object-cover" />
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-sm truncate">{p.name}</p>
+                    <p className="text-xs text-muted-foreground">{p.soldCount} sold</p>
+                  </div>
+                  <span className="font-bold text-primary text-sm">₹{p.price}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Low Stock Alerts */}
+          <div className="bg-card border border-border rounded-lg p-6 lg:col-span-2">
+            <h2 className="font-display text-lg font-bold mb-4 flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-accent" /> Low Stock Alerts
+            </h2>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              {lowStock.map((p, i) => (
+                <div key={p._id || p.id || i} className="flex items-center gap-3 p-3 rounded-lg bg-secondary/50 border border-border">
+                  <img src={p.image} alt={p.name} className="w-10 h-10 rounded object-cover" />
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-sm truncate">{p.name}</p>
+                    <p className="text-xs text-accent font-bold">{p.storeStockPieces || 0} left in stock</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </main>
     </div>
+    </>
   );
 };
+
+export default Dashboard;

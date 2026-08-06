@@ -11,6 +11,7 @@ interface NavbarProps {
   categories: { id: string; name: string }[];
   cartCount: number;
   cartTotal: number;
+  onCartOpen: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -22,7 +23,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   setSelectedCategory,
   categories,
   cartCount,
-  cartTotal
+  cartTotal,
+  onCartOpen
 }) => {
   return (
     <header className="sticky top-0 z-50 bg-off-white/90 backdrop-blur-md border-b border-gray-200/50 shadow-sm animate-fade-in">
@@ -90,19 +92,19 @@ export const Navbar: React.FC<NavbarProps> = ({
             </div>
             
             <div 
-              onClick={() => {
-                setCurrentPage('home');
-                setTimeout(() => {
-                  document.getElementById('checkout-section')?.scrollIntoView({ behavior: 'smooth' });
-                }, 100);
-              }}
-              className="flex items-center justify-center gap-2 px-5 cursor-pointer shadow-[var(--shadow-premium)] btn-primary font-poppins text-sm"
+              onClick={onCartOpen}
+              className="flex items-center justify-center gap-2 px-5 cursor-pointer shadow-[var(--shadow-premium)] btn-primary font-poppins text-sm relative"
             >
               <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
                 <path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z" />
               </svg>
+              {cartCount > 0 && (
+                <span className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-accent-orange text-white text-[10px] font-bold flex items-center justify-center shadow">
+                  {cartCount > 99 ? '99+' : cartCount}
+                </span>
+              )}
               <span>
-                {cartCount > 0 ? `${cartCount} Items | ₹${cartTotal}` : 'Cart'}
+                {cartCount > 0 ? `₹${cartTotal.toLocaleString('en-IN')}` : 'Cart'}
               </span>
             </div>
           </div>

@@ -1,21 +1,36 @@
 @import "tailwindcss";
 
 @theme {
-  --color-primary-blue: #0F4C81;
-  --color-secondary-gold: #D4AF37;
-  --color-accent-orange: #FF8C42;
+  --color-primary-blue: #24BE64;
+  --color-secondary-gold: #FFC107;
+  --color-accent-orange: #FF6B00;
   --color-success-green: #22C55E;
-  --color-danger-red: #DC2626;
-  --color-bg-light: #F8FAFC;
-  --color-section-bg: #FFFFFF;
-  --color-dark-section: #0F172A;
+  --color-danger-red: #EF4444;
+  --color-bg-light: #FFFDF8;
+  --color-section-bg: #FFF8ED;
+  --color-dark-section: #1F2A44;
   --color-border-gray: #E5E7EB;
-  --color-text-primary: #111827;
+  --color-text-primary: #1F2937;
   --color-text-secondary: #6B7280;
   
-  --color-royal-red: #0F4C81; /* Aliased for backward compatibility */
-  --color-luxury-gold: #D4AF37; /* Aliased for backward compatibility */
-  --color-off-white: #F8FAFC; /* Aliased for backward compatibility */
+  --color-royal-red: #E53935; /* Festival Red */
+  --color-luxury-gold: #FFC107; /* Golden Yellow */
+  --color-off-white: #FFFDF8; /* Off White */
+
+  /* Sidebar Theme Variables for Admin Panel */
+  --color-sidebar: #1F2A44; /* Secondary: Deep Navy */
+  --color-sidebar-foreground: #FFFDF8; /* Background: Off White */
+  --color-sidebar-primary: #24BE64; /* Primary: Green */
+  --color-sidebar-primary-foreground: #FFFFFF;
+  --color-sidebar-accent: #169A4E; /* Primary Hover: Dark Green */
+  --color-sidebar-accent-foreground: #FFFFFF;
+  --color-sidebar-border: #E5E7EB; /* Border: Light Gray */
+  --color-sidebar-ring: #24BE64;
+
+  --color-border: #E5E7EB; /* Border */
+  --color-primary-hover: #169A4E;
+  --color-primary-light: #E8F9EF;
+  --color-secondary: #1F2A44;
 
   --font-sans: "Inter", sans-serif;
   --font-poppins: "Poppins", sans-serif;
@@ -69,9 +84,9 @@ input[type=number] {
   transition: all 0.3s ease;
 }
 .btn-primary:hover {
-  background-color: #0B3A63;
+  background-color: var(--color-primary-hover);
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(15, 76, 129, 0.3);
+  box-shadow: 0 4px 12px rgba(36, 190, 100, 0.3);
 }
 
 .btn-secondary {
@@ -83,9 +98,9 @@ input[type=number] {
   transition: all 0.3s ease;
 }
 .btn-secondary:hover {
-  background-color: #B8860B;
+  background-color: #E0A800;
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
+  box-shadow: 0 4px 12px rgba(255, 193, 7, 0.3);
 }
 
 .btn-premium {
