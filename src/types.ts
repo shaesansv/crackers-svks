@@ -3,6 +3,7 @@ export interface Product {
   _id?: string;
   name: string;
   unit: string;
+  stock?: number;
   actualPrice: number;
   discountPrice: number;
   imageType: 'sparkler' | 'pot' | 'chakkar' | 'bomb' | 'kids' | 'garland' | 'rocket' | string;

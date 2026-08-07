@@ -87,6 +87,7 @@ function AppContent() {
           actualPrice: p.price || 0,
           discountPrice: p.netRate || p.wholesalePrice || p.price || 0,
           unit: p.unit || 'box',
+          stock: p.storeStockPieces ?? p.stock ?? 0,
           imageType: p.imageType || (p.category && typeof p.category === 'object' ? p.category.icon : 'sparkler')
         }));
         setDbProducts(productsData);

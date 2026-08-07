@@ -181,22 +181,35 @@ export const Home: React.FC<HomeProps> = ({
                 <div className="flex flex-col bg-white rounded-b-[18px] shadow-[var(--shadow-premium)]">
                   {category.products.map((product: Product) => {
                     const qty = quantities[product.id] || '';
-                    // Randomize stock status slightly for realism, or just default to Yes
                     const isLow = product.id === 'sp3' || product.id === 'gc2';
+                    const isOutOfStock = (product.stock ?? 1) <= 0;
 
                     return (
                       <div 
                         key={product.id} 
-                        className="flex flex-col md:grid md:grid-cols-[3fr_1fr_1fr_1fr_1fr_1fr] items-center px-4 md:px-6 py-5 md:py-4 border-b border-gray-100 hover:bg-white hover:shadow-[var(--shadow-premium-hover)] hover:-translate-y-1 transition-all duration-300 gap-4 md:gap-0 bg-white"
+                        className={`flex flex-col md:grid md:grid-cols-[3fr_1fr_1fr_1fr_1fr_1fr] items-center px-4 md:px-6 py-5 md:py-4 border-b border-gray-100 transition-all duration-300 gap-4 md:gap-0 ${
+                          isOutOfStock
+                            ? 'bg-gray-50 opacity-75 cursor-not-allowed'
+                            : 'bg-white hover:bg-white hover:shadow-[var(--shadow-premium-hover)] hover:-translate-y-1'
+                        }`}
                       >
                         {/* Product Details */}
                         <div className="flex items-center gap-4 w-full md:w-auto">
-                          <div className="w-[60px] h-[60px] md:w-[60px] md:h-[60px] flex-shrink-0 flex items-center justify-center bg-white border border-border-gray rounded-[18px] overflow-hidden group-hover:scale-105 transition-transform duration-300 shadow-sm">
+                          <div className="relative w-[60px] h-[60px] md:w-[60px] md:h-[60px] flex-shrink-0 flex items-center justify-center bg-white border border-border-gray rounded-[18px] overflow-hidden shadow-sm">
                             <ProductImage type={product.imageType} />
+                            {isOutOfStock && (
+                              <div className="absolute inset-0 bg-black/60 flex items-center justify-center rounded-[18px]">
+                                <span className="text-white text-[8px] font-bold text-center leading-tight px-1">OUT OF{"\n"}STOCK</span>
+                              </div>
+                            )}
                           </div>
                           <div className="flex flex-col flex-grow">
-                            <span className="text-[15px] font-bold text-text-primary mb-0.5">{product.name}</span>
-                            {product.name.includes('Discount') ? (
+                            <span className={`text-[15px] font-bold mb-0.5 ${isOutOfStock ? 'text-gray-400' : 'text-text-primary'}`}>{product.name}</span>
+                            {isOutOfStock ? (
+                              <span className="text-[11px] font-bold bg-red-500 text-white px-2 py-0.5 rounded-full inline-block w-max">
+                                🚫 Out of Stock
+                              </span>
+                            ) : product.name.includes('Discount') ? (
                               <span className="text-[11px] font-bold bg-danger-red text-white px-2 py-0.5 rounded-full inline-block w-max">Special Offer</span>
                             ) : (
                               <span className="text-[13px] text-text-secondary">Premium Standard</span>
@@ -207,7 +220,11 @@ export const Home: React.FC<HomeProps> = ({
                         {/* Mobile Details Row */}
                         <div className="flex items-center justify-between w-full md:hidden text-sm text-text-secondary bg-bg-light p-2 rounded-[12px]">
                           <div className="font-medium">Unit: <span className="font-normal">{product.unit}</span></div>
-                          <div className={`font-bold ${isLow ? 'text-accent-orange' : 'text-success-green'}`}>{isLow ? 'Low Stock' : 'In Stock'}</div>
+                          <div className={`font-bold ${
+                            isOutOfStock ? 'text-red-500' : isLow ? 'text-accent-orange' : 'text-success-green'
+                          }`}>
+                            {isOutOfStock ? 'Out of Stock' : isLow ? 'Low Stock' : 'In Stock'}
+                          </div>
                           <div className="font-bold text-secondary-gold">₹{product.discountPrice.toFixed(2)}</div>
                         </div>
 
@@ -216,9 +233,11 @@ export const Home: React.FC<HomeProps> = ({
                           {product.unit}
                         </div>
 
-                        {/* Desktop In Stock */}
-                        <div className={`hidden md:block text-[14px] font-bold text-center ${isLow ? 'text-accent-orange' : 'text-success-green'}`}>
-                          {isLow ? 'Low' : 'Yes'}
+                        {/* Desktop Stock Status */}
+                        <div className={`hidden md:block text-[14px] font-bold text-center ${
+                          isOutOfStock ? 'text-red-500' : isLow ? 'text-accent-orange' : 'text-success-green'
+                        }`}>
+                          {isOutOfStock ? 'No' : isLow ? 'Low' : 'Yes'}
                         </div>
 
                         {/* Desktop Price */}
@@ -235,21 +254,32 @@ export const Home: React.FC<HomeProps> = ({
                               type="number"
                               min="1"
                               value={qty}
+                              disabled={isOutOfStock}
                               onChange={(e) => handleQtyChange(product.id, e.target.value)}
-                              className="w-[60px] h-[36px] border border-gray-300 rounded-[4px] text-center text-[14px] outline-none focus:border-primary-blue"
+                              className={`w-[60px] h-[36px] border rounded-[4px] text-center text-[14px] outline-none transition-colors ${
+                                isOutOfStock
+                                  ? 'bg-gray-100 border-gray-200 text-gray-300 cursor-not-allowed'
+                                  : 'border-gray-300 focus:border-primary-blue'
+                              }`}
                             />
                           </div>
 
                           {/* Action */}
                           <div className="flex justify-center items-center w-1/2 md:w-auto pl-2 md:pl-0">
-                            <button
-                              onClick={() => {
-                                if (!qty) handleQtyChange(product.id, '1');
-                              }}
-                              className="w-full md:w-[70px] max-w-[120px] btn-primary flex items-center justify-center text-[13px] !h-[36px] shadow-sm"
-                            >
-                              ADD
-                            </button>
+                            {isOutOfStock ? (
+                              <div className="w-full md:w-[70px] max-w-[120px] h-[36px] flex items-center justify-center text-[11px] font-bold text-red-400 bg-red-50 border border-red-200 rounded-[6px] cursor-not-allowed select-none">
+                                🚫 N/A
+                              </div>
+                            ) : (
+                              <button
+                                onClick={() => {
+                                  if (!qty) handleQtyChange(product.id, '1');
+                                }}
+                                className="w-full md:w-[70px] max-w-[120px] btn-primary flex items-center justify-center text-[13px] !h-[36px] shadow-sm"
+                              >
+                                ADD
+                              </button>
+                            )}
                           </div>
                         </div>
                       </div>

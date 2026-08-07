@@ -225,7 +225,7 @@ const AdminCategories = () => {
               </h1>
               <p className="text-sm text-muted-foreground">{cats.length} categories</p>
             </div>
-            <Button onClick={openCreate} className="gap-2">
+            <Button onClick={openCreate} className="gap-2 bg-[#24BE64] hover:bg-[#169A4E] text-white shadow-md hover:shadow-lg transition-all duration-200">
               <Plus className="h-4 w-4" /> New Category
             </Button>
           </div>
@@ -268,25 +268,93 @@ const AdminCategories = () => {
 
           {/* Create / Edit Dialog */}
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>{editing ? "Edit Category" : "New Category"}</DialogTitle>
-                <DialogDescription>{editing ? "Rename or update this category." : "Add a new product category."}</DialogDescription>
-              </DialogHeader>
-              <div className="space-y-4 py-2">
-                <div className="space-y-2">
-                  <Label>Category Name</Label>
-                  <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="e.g. Fancy Lights" />
+            <DialogContent className="p-0 overflow-hidden bg-white max-w-md">
+              {/* Green Header Banner */}
+              <div className="bg-[#24BE64] px-6 py-4">
+                <DialogHeader>
+                  <DialogTitle className="text-white font-bold text-lg">
+                    {editing ? "Edit Category" : "New Category"}
+                  </DialogTitle>
+                  <DialogDescription className="text-green-100 text-sm mt-0.5">
+                    {editing ? "Update the category details below." : "Fill in the details to add a new category."}
+                  </DialogDescription>
+                </DialogHeader>
+              </div>
+
+              {/* White Form Body */}
+              <div className="space-y-5 p-6 bg-white text-gray-800">
+                {/* Category Name */}
+                <div className="space-y-1.5">
+                  <Label className="text-gray-700 font-semibold">Category Name</Label>
+                  <Input
+                    value={form.name}
+                    onChange={(e) => setForm({ ...form, name: e.target.value })}
+                    placeholder="e.g. Fancy Lights"
+                    className="border-gray-300 focus:border-[#24BE64] focus:ring-[#24BE64]"
+                  />
                 </div>
-                <div className="space-y-2">
-                  <Label>Image (Max 5MB, optional)</Label>
-                  <input type="file" accept="image/*" onChange={(e) => setImageFile(e.target.files?.[0] || null)} />
+
+                {/* Styled Image Upload */}
+                <div className="space-y-1.5">
+                  <Label className="text-gray-700 font-semibold">Category Image (Max 5MB, optional)</Label>
+                  <div
+                    className="mt-1 flex flex-col items-center justify-center gap-2 border-2 border-dashed border-[#24BE64] rounded-xl p-4 cursor-pointer hover:bg-green-50 transition-colors group"
+                    onClick={() => document.getElementById('category-image-input')?.click()}
+                  >
+                    <input
+                      id="category-image-input"
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => setImageFile(e.target.files?.[0] || null)}
+                    />
+                    {imageFile ? (
+                      <div className="flex items-center gap-3 w-full">
+                        <img
+                          src={URL.createObjectURL(imageFile)}
+                          alt="Preview"
+                          className="w-16 h-16 object-cover rounded-lg border border-gray-200 shadow-sm"
+                        />
+                        <div className="flex flex-col text-left">
+                          <span className="text-sm font-semibold text-gray-700 truncate max-w-[180px]">{imageFile.name}</span>
+                          <span className="text-xs text-gray-400">{(imageFile.size / 1024).toFixed(1)} KB</span>
+                          <span className="text-xs text-[#24BE64] font-medium mt-0.5">✓ Image selected</span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={(e) => { e.stopPropagation(); setImageFile(null); }}
+                          className="ml-auto text-red-400 hover:text-red-600 text-lg font-bold transition-colors"
+                          title="Remove image"
+                        >✕</button>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col items-center gap-1 py-2">
+                        <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">🖼️</div>
+                        <span className="text-sm font-semibold text-[#24BE64]">Click to upload image</span>
+                        <span className="text-xs text-gray-400">PNG, JPG, WEBP up to 5MB</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Footer Buttons */}
+                <div className="flex gap-3 pt-1">
+                  <Button
+                    variant="outline"
+                    className="flex-1 border-gray-300 text-gray-600 hover:bg-gray-50"
+                    onClick={() => setDialogOpen(false)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    className="flex-1 bg-[#24BE64] hover:bg-[#169A4E] text-white shadow-md transition-all duration-200"
+                    onClick={handleSave}
+                    disabled={!form.name.trim()}
+                  >
+                    {editing ? "Save Changes" : "Create Category"}
+                  </Button>
                 </div>
               </div>
-              <DialogFooter>
-                <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
-                <Button onClick={handleSave} disabled={!form.name.trim()}>{editing ? "Save Changes" : "Create"}</Button>
-              </DialogFooter>
             </DialogContent>
           </Dialog>
 
