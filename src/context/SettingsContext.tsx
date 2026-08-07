@@ -35,7 +35,34 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   };
 
   useEffect(() => {
-    refreshSettings();
+    const controller = new AbortController();
+
+    const fetchWithAbort = async () => {
+      try {
+        const response = await fetch('http://localhost:5000/api/settings/public/info', {
+          signal: controller.signal,
+        });
+        if (response.ok) {
+          const data = await response.json();
+          setSettings({
+            minOrderValue: data.minimumPurchaseAmount,
+            merchantPhone: data.contact?.phone,
+            storeAddress: data.contact?.address,
+            ...data
+          });
+        }
+      } catch (err: any) {
+        if (err?.name !== 'AbortError') {
+          console.log('Failed to fetch settings in SettingsContext', err);
+        }
+      }
+    };
+
+    fetchWithAbort();
+
+    return () => {
+      controller.abort();
+    };
   }, []);
 
   return (

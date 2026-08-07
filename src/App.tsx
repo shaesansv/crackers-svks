@@ -65,7 +65,7 @@ function AppContent() {
 
   const fetchProductsAndCategories = async () => {
     try {
-      const catResponse = await fetch('http://localhost:5000/api/categories');
+      const catResponse = await fetch('http://localhost:5000/api/categories?limit=1000');
       let categoriesData: Category[] = [];
       if (catResponse.ok) {
         const catsJson = await catResponse.json();
@@ -76,7 +76,7 @@ function AppContent() {
         }));
       }
 
-      const prodResponse = await fetch('http://localhost:5000/api/products');
+      const prodResponse = await fetch('http://localhost:5000/api/products?limit=1000');
       let productsData: Product[] = [];
       if (prodResponse.ok) {
         const resJson = await prodResponse.json();
@@ -117,6 +117,14 @@ function AppContent() {
   React.useEffect(() => {
     fetchSettings();
     fetchProductsAndCategories();
+
+    // Refresh storefront data whenever the user returns to this tab/window
+    // (e.g. after editing products in the admin panel)
+    const handleFocus = () => {
+      fetchProductsAndCategories();
+    };
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
   }, []);
 
   React.useEffect(() => {

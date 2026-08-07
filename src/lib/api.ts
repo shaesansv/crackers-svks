@@ -12,7 +12,7 @@ const getHeaders = () => {
 };
 
 export const getProducts = async () => {
-  const response = await fetch(`${API_BASE_URL}/api/products`, {
+  const response = await fetch(`${API_BASE_URL}/api/products?limit=1000`, {
     headers: getHeaders(),
   });
   if (!response.ok) {

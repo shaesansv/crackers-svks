@@ -1,8 +1,7 @@
 import { useState, useEffect } from "react";
-import { Save, Settings, Loader, Edit2, X } from "lucide-react";
+import { Save, Settings, Loader, RotateCcw } from "lucide-react";
 import AdminSidebar from "@/components/layout/AdminSidebar";
 import AdminNavbar from "@/components/layout/AdminNavbar";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useSiteSettings } from "@/context/SiteSettingsContext";
@@ -14,18 +13,13 @@ const AdminContent = () => {
   const { settings, updateSettings } = useSiteSettings();
   const [form, setForm] = useState<SiteSettings>(settings);
   const [isSaving, setIsSaving] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
-    // Only sync remote settings into the form when not actively editing
-    if (!isEditing) {
-      setForm(settings);
-    }
-  }, [settings, isEditing]);
-
-  const handleCancel = () => {
     setForm(settings);
-    setIsEditing(false);
+  }, [settings]);
+
+  const handleReset = () => {
+    setForm(settings);
     toast.info("Changes discarded");
   };
 
@@ -34,15 +28,10 @@ const AdminContent = () => {
       toast.error("Please fill in phone and address");
       return;
     }
-    if (form.discountPercent < 0 || form.discountPercent > 100) {
+    if ((form.discountPercent ?? 0) < 0 || (form.discountPercent ?? 0) > 100) {
       toast.error("Discount must be between 0 and 100");
       return;
     }
-    if (form.minimumPurchaseAmount < 0 || form.minPurchaseOutsideTN < 0) {
-      toast.error("Minimum purchase amount cannot be negative");
-      return;
-    }
-
     setIsSaving(true);
     try {
       await updateSettingsAPI({
@@ -57,20 +46,17 @@ const AdminContent = () => {
         news: form.news,
         enablePackingCharge: form.enablePackingCharge,
       });
-
-      // Update global context state immediately
       await updateSettings(form);
-
-      toast.success("Settings saved successfully! Changes will appear across the site.");
-      setIsEditing(false);
+      toast.success("Settings saved! Changes are now live on the website.");
     } catch (error: any) {
-      const msg = error?.message || "Failed to save settings";
-      toast.error(msg);
+      toast.error(error?.message || "Failed to save settings");
       console.error("Failed to update settings:", error);
     } finally {
       setIsSaving(false);
     }
   };
+
+  const taBase = "w-full rounded-lg border border-gray-300 bg-white p-3 text-sm text-gray-900 min-h-[80px] resize-none focus:outline-none focus:ring-2 focus:ring-[#24BE64] focus:border-[#24BE64]";
 
   return (
     <>
@@ -78,214 +64,280 @@ const AdminContent = () => {
       <div className="flex min-h-screen">
         <AdminSidebar />
         <main className="flex-1 p-6 lg:p-8 overflow-auto">
-          <div className="mb-8 flex items-center justify-between">
+
+          {/* ── Page Header with always-visible buttons ── */}
+          <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
             <div>
-              <h1 className="font-display text-2xl font-bold flex items-center gap-2">
-                <Settings className="h-6 w-6 text-primary" /> Content & Settings
+              <h1 className="text-2xl font-bold flex items-center gap-2 text-gray-900">
+                <Settings className="h-6 w-6" style={{ color: '#24BE64' }} />
+                Content &amp; Settings
               </h1>
-              <p className="text-sm text-muted-foreground">Manage company information and global settings</p>
+              <p className="text-sm text-gray-500 mt-1">Manage company information and global settings</p>
             </div>
-            {!isEditing && (
-              <Button onClick={() => setIsEditing(true)} className="gap-2">
-                <Edit2 className="h-4 w-4" /> Edit
-              </Button>
-            )}
+
+            {/* Buttons — always rendered, no conditional */}
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={handleReset}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  padding: '8px 18px',
+                  borderRadius: '8px',
+                  border: '1px solid #d1d5db',
+                  background: '#ffffff',
+                  color: '#374151',
+                  fontWeight: 600,
+                  fontSize: '14px',
+                  cursor: 'pointer',
+                }}
+              >
+                <RotateCcw size={15} /> Reset
+              </button>
+              <button
+                type="button"
+                onClick={handleSave}
+                disabled={isSaving}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  padding: '8px 22px',
+                  borderRadius: '8px',
+                  border: 'none',
+                  background: isSaving ? '#86efac' : '#16a34a',
+                  color: '#ffffff',
+                  fontWeight: 700,
+                  fontSize: '14px',
+                  cursor: isSaving ? 'not-allowed' : 'pointer',
+                  boxShadow: '0 2px 8px rgba(22,163,74,0.35)',
+                }}
+              >
+                {isSaving ? (
+                  <><Loader size={15} className="animate-spin" /> Saving...</>
+                ) : (
+                  <><Save size={15} /> Save Changes</>
+                )}
+              </button>
+            </div>
           </div>
 
           <div className="max-w-2xl space-y-6">
-            {/* Site Information */}
-            <div className="bg-card border border-border rounded-lg p-6 space-y-4">
-              <h2 className="font-display font-bold text-lg">Site Information</h2>
+
+            {/* ── Site Information ── */}
+            <div className="bg-white border border-gray-200 rounded-xl p-6 space-y-4 shadow-sm">
+              <h2 className="font-bold text-lg text-gray-900 border-b pb-2">Site Information</h2>
               <div className="space-y-2">
-                <Label>Site Name</Label>
+                <Label className="font-semibold text-gray-700">Site Name</Label>
                 <Input
-                  value={form.siteName}
+                  value={form.siteName ?? ""}
                   onChange={(e) => setForm({ ...form, siteName: e.target.value })}
-                  disabled={!isEditing}
                   maxLength={100}
-                  className={!isEditing ? "bg-muted cursor-not-allowed" : ""}
+                  className="bg-white text-gray-900 border-gray-300"
                 />
               </div>
               <div className="space-y-2">
-                <Label>Site Description</Label>
+                <Label className="font-semibold text-gray-700">Site Description</Label>
                 <textarea
-                  className={`w-full rounded-lg border border-border bg-secondary p-2 text-sm min-h-[60px] ${!isEditing ? "bg-muted cursor-not-allowed opacity-60" : ""}`}
-                  value={form.siteDescription}
+                  className={taBase}
+                  value={form.siteDescription ?? ""}
                   onChange={(e) => setForm({ ...form, siteDescription: e.target.value.slice(0, 300) })}
-                  disabled={!isEditing}
+                  placeholder="Brief description of your business..."
+                  rows={3}
                 />
+                <p className="text-[11px] text-gray-400">{(form.siteDescription ?? "").length}/300 characters</p>
               </div>
             </div>
 
-            {/* News / Marquee Section */}
-            <div className="bg-card border border-border rounded-lg p-6 space-y-4">
-              <h2 className="font-display font-bold text-lg flex items-center gap-2">
-                News / Announcement
-              </h2>
+            {/* ── News / Marquee ── */}
+            <div className="bg-white border border-gray-200 rounded-xl p-6 space-y-4 shadow-sm">
+              <h2 className="font-bold text-lg text-gray-900 border-b pb-2">📢 News / Announcement Banner</h2>
               <div className="space-y-2">
-                <Label>News (Marquee Text)</Label>
+                <Label className="font-semibold text-gray-700">Marquee Text</Label>
                 <textarea
-                  className={`w-full rounded-lg border border-border bg-secondary p-2 text-sm min-h-[80px] ${!isEditing ? "bg-muted cursor-not-allowed opacity-60" : ""}`}
-                  placeholder="Enter important news or announcements to show in the marquee..."
-                  value={form.news || ""}
+                  className={taBase}
+                  placeholder="Enter news or announcements to scroll across the top of the home page..."
+                  value={form.news ?? ""}
                   onChange={(e) => setForm({ ...form, news: e.target.value })}
-                  disabled={!isEditing}
+                  rows={3}
                 />
-                <p className="text-[10px] text-muted-foreground italic">This text will run across the top of the home page as a scrolling marquee.</p>
+                <p className="text-[11px] text-gray-400 italic">
+                  💡 This scrolling text appears at the top of the home page. Leave blank to hide the banner.
+                </p>
               </div>
             </div>
 
-
-
-            {/* Contact Information */}
-            <div className="bg-card border border-border rounded-lg p-6 space-y-4">
-              <h2 className="font-display font-bold text-lg">Contact Information</h2>
+            {/* ── Contact Information ── */}
+            <div className="bg-white border border-gray-200 rounded-xl p-6 space-y-4 shadow-sm">
+              <h2 className="font-bold text-lg text-gray-900 border-b pb-2">Contact Information</h2>
               <div className="space-y-2">
-                <Label>Email</Label>
+                <Label className="font-semibold text-gray-700">Email</Label>
                 <Input
                   type="email"
-                  value={form.contact?.email || ""}
+                  value={form.contact?.email ?? ""}
                   onChange={(e) => setForm({ ...form, contact: { ...form.contact!, email: e.target.value } })}
-                  disabled={!isEditing}
-                  className={!isEditing ? "bg-muted cursor-not-allowed" : ""}
+                  className="bg-white text-gray-900 border-gray-300"
                 />
               </div>
               <div className="space-y-2">
-                <Label>Phone Number</Label>
+                <Label className="font-semibold text-gray-700">Phone Number</Label>
                 <Input
-                  value={form.contact?.phone || ""}
+                  value={form.contact?.phone ?? ""}
                   onChange={(e) => setForm({ ...form, contact: { ...form.contact!, phone: e.target.value } })}
-                  disabled={!isEditing}
                   maxLength={20}
-                  className={!isEditing ? "bg-muted cursor-not-allowed" : ""}
+                  className="bg-white text-gray-900 border-gray-300"
                 />
               </div>
               <div className="space-y-2">
-                <Label>Address</Label>
+                <Label className="font-semibold text-gray-700">Address</Label>
                 <textarea
-                  className={`w-full rounded-lg border border-border bg-secondary p-2 text-sm min-h-[80px] ${!isEditing ? "bg-muted cursor-not-allowed opacity-60" : ""}`}
-                  value={form.contact?.address || ""}
-                  onChange={(e) => setForm({ ...form, contact: { ...form.contact!, address: e.target.value.slice(0, 300) } })}
-                  disabled={!isEditing}
+                  className={taBase}
+                  value={form.contact?.address ?? ""}
+                  onChange={(e) =>
+                    setForm({ ...form, contact: { ...form.contact!, address: e.target.value.slice(0, 300) } })
+                  }
+                  placeholder="Full business address..."
+                  rows={3}
                 />
               </div>
             </div>
 
-            {/* Pricing Settings */}
-            <div className="bg-card border border-border rounded-lg p-6 space-y-4">
-              <h2 className="font-display font-bold text-lg">Pricing</h2>
+            {/* ── Pricing Settings ── */}
+            <div className="bg-white border border-gray-200 rounded-xl p-6 space-y-4 shadow-sm">
+              <h2 className="font-bold text-lg text-gray-900 border-b pb-2">Pricing</h2>
               <div className="grid md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>Discount Percentage (%)</Label>
+                  <Label className="font-semibold text-gray-700">Discount Percentage (%)</Label>
                   <Input
-                    type="number"
-                    min={0}
-                    max={100}
-                    value={form.discountPercent}
+                    type="number" min={0} max={100}
+                    value={form.discountPercent ?? 0}
                     onChange={(e) => setForm({ ...form, discountPercent: Number(e.target.value) })}
-                    disabled={!isEditing}
-                    className={!isEditing ? "bg-muted cursor-not-allowed" : ""}
+                    className="bg-white text-gray-900 border-gray-300"
                   />
-                  <p className="text-xs text-muted-foreground">Applied to all discounted products</p>
+                  <p className="text-xs text-gray-400">Applied to all discounted products</p>
                 </div>
                 <div className="space-y-2">
-                  <Label>Min Purchase (Inside Tamil Nadu) (₹)</Label>
+                  <Label className="font-semibold text-gray-700">Min Purchase — Inside TN (₹)</Label>
                   <Input
-                    type="number"
-                    min={0}
-                    value={form.minimumPurchaseAmount}
+                    type="number" min={0}
+                    value={form.minimumPurchaseAmount ?? 0}
                     onChange={(e) => setForm({ ...form, minimumPurchaseAmount: Number(e.target.value) })}
-                    disabled={!isEditing}
-                    className={!isEditing ? "bg-muted cursor-not-allowed" : ""}
+                    className="bg-white text-gray-900 border-gray-300"
                   />
-                  <p className="text-[10px] text-muted-foreground">Minimum order value for TN customers</p>
+                  <p className="text-[11px] text-gray-400">Minimum order value for TN customers</p>
                 </div>
                 <div className="space-y-2">
-                  <Label>Min Purchase (Outside Tamil Nadu) (₹)</Label>
+                  <Label className="font-semibold text-gray-700">Min Purchase — Outside TN (₹)</Label>
                   <Input
-                    type="number"
-                    min={0}
-                    value={form.minPurchaseOutsideTN}
+                    type="number" min={0}
+                    value={form.minPurchaseOutsideTN ?? 0}
                     onChange={(e) => setForm({ ...form, minPurchaseOutsideTN: Number(e.target.value) })}
-                    disabled={!isEditing}
-                    className={!isEditing ? "bg-muted cursor-not-allowed" : ""}
+                    className="bg-white text-gray-900 border-gray-300"
                   />
-                  <p className="text-[10px] text-muted-foreground">Minimum order value for Outside TN customers</p>
+                  <p className="text-[11px] text-gray-400">Minimum order value for outside-TN customers</p>
                 </div>
-                <div className="space-y-2 col-span-1 md:col-span-2 pt-2 border-t border-border mt-2">
-                  <div className="flex items-center justify-between">
+
+                {/* Packing Charge Toggle */}
+                <div className="md:col-span-2 pt-3 border-t border-gray-100">
+                  <div className="flex items-center justify-between bg-gray-50 border border-gray-200 rounded-lg p-4">
                     <div>
-                      <Label>Enable Packing Charge (3%)</Label>
-                      <p className="text-xs text-muted-foreground">Automatically add 3% packing charge to website orders</p>
+                      <p className="font-semibold text-sm text-gray-900">Enable Packing Charge (3%)</p>
+                      <p className="text-xs text-gray-500 mt-0.5">Automatically add 3% packing charge to website orders</p>
                     </div>
-                    <label className="relative inline-flex items-center cursor-pointer">
-                      <input 
-                        type="checkbox" 
-                        className="sr-only peer" 
-                        checked={form.enablePackingCharge ?? true}
-                        onChange={(e) => setForm({ ...form, enablePackingCharge: e.target.checked })}
-                        disabled={!isEditing}
+                    <button
+                      type="button"
+                      role="switch"
+                      aria-checked={form.enablePackingCharge ?? true}
+                      onClick={() => setForm({ ...form, enablePackingCharge: !(form.enablePackingCharge ?? true) })}
+                      style={{
+                        position: 'relative',
+                        display: 'inline-flex',
+                        width: '52px',
+                        height: '28px',
+                        borderRadius: '9999px',
+                        border: 'none',
+                        cursor: 'pointer',
+                        flexShrink: 0,
+                        background: (form.enablePackingCharge ?? true) ? '#16a34a' : '#d1d5db',
+                        transition: 'background 0.2s',
+                      }}
+                    >
+                      <span
+                        style={{
+                          position: 'absolute',
+                          top: '3px',
+                          left: (form.enablePackingCharge ?? true) ? '26px' : '3px',
+                          width: '22px',
+                          height: '22px',
+                          borderRadius: '9999px',
+                          background: '#ffffff',
+                          boxShadow: '0 1px 4px rgba(0,0,0,0.2)',
+                          transition: 'left 0.2s',
+                        }}
                       />
-                      <div className="w-11 h-6 bg-muted peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
-                    </label>
+                    </button>
                   </div>
+                  <p className="text-[11px] text-gray-400 mt-1 px-1">
+                    Currently:{' '}
+                    <span style={{ fontWeight: 700, color: (form.enablePackingCharge ?? true) ? '#16a34a' : '#6b7280' }}>
+                      {(form.enablePackingCharge ?? true) ? "Enabled" : "Disabled"}
+                    </span>
+                  </p>
                 </div>
               </div>
             </div>
 
-            {/* Social Links */}
-            <div className="bg-card border border-border rounded-lg p-6 space-y-4">
-              <h2 className="font-display font-bold text-lg">Social Media Links</h2>
+            {/* ── Social Links ── */}
+            <div className="bg-white border border-gray-200 rounded-xl p-6 space-y-4 shadow-sm">
+              <h2 className="font-bold text-lg text-gray-900 border-b pb-2">Social Media Links</h2>
               <div className="grid md:grid-cols-2 gap-4">
                 {["facebook", "twitter", "instagram", "youtube"].map((platform) => (
                   <div key={platform} className="space-y-2">
-                    <Label className="capitalize">{platform}</Label>
+                    <Label className="capitalize font-semibold text-gray-700">{platform}</Label>
                     <Input
-                      value={form.socialLinks?.[platform as keyof typeof form.socialLinks] || ""}
+                      placeholder={`https://${platform}.com/yourpage`}
+                      value={form.socialLinks?.[platform as keyof typeof form.socialLinks] ?? ""}
                       onChange={(e) =>
-                        setForm({
-                          ...form,
-                          socialLinks: {
-                            ...form.socialLinks,
-                            [platform]: e.target.value,
-                          },
-                        })
+                        setForm({ ...form, socialLinks: { ...form.socialLinks, [platform]: e.target.value } })
                       }
-                      disabled={!isEditing}
-                      className={!isEditing ? "bg-muted cursor-not-allowed" : ""}
+                      className="bg-white text-gray-900 border-gray-300"
                     />
                   </div>
                 ))}
               </div>
             </div>
 
-            {/* Action Buttons */}
-            {isEditing && (
-              <div className="flex gap-3 justify-end pt-4 border-t border-border">
-                <Button
-                  onClick={handleCancel}
-                  variant="outline"
-                  className="gap-2"
-                >
-                  <X className="h-4 w-4" /> Cancel
-                </Button>
-                <Button
-                  onClick={handleSave}
-                  disabled={isSaving}
-                  className="gap-2"
-                >
-                  {isSaving ? (
-                    <>
-                      <Loader className="h-4 w-4 animate-spin" /> Saving...
-                    </>
-                  ) : (
-                    <>
-                      <Save className="h-4 w-4" /> Save Changes
-                    </>
-                  )}
-                </Button>
-              </div>
-            )}
+            {/* ── Bottom Save Button (duplicate for convenience) ── */}
+            <div className="flex justify-end pb-10">
+              <button
+                type="button"
+                onClick={handleSave}
+                disabled={isSaving}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '10px 28px',
+                  borderRadius: '10px',
+                  border: 'none',
+                  background: isSaving ? '#86efac' : '#16a34a',
+                  color: '#ffffff',
+                  fontWeight: 700,
+                  fontSize: '15px',
+                  cursor: isSaving ? 'not-allowed' : 'pointer',
+                  boxShadow: '0 4px 12px rgba(22,163,74,0.4)',
+                }}
+              >
+                {isSaving ? (
+                  <><Loader size={16} className="animate-spin" /> Saving...</>
+                ) : (
+                  <><Save size={16} /> Save Changes</>
+                )}
+              </button>
+            </div>
+
           </div>
         </main>
       </div>

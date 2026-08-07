@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { ProductImage } from '../components/ProductImage';
 import { Fireworks } from '@fireworks-js/react';
 import type { Category, Product } from '../types';
+import { useSiteSettings } from '../context/SiteSettingsContext';
 
 interface HomeProps {
   quantities: Record<string, number>;
@@ -26,6 +27,10 @@ export const Home: React.FC<HomeProps> = ({
   categories
 }) => {
   const [selectedBrand, setSelectedBrand] = useState('all');
+  const { settings } = useSiteSettings();
+  const marqueeText = settings.news || '';
+  const heroTitle = settings.siteName ? `Welcome to ${settings.siteName}` : 'Celebrate with Premium Fireworks';
+  const heroDesc = settings.siteDescription || "Sivakasi's finest crackers at wholesale prices. Light up your celebrations!";
 
   // Filter products and categories based on search, category, and brand state
   const filteredCategories = categories
@@ -56,6 +61,25 @@ export const Home: React.FC<HomeProps> = ({
 
   return (
     <div className="flex-grow flex flex-col bg-bg-light font-sans">
+
+      {/* Marquee News Banner — only shown when admin has set news text */}
+      {marqueeText && (
+        <div className="w-full bg-amber-500 text-white overflow-hidden py-2 px-0 flex items-center" style={{ minHeight: '36px' }}>
+          <span className="font-bold text-xs px-4 shrink-0 uppercase tracking-wider border-r border-amber-300 mr-3 pr-3">📢 NEWS</span>
+          <div className="overflow-hidden flex-1">
+            <div
+              className="whitespace-nowrap text-sm font-medium"
+              style={{
+                display: 'inline-block',
+                animation: 'marquee-scroll 30s linear infinite',
+              }}
+            >
+              {marqueeText}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{marqueeText}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Hero Section with Fireworks */}
       <div 
         className="w-full h-[300px] md:h-[400px] relative overflow-hidden flex-shrink-0"
@@ -97,10 +121,10 @@ export const Home: React.FC<HomeProps> = ({
         />
         <div className="absolute inset-0 flex flex-col items-center justify-center z-20 bg-black/20">
           <h1 className="text-3xl md:text-5xl font-bold text-white text-center px-4 tracking-wide shadow-black drop-shadow-md">
-            Celebrate with Premium Fireworks
+            {heroTitle}
           </h1>
           <p className="text-gray-200 mt-4 text-sm md:text-base max-w-lg text-center px-4 drop-shadow-md">
-            Sivakasi's finest crackers at wholesale prices. Light up your celebrations!
+            {heroDesc}
           </p>
         </div>
       </div>

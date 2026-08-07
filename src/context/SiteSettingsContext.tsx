@@ -81,7 +81,30 @@ export const SiteSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ 
   };
 
   useEffect(() => {
-    fetchSettings();
+    const controller = new AbortController();
+
+    const fetchWithAbort = async () => {
+      try {
+        const response = await fetch('http://localhost:5000/api/settings/public/info', {
+          signal: controller.signal,
+        });
+        if (response.ok) {
+          const data = await response.json();
+          setSettings(prev => ({ ...prev, ...data }));
+        }
+      } catch (err: any) {
+        // AbortError is expected on unmount — not a real error
+        if (err?.name !== 'AbortError') {
+          console.log('Failed to fetch site settings', err);
+        }
+      }
+    };
+
+    fetchWithAbort();
+
+    return () => {
+      controller.abort(); // Cancel fetch if provider unmounts
+    };
   }, []);
 
   const updateSettings = async (newSettings: SiteSettings) => {

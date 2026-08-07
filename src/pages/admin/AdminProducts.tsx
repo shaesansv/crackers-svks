@@ -323,10 +323,10 @@ const AdminProducts = () => {
                         setEditing(null);
                         toast.success(editing ? 'Product updated!' : 'Product added!');
 
-                        // refresh products
+                        // refresh products — handle both { products: [] } and plain [] responses
                         getProducts().then((d) => {
-                          const safeData = Array.isArray(d) ? d : [];
-                          const mappedProducts = safeData.map((p: any) => ({
+                          const rawList = Array.isArray(d) ? d : (d && Array.isArray(d.products) ? d.products : []);
+                          const mappedProducts = rawList.map((p: any) => ({
                             ...p,
                             id: p._id || p.id,
                           }));
