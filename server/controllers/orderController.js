@@ -169,17 +169,31 @@ export const approveOrder = async (req, res, next) => {
       return next(new AppError('Order not found', 404));
     }
 
-    order.approved = true;
-    const updatedOrder = await order.save();
+    // Use findByIdAndUpdate instead of order.save() to avoid full schema
+    // re-validation — legacy orders may have fields in old format that would
+    // fail required-field checks on items.quantity / items.product / orderNumber.
+    const updatedOrder = await Order.findByIdAndUpdate(
+      orderId,
+      { $set: { approved: true } },
+      { new: true, runValidators: false }
+    );
 
     let customer = await Customer.findOne({ email: order.customerEmail });
 
     if (customer) {
-      customer.name = order.customerName;
-      customer.phone = order.customerPhone;
-      customer.alternatePhone = order.alternatePhoneNumber;
-      customer.deliveryAddress = order.deliveryAddress;
-      await customer.save();
+      // Update existing customer using findByIdAndUpdate (avoid save() re-validation)
+      await Customer.findByIdAndUpdate(
+        customer._id,
+        {
+          $set: {
+            name: order.customerName,
+            phone: order.customerPhone,
+            alternatePhone: order.alternatePhoneNumber,
+            deliveryAddress: order.deliveryAddress,
+          }
+        },
+        { runValidators: false }
+      );
     } else {
       // Create new customer if not exists
       customer = new Customer({
@@ -191,8 +205,12 @@ export const approveOrder = async (req, res, next) => {
         customerType: 'WEBSITE'
       });
       await customer.save();
-      updatedOrder.customer = customer._id;
-      await updatedOrder.save();
+      // Link customer to order
+      await Order.findByIdAndUpdate(
+        orderId,
+        { $set: { customer: customer._id } },
+        { runValidators: false }
+      );
     }
 
     res.json({

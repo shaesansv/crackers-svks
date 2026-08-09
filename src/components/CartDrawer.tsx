@@ -164,11 +164,26 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                       </button>
                     </div>
 
-                    {/* Price */}
+                    {/* Price — 3-mode pricing */}
                     <div className="text-right">
-                      <p className="text-[14px] font-bold text-secondary-gold">₹{(product.discountPrice * qty).toLocaleString('en-IN')}</p>
-                      {product.actualPrice !== product.discountPrice && (
-                        <p className="text-[10px] text-text-secondary line-through">₹{(product.actualPrice * qty).toLocaleString('en-IN')}</p>
+                      {product.hasDiscount && product.actualPrice > product.discountPrice ? (
+                        // Mode 1: product-level hasDiscount
+                        <>
+                          <p className="text-[14px] font-bold text-green-600">₹{(product.discountPrice * qty).toLocaleString('en-IN')}</p>
+                          <p className="text-[10px] text-gray-400 line-through">₹{(product.actualPrice * qty).toLocaleString('en-IN')}</p>
+                        </>
+                      ) : product.displayNetRate && product.netRate && product.netRate > 0 ? (
+                        // Mode 2: displayNetRate only — no strikethrough, amber color
+                        <p className="text-[14px] font-bold text-amber-600">₹{(product.discountPrice * qty).toLocaleString('en-IN')}</p>
+                      ) : product.appliedGlobalDiscount && product.actualPrice > product.discountPrice ? (
+                        // Mode 3: global discount applied
+                        <>
+                          <p className="text-[14px] font-bold text-orange-600">₹{(product.discountPrice * qty).toLocaleString('en-IN')}</p>
+                          <p className="text-[10px] text-gray-400 line-through">₹{(product.actualPrice * qty).toLocaleString('en-IN')}</p>
+                        </>
+                      ) : (
+                        // Default: no discount
+                        <p className="text-[14px] font-bold text-secondary-gold">₹{(product.discountPrice * qty).toLocaleString('en-IN')}</p>
                       )}
                     </div>
                   </div>

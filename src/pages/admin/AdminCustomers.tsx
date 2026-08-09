@@ -207,54 +207,57 @@ const AdminCustomers = () => {
 
         {/* Customer Details & Purchase History Dialog */}
         <Dialog open={!!selectedCustomer} onOpenChange={(o) => !o && setSelectedCustomer(null)}>
-          <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+          <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto bg-white dark:bg-zinc-900 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-zinc-700 shadow-2xl">
             <DialogHeader>
-              <DialogTitle>{selectedCustomer?.name} — Customer Profile</DialogTitle>
-              <DialogDescription>{selectedCustomer?.email}</DialogDescription>
+              <DialogTitle className="text-gray-900 dark:text-gray-100">{selectedCustomer?.name} — Customer Profile</DialogTitle>
+              <DialogDescription className="text-gray-500">{selectedCustomer?.email}</DialogDescription>
             </DialogHeader>
             
             {selectedCustomer && (
               <div className="space-y-6">
                 {/* Customer Details */}
-                <div className="bg-secondary text-white p-4 rounded-lg">
-                  <h3 className="font-semibold mb-3">Contact Information</h3>
+                <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-zinc-800 dark:to-zinc-700 border border-blue-100 dark:border-zinc-600 p-4 rounded-xl">
+                  <h3 className="font-semibold mb-3 text-gray-800 dark:text-gray-100 flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-blue-500 inline-block"></span>
+                    Contact Information
+                  </h3>
                   <div className="grid grid-cols-2 gap-4 text-sm">
                     <div>
-                      <p className="text-white/70">Email</p>
-                      <p className="font-medium">{selectedCustomer.email}</p>
+                      <p className="text-gray-500 dark:text-gray-400 text-xs mb-0.5">Email</p>
+                      <p className="font-medium text-gray-800 dark:text-gray-200">{selectedCustomer.email}</p>
                     </div>
                     <div>
-                      <p className="text-white/70">Phone</p>
-                      <p className="font-medium">{selectedCustomer.phone || "Not provided"}</p>
+                      <p className="text-gray-500 dark:text-gray-400 text-xs mb-0.5">Phone</p>
+                      <p className="font-medium text-gray-800 dark:text-gray-200">{selectedCustomer.phone || "Not provided"}</p>
                     </div>
                     {selectedCustomer.alternatePhone && (
                       <div>
-                        <p className="text-white/70">Alternate Phone</p>
-                        <p className="font-medium">{selectedCustomer.alternatePhone}</p>
+                        <p className="text-gray-500 dark:text-gray-400 text-xs mb-0.5">Alternate Phone</p>
+                        <p className="font-medium text-gray-800 dark:text-gray-200">{selectedCustomer.alternatePhone}</p>
                       </div>
                     )}
                   </div>
                   {selectedCustomer.deliveryAddress && (
                     <div className="mt-4">
-                      <p className="text-white/70 text-sm">Delivery Address</p>
-                      <p className="font-medium text-sm text-foreground bg-background p-2 rounded mt-1">{selectedCustomer.deliveryAddress}</p>
+                      <p className="text-gray-500 dark:text-gray-400 text-xs mb-1">Delivery Address</p>
+                      <p className="font-medium text-sm text-gray-700 dark:text-gray-300 bg-white dark:bg-zinc-800 border border-blue-100 dark:border-zinc-600 p-2 rounded-lg mt-1">{selectedCustomer.deliveryAddress}</p>
                     </div>
                   )}
                 </div>
 
                 {/* Summary */}
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
-                  <div className="bg-primary/10 p-3 rounded">
-                    <p className="text-muted-foreground">Total Orders</p>
-                    <p className="font-bold text-lg">{selectedCustomer.totalOrders}</p>
+                  <div className="bg-green-50 dark:bg-green-900/20 border border-green-100 dark:border-green-800 p-3 rounded-xl">
+                    <p className="text-green-600 dark:text-green-400 text-xs font-medium mb-1">Total Orders</p>
+                    <p className="font-bold text-xl text-green-700 dark:text-green-300">{selectedCustomer.totalOrders}</p>
                   </div>
-                  <div className="bg-primary/10 p-3 rounded">
-                    <p className="text-muted-foreground">Total Spent</p>
-                    <p className="font-bold text-lg">₹{selectedCustomer.totalSpent.toLocaleString()}</p>
+                  <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 p-3 rounded-xl">
+                    <p className="text-blue-600 dark:text-blue-400 text-xs font-medium mb-1">Total Spent</p>
+                    <p className="font-bold text-xl text-blue-700 dark:text-blue-300">₹{selectedCustomer.totalSpent.toLocaleString()}</p>
                   </div>
-                  <div className="bg-primary/10 p-3 rounded col-span-2 md:col-span-1">
-                    <p className="text-muted-foreground">Location</p>
-                    <p className="font-bold text-base truncate" title={selectedCustomer.district && selectedCustomer.state ? `${selectedCustomer.district}, ${selectedCustomer.state}` : (selectedCustomer.state || selectedCustomer.district || "—")}>
+                  <div className="bg-purple-50 dark:bg-purple-900/20 border border-purple-100 dark:border-purple-800 p-3 rounded-xl col-span-2 md:col-span-1">
+                    <p className="text-purple-600 dark:text-purple-400 text-xs font-medium mb-1">Location</p>
+                    <p className="font-bold text-base text-purple-700 dark:text-purple-300 truncate" title={selectedCustomer.district && selectedCustomer.state ? `${selectedCustomer.district}, ${selectedCustomer.state}` : (selectedCustomer.state || selectedCustomer.district || "—")}>
                       {selectedCustomer.district && selectedCustomer.state ? `${selectedCustomer.district}, ${selectedCustomer.state}` : (selectedCustomer.state || selectedCustomer.district || "—")}
                     </p>
                   </div>
@@ -263,12 +266,12 @@ const AdminCustomers = () => {
                 {/* Purchase History */}
                 <div>
                   <div className="flex justify-between items-center mb-3">
-                    <h3 className="font-semibold">Purchase History</h3>
-                    <Button variant="ghost" size="sm" className="gap-1" onClick={() => setSortAsc(!sortAsc)}>
+                    <h3 className="font-semibold text-gray-800 dark:text-gray-200">Purchase History</h3>
+                    <Button variant="ghost" size="sm" className="gap-1 text-gray-600 dark:text-gray-400" onClick={() => setSortAsc(!sortAsc)}>
                       <ArrowUpDown className="h-3 w-3" /> Sort ({sortAsc ? "Oldest" : "Newest"})
                     </Button>
                   </div>
-                  <div className="max-h-60 overflow-auto border rounded-lg">
+                  <div className="max-h-60 overflow-auto border border-gray-200 dark:border-zinc-700 rounded-xl bg-white dark:bg-zinc-800">
                     <Table>
                       <TableHeader>
                         <TableRow>

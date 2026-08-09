@@ -46,7 +46,6 @@ function AppContent() {
     merchantPhone?: string;
     storeAddress?: string;
   } | null>(null);
-
   const fetchSettings = async () => {
     try {
       const response = await fetch('http://localhost:5000/api/settings/public/info');
@@ -57,14 +56,19 @@ function AppContent() {
           merchantPhone: settingsData.contact?.phone,
           storeAddress: settingsData.contact?.address,
         });
+        return settingsData.discountPercent ?? 0;
       }
     } catch (err) {
       console.log('Failed to fetch settings from backend', err);
     }
+    return 0;
   };
 
   const fetchProductsAndCategories = async () => {
     try {
+      // Fetch settings FIRST so we have global discount % before mapping products
+      const discPct = await fetchSettings();
+
       const catResponse = await fetch('http://localhost:5000/api/categories?limit=1000');
       let categoriesData: Category[] = [];
       if (catResponse.ok) {
@@ -81,15 +85,48 @@ function AppContent() {
       if (prodResponse.ok) {
         const resJson = await prodResponse.json();
         const rawProducts = Array.isArray(resJson) ? resJson : (resJson && Array.isArray(resJson.products) ? resJson.products : []);
-        productsData = rawProducts.map((p: any) => ({
-          ...p,
-          id: p._id || p.id,
-          actualPrice: p.price || 0,
-          discountPrice: p.netRate || p.wholesalePrice || p.price || 0,
-          unit: p.unit || 'box',
-          stock: p.storeStockPieces ?? p.stock ?? 0,
-          imageType: p.imageType || (p.category && typeof p.category === 'object' ? p.category.icon : 'sparkler')
-        }));
+        productsData = rawProducts.map((p: any) => {
+          const retailPrice = Number(p.price) || 0;
+          const pNetRate = Number(p.netRate) || 0;
+
+          // Pricing Mode Rule:
+          // Either "Display Net-Rate on Shop" OR "Has Discount" must be active.
+          // Display Net-Rate is valid ONLY if displayNetRate flag is true AND netRate > 0.
+          const pDisplayNetRate = !!p.displayNetRate && pNetRate > 0;
+          const pHasDiscount = !pDisplayNetRate; // If not Display Net-Rate, then Has Discount is active!
+
+          let discountPrice: number;
+          let appliedGlobalDiscount = false;
+
+          if (pDisplayNetRate) {
+            // Mode: Display Net-Rate on Shop -> NO discount calculation, display netRate directly
+            discountPrice = pNetRate;
+          } else {
+            // Mode: Has Discount -> Calculate discount using Content page discountPercent
+            if (discPct > 0 && retailPrice > 0) {
+              discountPrice = Math.round(retailPrice * (1 - discPct / 100) * 100) / 100;
+              appliedGlobalDiscount = true;
+            } else {
+              discountPrice = retailPrice;
+            }
+          }
+
+          return {
+            ...p,
+            id: p._id || p.id,
+            price: retailPrice,
+            actualPrice: retailPrice,
+            discountPrice,
+            netRate: pNetRate,
+            hasDiscount: pHasDiscount,
+            displayNetRate: pDisplayNetRate,
+            appliedGlobalDiscount,
+            globalDiscountPct: pHasDiscount ? discPct : 0,
+            unit: p.unit || 'box',
+            stock: p.storeStockPieces ?? p.stock ?? 0,
+            imageType: p.imageType || (p.category && typeof p.category === 'object' ? p.category.icon : 'sparkler')
+          };
+        });
         setDbProducts(productsData);
       }
 
@@ -115,11 +152,10 @@ function AppContent() {
   };
 
   React.useEffect(() => {
-    fetchSettings();
     fetchProductsAndCategories();
 
-    // Refresh storefront data whenever the user returns to this tab/window
-    // (e.g. after editing products in the admin panel)
+    // Refresh storefront data (incl. discount %) whenever the user returns to this tab/window
+    // (e.g. after editing products or content settings in the admin panel)
     const handleFocus = () => {
       fetchProductsAndCategories();
     };

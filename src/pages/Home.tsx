@@ -233,8 +233,14 @@ export const Home: React.FC<HomeProps> = ({
                               <span className="text-[11px] font-bold bg-red-500 text-white px-2 py-0.5 rounded-full inline-block w-max">
                                 🚫 Out of Stock
                               </span>
-                            ) : product.name.includes('Discount') ? (
-                              <span className="text-[11px] font-bold bg-danger-red text-white px-2 py-0.5 rounded-full inline-block w-max">Special Offer</span>
+                            ) : product.displayNetRate ? (
+                              <span className="text-[11px] font-semibold bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full inline-block w-max">
+                                Net Rate
+                              </span>
+                            ) : product.hasDiscount && product.globalDiscountPct && product.globalDiscountPct > 0 ? (
+                              <span className="text-[11px] font-bold bg-red-500 text-white px-2 py-0.5 rounded-full inline-block w-max">
+                                🔥 {product.globalDiscountPct}% OFF
+                              </span>
                             ) : (
                               <span className="text-[13px] text-text-secondary">Premium Standard</span>
                             )}
@@ -249,7 +255,19 @@ export const Home: React.FC<HomeProps> = ({
                           }`}>
                             {isOutOfStock ? 'Out of Stock' : isLow ? 'Low Stock' : 'In Stock'}
                           </div>
-                          <div className="font-bold text-secondary-gold">₹{product.discountPrice.toFixed(2)}</div>
+                          {/* Mobile Price */}
+                          <div className="flex flex-col items-end">
+                            {product.displayNetRate ? (
+                              <span className="text-[14px] font-bold text-amber-600">₹{product.discountPrice.toFixed(2)}</span>
+                            ) : product.hasDiscount && product.globalDiscountPct && product.globalDiscountPct > 0 && product.price > product.discountPrice ? (
+                              <>
+                                <span className="text-[11px] line-through text-gray-400 font-medium">₹{product.price.toFixed(2)}</span>
+                                <span className="text-[14px] font-bold text-green-600">₹{product.discountPrice.toFixed(2)}</span>
+                              </>
+                            ) : (
+                              <span className="font-bold text-secondary-gold">₹{product.discountPrice.toFixed(2)}</span>
+                            )}
+                          </div>
                         </div>
 
                         {/* Desktop Unit / Size */}
@@ -265,8 +283,17 @@ export const Home: React.FC<HomeProps> = ({
                         </div>
 
                         {/* Desktop Price */}
-                        <div className="hidden md:block text-[15px] font-bold text-secondary-gold text-center">
-                          ₹{product.discountPrice.toFixed(2)}
+                        <div className="hidden md:flex flex-col items-center justify-center text-center">
+                          {product.displayNetRate ? (
+                            <span className="text-[15px] font-bold text-amber-600">₹{product.discountPrice.toFixed(2)}</span>
+                          ) : product.hasDiscount && product.globalDiscountPct && product.globalDiscountPct > 0 && product.price > product.discountPrice ? (
+                            <>
+                              <span className="text-[12px] line-through text-gray-400 font-medium leading-tight">₹{product.price.toFixed(2)}</span>
+                              <span className="text-[15px] font-bold text-green-600 leading-tight">₹{product.discountPrice.toFixed(2)}</span>
+                            </>
+                          ) : (
+                            <span className="text-[15px] font-bold text-secondary-gold">₹{product.discountPrice.toFixed(2)}</span>
+                          )}
                         </div>
 
                         {/* Actions Row (Quantity & Add Button) */}

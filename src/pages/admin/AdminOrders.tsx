@@ -244,7 +244,7 @@ const AdminOrders = () => {
           {([
             { key: 'all',      label: 'All Orders',  icon: '📋', activeClass: 'bg-primary text-primary-foreground border-primary' },
             { key: 'approved', label: 'Approved',     icon: '✅', activeClass: 'bg-green-600 text-white border-green-600' },
-            { key: 'packing',  label: 'Packed',       icon: '📦', activeClass: 'bg-blue-600 text-white border-blue-600' },
+            { key: 'packing',  label: 'Shipped',      icon: '🚚', activeClass: 'bg-teal-600 text-white border-teal-600' },
             { key: 'hold',     label: 'On Hold',      icon: '🔒', activeClass: 'bg-amber-500 text-white border-amber-500' },
           ] as { key: StatusFilter; label: string; icon: string; activeClass: string }[]).map(({ key, label, icon, activeClass }) => (
             <button
@@ -297,9 +297,8 @@ const AdminOrders = () => {
                   <th className="text-left p-3">Phone</th>
                   <th className="text-right p-3 hidden sm:table-cell">Items</th>
                   <th className="text-right p-3">Total</th>
-                  <th className="text-center p-3">Packing</th>
+                  <th className="text-center p-3">Shipping</th>
                   <th className="text-center p-3">Approved</th>
-                  <th className="text-center p-3">Hold Status</th>
                   <th className="text-right p-3 hidden md:table-cell">Date</th>
                   <th className="text-right p-3">Actions</th>
                 </tr>
@@ -328,44 +327,25 @@ const AdminOrders = () => {
                     <td className="p-3 text-right hidden sm:table-cell">{o.items?.length || 0}</td>
                     <td className="p-3 text-right font-bold text-primary">₹{Number(o.subtotal) + (Number(o.packingCharge) || 0)}</td>
                     <td className="p-3 text-center">
-                      <Badge variant={o.packingStatus === 'packed' ? 'default' : 'secondary'} className={o.packingStatus === 'packed' ? 'bg-blue-600' : ''}>
-                        {o.packingStatus ? (o.packingStatus === 'packed' ? '📦 Packed' : '🔹 Unpacked') : 'N/A'}
-                      </Badge>
-                    </td>
-                    <td className="p-3 text-center">
-                      {o.approved ? (
-                        <Badge variant="default" className="bg-green-600">✓ Approved</Badge>
+                      {o.packingStatus === 'packed' ? (
+                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-teal-500 text-white shadow-sm">
+                          🚚 Shipped
+                        </span>
                       ) : (
-                        <Badge variant="secondary">Pending</Badge>
+                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-gray-200 text-gray-600">
+                          ⏳ Not Shipped
+                        </span>
                       )}
                     </td>
                     <td className="p-3 text-center">
-                      {o.holdDays && o.holdDays > 0 ? (
-                        <div className="flex flex-col items-center gap-0.5">
-                          <Badge
-                            variant="outline"
-                            className={`${
-                              isHoldReady(o)
-                                ? "border-red-500 text-red-600 bg-red-500/20 font-bold animate-pulse"
-                                : isOrderOnHold(o)
-                                ? "border-amber-500 text-amber-600 bg-amber-500/20 font-bold"
-                                : "border-gray-400 text-gray-400 bg-gray-400/10"
-                            }`}
-                          >
-                            {isHoldReady(o) ? "🔥" : isOrderOnHold(o) ? "🔒" : "⏳"} {o.holdDays}d Hold
-                          </Badge>
-                          {(() => {
-                            const until = new Date(o.createdAt);
-                            until.setDate(until.getDate() + Number(o.holdDays));
-                            return (
-                              <span className={`text-[10px] font-medium ${isHoldReady(o) ? 'text-red-600' : 'text-amber-600'}`}>
-                                {isHoldReady(o) ? 'Ready to send!' : `Until ${until.toLocaleDateString('en-IN')}`}
-                              </span>
-                            );
-                          })()}
-                        </div>
+                      {o.approved ? (
+                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-green-500 text-white shadow-sm">
+                          ✓ Approved
+                        </span>
                       ) : (
-                        <span className="text-muted-foreground text-xs">No Hold</span>
+                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-700 border border-amber-300">
+                          ⏸ Pending
+                        </span>
                       )}
                     </td>
                     <td className="p-3 text-right text-muted-foreground hidden md:table-cell text-xs">
@@ -381,16 +361,6 @@ const AdminOrders = () => {
                         >
                           View Details
                         </Button>
-                        {isHoldReady(o) && (
-                          <Button
-                            size="sm"
-                            variant="default"
-                            onClick={() => handleRemoveHold(o._id)}
-                            className="text-xs w-full max-w-[100px] h-7 bg-red-600 hover:bg-red-700"
-                          >
-                            Remove Hold
-                          </Button>
-                        )}
                       </div>
                     </td>
                   </tr>
@@ -415,7 +385,7 @@ const AdminOrders = () => {
 
         {/* Order Details Dialog */}
         <Dialog open={!!selectedOrder} onOpenChange={(open) => !open && setSelectedOrder(null)}>
-          <DialogContent className="max-w-2xl max-h-96 overflow-y-auto">
+          <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto bg-white dark:bg-zinc-900 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-zinc-700 shadow-2xl">
             <DialogHeader>
               <DialogTitle>Order Details</DialogTitle>
               <DialogDescription>Order ID: {selectedOrder?.orderNumber || selectedOrder?._id?.slice(-8)}</DialogDescription>
@@ -450,52 +420,43 @@ const AdminOrders = () => {
                 </div>
 
                 <div>
-                  <h3 className="font-semibold text-sm mb-2">Delivery Address</h3>
-                  <p className="text-sm text-white bg-secondary p-2 rounded">
-                    {selectedOrder.deliveryAddress?.fullAddress || selectedOrder.shippingAddress?.fullAddress || "No address provided"}
-                    {selectedOrder.deliveryAddress?.district && <span className="block mt-1"><strong>District:</strong> {selectedOrder.deliveryAddress.district}</span>}
-                    {selectedOrder.deliveryAddress?.state && <span className="block mt-1"><strong>State:</strong> {selectedOrder.deliveryAddress.state}</span>}
-                  </p>
-                </div>
-
-                <div>
-                  <h3 className="font-semibold text-sm mb-2">Items</h3>
-                  <ul className="text-sm text-white space-y-1 bg-secondary p-2 rounded">
-                    {selectedOrder.items?.map((item: any, idx: number) => (
-                      <li key={idx}>
-                        {item.product?.name || item.productName || 'Product'} - Qty: {item.quantity} × ₹{item.price}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                <div>
-                  <h3 className="font-semibold text-sm mb-2">Customer Hold Settings</h3>
-                  <div className="flex items-center gap-3 bg-secondary p-3 rounded">
-                    <div className="flex-1">
-                      <p className="text-xs text-muted-foreground mb-1">Hold Duration (Days):</p>
-                      <div className="flex items-center gap-2">
-                        <Input
-                          type="number"
-                          min="0"
-                          max="365"
-                          value={holdDaysInput}
-                          onChange={(e) => setHoldDaysInput(Math.max(0, parseInt(e.target.value, 10) || 0))}
-                          className="w-24 h-9 bg-card text-foreground"
-                        />
-                        <span className="text-sm">days</span>
-                      </div>
-                    </div>
-                    <Button
-                      size="sm"
-                      onClick={handleUpdateHoldDays}
-                      disabled={isUpdatingHold}
-                      className="bg-primary text-primary-foreground hover:bg-primary/95"
-                    >
-                      {isUpdatingHold ? "Updating..." : "Save Hold"}
-                    </Button>
+                  <h3 className="font-semibold text-sm mb-2 text-gray-800 dark:text-gray-200">Delivery Address</h3>
+                  <div className="text-sm text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 p-3 rounded-lg">
+                    <p>{selectedOrder.deliveryAddress?.fullAddress || selectedOrder.shippingAddress?.fullAddress || "No address provided"}</p>
+                    {selectedOrder.deliveryAddress?.district && <p className="mt-1"><strong>District:</strong> {selectedOrder.deliveryAddress.district}</p>}
+                    {selectedOrder.deliveryAddress?.state && <p className="mt-1"><strong>State:</strong> {selectedOrder.deliveryAddress.state}</p>}
                   </div>
                 </div>
+
+                <div>
+                  <h3 className="font-semibold text-sm mb-2 text-gray-800 dark:text-gray-200">Items Ordered</h3>
+                  <div className="bg-gray-100 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-lg overflow-hidden">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="bg-gray-200 dark:bg-zinc-700 text-gray-600 dark:text-gray-300">
+                          <th className="text-left px-3 py-2 font-semibold">#</th>
+                          <th className="text-left px-3 py-2 font-semibold">Product</th>
+                          <th className="text-center px-3 py-2 font-semibold">Qty</th>
+                          <th className="text-right px-3 py-2 font-semibold">Price</th>
+                          <th className="text-right px-3 py-2 font-semibold">Total</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {selectedOrder.items?.map((item: any, idx: number) => (
+                          <tr key={idx} className="border-t border-gray-200 dark:border-zinc-700 text-gray-800 dark:text-gray-200">
+                            <td className="px-3 py-2 text-gray-400">{idx + 1}</td>
+                            <td className="px-3 py-2 font-medium">{item.product?.name || item.productName || 'Product'}</td>
+                            <td className="px-3 py-2 text-center">{item.quantity}</td>
+                            <td className="px-3 py-2 text-right">₹{item.price}</td>
+                            <td className="px-3 py-2 text-right font-semibold">₹{(item.quantity * item.price).toFixed(2)}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+
 
                 <div className="flex gap-2 pt-4">
                   <Button
@@ -506,11 +467,10 @@ const AdminOrders = () => {
                     Close
                   </Button>
                   <Button
-                    variant="secondary"
                     onClick={() => downloadPDF(selectedOrder)}
-                    className="flex-1"
+                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
                   >
-                    Download PDF
+                    📄 Download PDF
                   </Button>
                   {!selectedOrder.approved && (
                     <Button
@@ -530,9 +490,9 @@ const AdminOrders = () => {
                     <Button
                       onClick={handleTogglePackingStatus}
                       disabled={isUpdatingPacking}
-                      className={`flex-1 ${selectedOrder.packingStatus === 'packed' ? 'bg-blue-600 hover:bg-blue-700' : 'bg-orange-600 hover:bg-orange-700'} text-white`}
+                      className={`flex-1 ${selectedOrder.packingStatus === 'packed' ? 'bg-gray-500 hover:bg-gray-600' : 'bg-teal-600 hover:bg-teal-700'} text-white`}
                     >
-                      {isUpdatingPacking ? "Updating..." : selectedOrder.packingStatus === 'packed' ? '📦 Mark Unpacked' : '🔹 Mark Packed'}
+                      {isUpdatingPacking ? "Updating..." : selectedOrder.packingStatus === 'packed' ? '⏳ Mark Not Shipped' : '🚚 Mark Shipped'}
                     </Button>
                   )}
                 </div>

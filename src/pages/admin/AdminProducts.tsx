@@ -36,6 +36,9 @@ const AdminProducts = () => {
 
   const openEdit = (product: Product) => {
     setEditing(product);
+    const hasValidNetRate = !!product.netRate && Number(product.netRate) > 0;
+    const isDisplayNetRate = !!product.displayNetRate && hasValidNetRate;
+
     setForm({
       name: product.name,
       price: product.price.toString(),
@@ -44,8 +47,8 @@ const AdminProducts = () => {
       category: (product.category && typeof product.category === 'object') ? (product.category as any)._id || (product.category as any).id || "" : product.category || "",
       description: product.description,
       quantity: product.quantity || "",
-      hasDiscount: product.hasDiscount || false,
-      displayNetRate: product.displayNetRate || false,
+      hasDiscount: !isDisplayNetRate,
+      displayNetRate: isDisplayNetRate,
       netRate: product.netRate?.toString() || "",
       wholesalePrice: product.wholesalePrice?.toString() || "",
       storeStockPieces: product.storeStockPieces?.toString() || "0",
@@ -58,9 +61,52 @@ const AdminProducts = () => {
 
   const openCreate = () => {
     setEditing(null);
-    setForm({ name: "", price: "", wholesalePrice: "", netRate: "", stock: "", brand: "", category: "", description: "", quantity: "", hasDiscount: false, displayNetRate: false, storeStockPieces: "0", godownStockCases: "0", piecesPerCase: "1" });
+    setForm({ name: "", price: "", wholesalePrice: "", netRate: "", stock: "", brand: "", category: "", description: "", quantity: "", hasDiscount: true, displayNetRate: false, storeStockPieces: "0", godownStockCases: "0", piecesPerCase: "1" });
     setImageFile(null);
     setDialogOpen(true);
+  };
+
+  const togglePricingMode = async (p: Product) => {
+    const currentlyDisplayNetRate = !!p.displayNetRate && !!p.netRate && Number(p.netRate) > 0;
+    const newDisplayNetRate = !currentlyDisplayNetRate;
+    
+    if (newDisplayNetRate && (!p.netRate || Number(p.netRate) <= 0)) {
+      toast.warning("Cannot enable 'Display Net-Rate': Net-Rate amount is missing. Please edit the product to set Net-Rate first.");
+      return;
+    }
+
+    const newHasDiscount = !newDisplayNetRate;
+
+    // Optimistic update
+    setProductList((prev) =>
+      prev.map((prod) =>
+        prod.id === p.id ? { ...prod, displayNetRate: newDisplayNetRate, hasDiscount: newHasDiscount } : prod
+      )
+    );
+
+    try {
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+
+      const res = await fetch(`${API_BASE_URL}/api/products/${p.id}`, {
+        method: 'PUT',
+        headers,
+        body: JSON.stringify({ displayNetRate: newDisplayNetRate, hasDiscount: newHasDiscount }),
+        credentials: 'include'
+      });
+
+      if (!res.ok) throw new Error('Update failed');
+      toast.success(`Pricing mode updated to: ${newDisplayNetRate ? 'Display Net Rate' : 'Has Discount'}`);
+    } catch (err) {
+      console.error('Update error:', err);
+      toast.error('Failed to update pricing mode');
+      // Revert
+      setProductList((prev) =>
+        prev.map((prod) =>
+          prod.id === p.id ? { ...prod, displayNetRate: p.displayNetRate, hasDiscount: p.hasDiscount } : prod
+        )
+      );
+    }
   };
 
   useEffect(() => {
@@ -170,24 +216,33 @@ const AdminProducts = () => {
                       <div><Label>Product Name</Label><Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Enter product name" /></div>
                       <div><Label>SKU / Code</Label><Input value={editing?.sku || 'Auto-generated on save'} disabled className="bg-muted" /></div>
                     </div>
-                    <div className="grid grid-cols-3 gap-4">
+                    <div className="grid grid-cols-2 gap-4">
                       <div><Label>Retail Price (₹)</Label><Input value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} type="number" placeholder="0" /></div>
-                      <div><Label>Wholesale Price (₹)</Label><Input value={form.wholesalePrice} onChange={(e) => setForm({ ...form, wholesalePrice: e.target.value })} type="number" placeholder="0" /></div>
-                      <div><Label>Net-Rate (₹)</Label><Input value={form.netRate} onChange={(e) => setForm({ ...form, netRate: e.target.value })} type="number" placeholder="0" /></div>
+                      <div>
+                        <Label>Net-Rate (₹)</Label>
+                        <Input
+                          value={form.netRate}
+                          type="number"
+                          placeholder="0"
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            const numVal = Number(val);
+                            if (form.displayNetRate && (!val || isNaN(numVal) || numVal <= 0)) {
+                              toast.warning("Net-Rate amount is required for 'Display Net Rate on Shop'. Auto-selected 'Has Discount'.");
+                              setForm({ ...form, netRate: val, displayNetRate: false, hasDiscount: true });
+                            } else {
+                              setForm({ ...form, netRate: val });
+                            }
+                          }}
+                        />
+                      </div>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div><Label>Shop Stock (Pcs)</Label><Input value={form.storeStockPieces} onChange={(e) => {
+                    <div>
+                      <Label>Shop Stock (Pcs)</Label>
+                      <Input value={form.storeStockPieces} onChange={(e) => {
                         const val = e.target.value;
                         setForm({ ...form, storeStockPieces: val, stock: val });
-                      }} type="number" placeholder="0" /></div>
-                      <div><Label>Godown (Cases)</Label><Input value={form.godownStockCases} onChange={(e) => {
-                        const val = e.target.value;
-                        setForm({ ...form, godownStockCases: val });
-                      }} type="number" placeholder="0" /></div>
-                      <div><Label>Pcs / Case</Label><Input value={form.piecesPerCase} onChange={(e) => {
-                        const val = e.target.value;
-                        setForm({ ...form, piecesPerCase: val });
-                      }} type="number" placeholder="1" /></div>
+                      }} type="number" placeholder="0" />
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div><Label>Brand</Label><Input value={form.brand} onChange={(e) => setForm({ ...form, brand: e.target.value })} placeholder="Brand name" /></div>
@@ -196,10 +251,11 @@ const AdminProducts = () => {
                           <Checkbox 
                             id="hasDiscount" 
                             checked={form.hasDiscount && !form.displayNetRate} 
-                            disabled={form.displayNetRate}
-                            onCheckedChange={(checked) => setForm({ ...form, hasDiscount: !!checked })} 
+                            onCheckedChange={() => {
+                              setForm({ ...form, hasDiscount: true, displayNetRate: false });
+                            }} 
                           />
-                          <Label htmlFor="hasDiscount" className={`cursor-pointer ${form.displayNetRate ? 'opacity-50' : ''}`}>
+                          <Label htmlFor="hasDiscount" className="cursor-pointer font-medium">
                             Has Discount
                           </Label>
                         </div>
@@ -208,15 +264,20 @@ const AdminProducts = () => {
                             id="displayNetRate" 
                             checked={form.displayNetRate} 
                             onCheckedChange={(checked) => {
-                              const isChecked = !!checked;
-                              setForm({ 
-                                ...form, 
-                                displayNetRate: isChecked,
-                                hasDiscount: isChecked ? false : form.hasDiscount
-                              });
+                              if (checked) {
+                                const netRateNum = Number(form.netRate);
+                                if (!form.netRate || isNaN(netRateNum) || netRateNum <= 0) {
+                                  toast.warning("Please enter a valid Net-Rate amount before selecting 'Display Net Rate on Shop'.");
+                                  setForm({ ...form, hasDiscount: true, displayNetRate: false });
+                                } else {
+                                  setForm({ ...form, displayNetRate: true, hasDiscount: false });
+                                }
+                              } else {
+                                setForm({ ...form, hasDiscount: true, displayNetRate: false });
+                              }
                             }} 
                           />
-                          <Label htmlFor="displayNetRate" className="cursor-pointer">
+                          <Label htmlFor="displayNetRate" className="cursor-pointer font-medium">
                             Display Net Rate on Shop
                           </Label>
                         </div>
@@ -276,6 +337,19 @@ const AdminProducts = () => {
                       const maxSize = 5 * 1024 * 1024; // 5MB
                       if (imageFile && imageFile.size > maxSize) return toast.error('Image must be less than 5MB');
 
+                      let finalDisplayNetRate = form.displayNetRate;
+                      let finalHasDiscount = form.hasDiscount;
+                      const netRateNum = Number(form.netRate);
+
+                      if (finalDisplayNetRate && (!form.netRate || isNaN(netRateNum) || netRateNum <= 0)) {
+                        toast.warning("Net-Rate amount is required for Display Net-Rate. Switched to Has Discount mode.");
+                        finalDisplayNetRate = false;
+                        finalHasDiscount = true;
+                      }
+                      if (!finalDisplayNetRate) {
+                        finalHasDiscount = true;
+                      }
+
                       const fd = new FormData();
                       fd.append('name', form.name);
                       fd.append('price', form.price);
@@ -286,8 +360,8 @@ const AdminProducts = () => {
                       fd.append('quantity', form.quantity);
                       fd.append('wholesalePrice', form.wholesalePrice || "");
                       fd.append('netRate', form.netRate || "");
-                      fd.append('hasDiscount', form.hasDiscount.toString());
-                      fd.append('displayNetRate', form.displayNetRate.toString());
+                      fd.append('hasDiscount', finalHasDiscount.toString());
+                      fd.append('displayNetRate', finalDisplayNetRate.toString());
                       fd.append('storeStockPieces', form.storeStockPieces);
                       fd.append('godownStockCases', form.godownStockCases);
                       fd.append('piecesPerCase', form.piecesPerCase);
@@ -360,13 +434,15 @@ const AdminProducts = () => {
                     <th className="text-left p-3 hidden sm:table-cell">Category</th>
                     <th className="text-right p-3">Price</th>
                     <th className="text-right p-3">Net Rate</th>
-                    <th className="text-center p-3 hidden md:table-cell">Discount</th>
+                    <th className="text-center p-3 hidden md:table-cell">Pricing Mode</th>
                     <th className="text-right p-3 hidden md:table-cell">Stock</th>
                     <th className="text-right p-3">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {paginatedData.map((p) => (
+                  {paginatedData.map((p) => {
+                    const isDisplayNetRateMode = !!p.displayNetRate && !!p.netRate && Number(p.netRate) > 0;
+                    return (
                     <tr key={p.id} className="border-b border-border hover:bg-secondary/30 transition-colors">
                       <td className="p-3 font-mono text-xs text-muted-foreground">{p.sku || p.code || 'N/A'}</td>
                       <td className="p-3">
@@ -386,45 +462,23 @@ const AdminProducts = () => {
                         ₹{p.netRate || 0}
                       </td>
                       <td className="p-3 text-center hidden md:table-cell">
-                        <Checkbox
-                          checked={p.hasDiscount && !p.displayNetRate}
-                          disabled={p.displayNetRate}
-                          onCheckedChange={async (checked) => {
-                            try {
-                              const newStatus = !!checked;
-                              // Optimistic update
-                              setProductList((prev) =>
-                                prev.map((prod) =>
-                                  prod.id === p.id ? { ...prod, hasDiscount: newStatus } : prod
-                                )
-                              );
-
-                              const headers: Record<string, string> = {
-                                'Content-Type': 'application/json'
-                              };
-                              if (token) headers['Authorization'] = `Bearer ${token}`;
-
-                              const res = await fetch(`${API_BASE_URL}/api/products/${p.id}`, {
-                                method: 'PUT',
-                                headers,
-                                body: JSON.stringify({ hasDiscount: newStatus }),
-                                credentials: 'include'
-                              });
-
-                              if (!res.ok) throw new Error('Update failed');
-                              toast.success(`Discount ${newStatus ? 'enabled' : 'disabled'}`);
-                            } catch (err) {
-                              console.error('Update error:', err);
-                              toast.error('Failed to update discount status');
-                              // Revert on error
-                              setProductList((prev) =>
-                                prev.map((prod) =>
-                                  prod.id === p.id ? { ...prod, hasDiscount: !checked } : prod
-                                )
-                              );
-                            }
-                          }}
-                        />
+                        {isDisplayNetRateMode ? (
+                          <button
+                            onClick={() => togglePricingMode(p)}
+                            className="px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-800 border border-amber-300 hover:bg-amber-200 transition-colors cursor-pointer"
+                            title="Click to switch to Has Discount mode"
+                          >
+                            Net Rate (₹{p.netRate})
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => togglePricingMode(p)}
+                            className="px-2.5 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800 border border-green-300 hover:bg-green-200 transition-colors cursor-pointer"
+                            title="Click to switch to Display Net Rate mode"
+                          >
+                            🔥 Has Discount
+                          </button>
+                        )}
                       </td>
                       <td className="p-3 text-right hidden md:table-cell">
                         <span className={(p.storeStockPieces || 0) < 30 ? "text-accent font-bold" : ""}>{p.storeStockPieces || 0}</span>
@@ -436,7 +490,8 @@ const AdminProducts = () => {
                         </div>
                       </td>
                     </tr>
-                  ))}
+                  );
+                })}
                 </tbody>
               </table>
             </div>

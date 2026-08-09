@@ -69,9 +69,6 @@ app.use(requestLogger);
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-app.use('/uploads', express.static(path.join(__dirname, 'public', 'uploads')));
-app.use(express.static(path.join(__dirname, '../dist')));
-
 import connectDB from './config/db.js';
 
 // Connect to database
@@ -79,10 +76,13 @@ connectDB();
 
 logger.info('Server initialized');
 
-// Health Check
-app.get('/', (req, res) => {
-  res.json({ status: 'ok', message: 'Server is running' });
+// Health Check — must be BEFORE express.static so it isn't intercepted by index.html
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'ok', message: 'Server is running', db: 'mongodb-atlas' });
 });
+
+app.use('/uploads', express.static(path.join(__dirname, 'public', 'uploads')));
+app.use(express.static(path.join(__dirname, '../dist')));
 
 // Routes
 app.use('/api/auth', authRouter);

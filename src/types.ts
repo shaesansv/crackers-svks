@@ -4,8 +4,14 @@ export interface Product {
   name: string;
   unit: string;
   stock?: number;
+  price: number;          // Original retail price (MRP)
   actualPrice: number;
-  discountPrice: number;
+  discountPrice: number;  // Effective price shown in cart/checkout
+  netRate?: number;       // Discounted price when hasDiscount is true
+  hasDiscount?: boolean;  // Mode 1: product-level discount using netRate
+  displayNetRate?: boolean; // Mode 2: display only netRate, no badge/strikethrough
+  appliedGlobalDiscount?: boolean; // Mode 3: global discount% from content page was applied
+  globalDiscountPct?: number;      // The global discount % that was applied (Mode 3)
   imageType: 'sparkler' | 'pot' | 'chakkar' | 'bomb' | 'kids' | 'garland' | 'rocket' | string;
   imageUrl?: string;
   category?: any;
