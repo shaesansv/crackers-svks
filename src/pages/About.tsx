@@ -22,26 +22,26 @@ export const About: React.FC = () => {
       <section 
         className="relative w-full h-[320px] overflow-hidden flex items-center justify-center px-10 md:px-20 select-none"
         style={{
-          backgroundImage: `linear-gradient(to bottom right, rgba(15, 76, 129, 0.85), rgba(30, 58, 138, 0.95)), url('/shop_shelf_1.png')`,
+          backgroundImage: `linear-gradient(to bottom right, rgba(22, 75, 96, 0.9), rgba(27, 107, 147, 0.95)), url('/shop_shelf_1.png')`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundAttachment: 'fixed'
         }}
       >
         {/* Subtle luxury glow background */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-64 bg-secondary-gold/10 blur-[100px] rounded-full pointer-events-none"></div>
-        <div className="absolute -right-20 -top-20 w-96 h-96 border-[40px] border-secondary-gold/10 rounded-full pointer-events-none"></div>
-        <div className="absolute -left-20 -bottom-20 w-80 h-80 border-[30px] border-secondary-gold/5 rounded-full pointer-events-none"></div>
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-64 bg-[#4FC0D0]/10 blur-[100px] rounded-full pointer-events-none"></div>
+        <div className="absolute -right-20 -top-20 w-96 h-96 border-[40px] border-[#4FC0D0]/10 rounded-full pointer-events-none"></div>
+        <div className="absolute -left-20 -bottom-20 w-80 h-80 border-[30px] border-[#4FC0D0]/5 rounded-full pointer-events-none"></div>
         
         {/* Center: Premium Text */}
         <div className="relative z-10 flex flex-col items-center text-center gap-2 animate-slide-up">
-          <div className="bg-secondary-gold/20 text-secondary-gold font-poppins font-bold text-[10px] md:text-xs px-4 py-1.5 uppercase tracking-[0.3em] rounded-full backdrop-blur-sm border border-secondary-gold/30">
+          <div className="bg-[#4FC0D0]/20 text-[#A2FF86] font-poppins font-bold text-[10px] md:text-xs px-4 py-1.5 uppercase tracking-[0.3em] rounded-full backdrop-blur-sm border border-[#4FC0D0]/30">
             ESTABLISHED 1994
           </div>
           <h1 className="text-4xl md:text-6xl font-poppins font-black text-white tracking-tight drop-shadow-md select-none mt-2">
-            About <span className="text-secondary-gold">Us</span>
+            About <span className="text-[#4FC0D0]">Us</span>
           </h1>
-          <div className="w-24 h-1 bg-gradient-to-r from-transparent via-secondary-gold to-transparent mt-4"></div>
+          <div className="w-24 h-1 bg-gradient-to-r from-transparent via-[#4FC0D0] to-transparent mt-4"></div>
         </div>
       </section>
 

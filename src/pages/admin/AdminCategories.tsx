@@ -225,7 +225,7 @@ const AdminCategories = () => {
               </h1>
               <p className="text-sm text-muted-foreground">{cats.length} categories</p>
             </div>
-            <Button onClick={openCreate} className="gap-2 bg-[#24BE64] hover:bg-[#169A4E] text-white shadow-md hover:shadow-lg transition-all duration-200">
+            <Button onClick={openCreate} className="gap-2 bg-[#A2FF86] hover:bg-[#8be371] text-[#164B60] font-bold shadow-md hover:shadow-lg transition-all duration-200">
               <Plus className="h-4 w-4" /> New Category
             </Button>
           </div>
@@ -270,12 +270,12 @@ const AdminCategories = () => {
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogContent className="p-0 overflow-hidden bg-white max-w-md">
               {/* Green Header Banner */}
-              <div className="bg-[#24BE64] px-6 py-4">
+              <div className="bg-[#164B60] px-6 py-4">
                 <DialogHeader>
                   <DialogTitle className="text-white font-bold text-lg">
                     {editing ? "Edit Category" : "New Category"}
                   </DialogTitle>
-                  <DialogDescription className="text-green-100 text-sm mt-0.5">
+                  <DialogDescription className="text-cyan-100 text-sm mt-0.5">
                     {editing ? "Update the category details below." : "Fill in the details to add a new category."}
                   </DialogDescription>
                 </DialogHeader>
@@ -290,7 +290,7 @@ const AdminCategories = () => {
                     value={form.name}
                     onChange={(e) => setForm({ ...form, name: e.target.value })}
                     placeholder="e.g. Fancy Lights"
-                    className="border-gray-300 focus:border-[#24BE64] focus:ring-[#24BE64]"
+                    className="border-gray-300 focus:border-[#4FC0D0] focus:ring-[#4FC0D0]"
                   />
                 </div>
 
@@ -298,7 +298,7 @@ const AdminCategories = () => {
                 <div className="space-y-1.5">
                   <Label className="text-gray-700 font-semibold">Category Image (Max 5MB, optional)</Label>
                   <div
-                    className="mt-1 flex flex-col items-center justify-center gap-2 border-2 border-dashed border-[#24BE64] rounded-xl p-4 cursor-pointer hover:bg-green-50 transition-colors group"
+                    className="mt-1 flex flex-col items-center justify-center gap-2 border-2 border-dashed border-[#4FC0D0] rounded-xl p-4 cursor-pointer hover:bg-cyan-50/50 transition-colors group"
                     onClick={() => document.getElementById('category-image-input')?.click()}
                   >
                     <input
@@ -318,7 +318,7 @@ const AdminCategories = () => {
                         <div className="flex flex-col text-left">
                           <span className="text-sm font-semibold text-gray-700 truncate max-w-[180px]">{imageFile.name}</span>
                           <span className="text-xs text-gray-400">{(imageFile.size / 1024).toFixed(1)} KB</span>
-                          <span className="text-xs text-[#24BE64] font-medium mt-0.5">✓ Image selected</span>
+                          <span className="text-xs text-[#164B60] font-medium mt-0.5">✓ Image selected</span>
                         </div>
                         <button
                           type="button"
@@ -329,8 +329,8 @@ const AdminCategories = () => {
                       </div>
                     ) : (
                       <div className="flex flex-col items-center gap-1 py-2">
-                        <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">🖼️</div>
-                        <span className="text-sm font-semibold text-[#24BE64]">Click to upload image</span>
+                        <div className="w-12 h-12 rounded-full bg-cyan-50 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">🖼️</div>
+                        <span className="text-sm font-semibold text-[#164B60]">Click to upload image</span>
                         <span className="text-xs text-gray-400">PNG, JPG, WEBP up to 5MB</span>
                       </div>
                     )}
@@ -347,7 +347,7 @@ const AdminCategories = () => {
                     Cancel
                   </Button>
                   <Button
-                    className="flex-1 bg-[#24BE64] hover:bg-[#169A4E] text-white shadow-md transition-all duration-200"
+                    className="flex-1 bg-[#A2FF86] hover:bg-[#8be371] text-[#164B60] font-bold shadow-md transition-all duration-200"
                     onClick={handleSave}
                     disabled={!form.name.trim()}
                   >

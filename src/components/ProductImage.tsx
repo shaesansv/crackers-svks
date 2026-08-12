@@ -1,10 +1,37 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { API_BASE_URL } from '../lib/api';
 
 interface ProductImageProps {
-  type: string;
+  type?: string;
+  src?: string;
+  alt?: string;
+  className?: string;
 }
 
-export const ProductImage: React.FC<ProductImageProps> = ({ type }) => {
+export const formatImageUrl = (url?: string) => {
+  if (!url) return '';
+  if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:')) {
+    return url;
+  }
+  const cleanPath = url.startsWith('/') ? url : `/${url}`;
+  return `${API_BASE_URL}${cleanPath}`;
+};
+
+export const ProductImage: React.FC<ProductImageProps> = ({ type = 'sparkler', src, alt = 'Product Image', className }) => {
+  const [imageError, setImageError] = useState(false);
+  const formattedSrc = formatImageUrl(src);
+
+  if (formattedSrc && !imageError) {
+    return (
+      <img
+        src={formattedSrc}
+        alt={alt}
+        onError={() => setImageError(true)}
+        className={className || "w-full h-full object-cover rounded-[14px] shadow-sm"}
+      />
+    );
+  }
+
   // Return styled SVGs with distinct, beautiful colors to match the premium Sivakasi look
   switch (type) {
     case 'sparkler':

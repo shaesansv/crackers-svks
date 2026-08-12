@@ -13,6 +13,7 @@ export interface Product {
   appliedGlobalDiscount?: boolean; // Mode 3: global discount% from content page was applied
   globalDiscountPct?: number;      // The global discount % that was applied (Mode 3)
   imageType: 'sparkler' | 'pot' | 'chakkar' | 'bomb' | 'kids' | 'garland' | 'rocket' | string;
+  image?: string;
   imageUrl?: string;
   category?: any;
   brand?: string;
@@ -28,6 +29,7 @@ export interface Category {
   discountText: string;
   imageType: string;
   products: Product[];
+  image?: string;
   imageUrl?: string;
 }
 

@@ -228,8 +228,6 @@ function AppContent() {
         ...prev,
         [productId]: qty
       }));
-      // Auto-open cart when item is added
-      setIsCartOpen(true);
     }
   };
 
@@ -247,8 +245,6 @@ function AppContent() {
         ...prev,
         [productId]: next
       }));
-      // Auto-open cart when item qty increases
-      if (increment) setIsCartOpen(true);
     }
   };
 

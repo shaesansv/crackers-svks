@@ -45,12 +45,12 @@ const AdminLogin = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-50 to-red-50 p-4">
-      <Card className="w-full max-w-md shadow-lg">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#164B60] via-[#1B6B93] to-[#164B60] p-4">
+      <Card className="w-full max-w-md shadow-2xl border border-white/10 bg-white/95 backdrop-blur-md">
         <div className="p-8">
           <div className="text-center mb-8">
             <span className="text-5xl mb-4 block">🎆</span>
-            <h1 className="font-display text-2xl font-bold">Admin Panel</h1>
+            <h1 className="font-display text-2xl font-bold text-[#164B60]">Admin Panel</h1>
             <p className="text-sm text-muted-foreground mt-2">Cracker Hub Administration</p>
           </div>
 
@@ -81,7 +81,7 @@ const AdminLogin = () => {
 
             <Button 
               type="submit" 
-              className="w-full mt-6" 
+              className="w-full mt-6 bg-[#A2FF86] text-[#164B60] hover:bg-[#8be371] font-bold shadow-md transition-all duration-200" 
               disabled={loading}
               size="lg"
             >

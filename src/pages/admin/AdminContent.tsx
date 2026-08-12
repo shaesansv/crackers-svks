@@ -59,7 +59,7 @@ const AdminContent = () => {
     }
   };
 
-  const taBase = "w-full rounded-lg border border-gray-300 bg-white p-3 text-sm text-gray-900 min-h-[80px] resize-none focus:outline-none focus:ring-2 focus:ring-[#24BE64] focus:border-[#24BE64]";
+  const taBase = "w-full rounded-lg border border-gray-300 bg-white p-3 text-sm text-gray-900 min-h-[80px] resize-none focus:outline-none focus:ring-2 focus:ring-[#4FC0D0] focus:border-[#164B60]";
 
   return (
     <>
@@ -72,7 +72,7 @@ const AdminContent = () => {
           <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
             <div>
               <h1 className="text-2xl font-bold flex items-center gap-2 text-gray-900">
-                <Settings className="h-6 w-6" style={{ color: '#24BE64' }} />
+                <Settings className="h-6 w-6" style={{ color: '#164B60' }} />
                 Content &amp; Settings
               </h1>
               <p className="text-sm text-gray-500 mt-1">Manage company information and global settings</p>
@@ -110,12 +110,12 @@ const AdminContent = () => {
                   padding: '8px 22px',
                   borderRadius: '8px',
                   border: 'none',
-                  background: isSaving ? '#86efac' : '#16a34a',
-                  color: '#ffffff',
+                  background: isSaving ? '#c2f0b3' : '#A2FF86',
+                  color: '#164B60',
                   fontWeight: 700,
                   fontSize: '14px',
                   cursor: isSaving ? 'not-allowed' : 'pointer',
-                  boxShadow: '0 2px 8px rgba(22,163,74,0.35)',
+                  boxShadow: '0 2px 8px rgba(162,255,134,0.4)',
                 }}
               >
                 {isSaving ? (

@@ -200,15 +200,15 @@ const AdminProducts = () => {
               <Link to="/" className="text-sm text-primary hover:underline lg:hidden self-center">← Store</Link>
               <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
                 <DialogTrigger asChild>
-                  <Button onClick={openCreate} className="bg-[#24BE64] hover:bg-[#169A4E] text-white shadow-md hover:shadow-lg transition-all duration-200"><Plus className="h-4 w-4 mr-1" /> Add Product</Button>
+                  <Button onClick={openCreate} className="bg-[#A2FF86] hover:bg-[#8be371] text-[#164B60] font-bold shadow-md hover:shadow-lg transition-all duration-200"><Plus className="h-4 w-4 mr-1" /> Add Product</Button>
                 </DialogTrigger>
                 <DialogContent className="max-w-3xl p-0 overflow-hidden bg-white">
-                  <div className="bg-[#24BE64] px-6 py-4">
+                  <div className="bg-[#164B60] px-6 py-4">
                     <DialogHeader>
                       <DialogTitle className="font-display flex justify-between items-center text-white">
                         <span>{editing ? 'Edit Product' : 'Add New Product'}</span>
                       </DialogTitle>
-                      <p className="text-green-100 text-sm mt-0.5">{editing ? 'Update the product details below' : 'Fill in the details to add a new product'}</p>
+                      <p className="text-cyan-100 text-sm mt-0.5">{editing ? 'Update the product details below' : 'Fill in the details to add a new product'}</p>
                     </DialogHeader>
                   </div>
                   <div className="space-y-4 max-h-[75vh] overflow-y-auto pr-2 custom-scrollbar p-6 bg-white text-gray-800">
@@ -284,7 +284,7 @@ const AdminProducts = () => {
                       </div>
                     </div>
                     <div><Label>Category</Label>
-                      <select value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} className="w-full rounded-lg border border-[#24BE64] bg-[#1a7a43] p-2 text-sm text-white">
+                      <select value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} className="w-full rounded-lg border border-[#164B60] bg-[#164B60] p-2 text-sm text-white">
                         <option value="">Select category</option>
                         {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
                       </select>
@@ -292,7 +292,7 @@ const AdminProducts = () => {
                     <div>
                       <Label>Product Image (Max 5MB, optional)</Label>
                       <div
-                        className="mt-1 flex flex-col items-center justify-center gap-2 border-2 border-dashed border-[#24BE64] rounded-xl p-4 cursor-pointer hover:bg-green-50 transition-colors group"
+                        className="mt-1 flex flex-col items-center justify-center gap-2 border-2 border-dashed border-[#4FC0D0] rounded-xl p-4 cursor-pointer hover:bg-cyan-50/50 transition-colors group"
                         onClick={() => document.getElementById('product-image-input')?.click()}
                       >
                         <input
@@ -312,7 +312,7 @@ const AdminProducts = () => {
                             <div className="flex flex-col text-left">
                               <span className="text-sm font-semibold text-gray-700 truncate max-w-[200px]">{imageFile.name}</span>
                               <span className="text-xs text-gray-400">{(imageFile.size / 1024).toFixed(1)} KB</span>
-                              <span className="text-xs text-[#24BE64] font-medium mt-0.5">✓ Image selected</span>
+                              <span className="text-xs text-[#164B60] font-medium mt-0.5">✓ Image selected</span>
                             </div>
                             <button
                               type="button"
@@ -323,15 +323,15 @@ const AdminProducts = () => {
                           </div>
                         ) : (
                           <div className="flex flex-col items-center gap-1 py-2">
-                            <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">📷</div>
-                            <span className="text-sm font-semibold text-[#24BE64]">Click to upload image</span>
+                            <div className="w-12 h-12 rounded-full bg-cyan-50 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">📷</div>
+                            <span className="text-sm font-semibold text-[#164B60]">Click to upload image</span>
                             <span className="text-xs text-gray-400">PNG, JPG, WEBP up to 5MB</span>
                           </div>
                         )}
                       </div>
                     </div>
-                    <div><Label>Description</Label><textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} className="w-full rounded-lg border border-[#24BE64] bg-[#1a7a43] p-2 text-sm min-h-[80px] text-white placeholder:text-green-200" placeholder="Product description..." /></div>
-                    <Button className="w-full bg-[#24BE64] hover:bg-[#169A4E] text-white shadow-md hover:shadow-green-200 hover:shadow-lg transition-all duration-200" onClick={async () => {
+                    <div><Label>Description</Label><textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} className="w-full rounded-lg border border-gray-300 focus:border-[#4FC0D0] bg-white p-2 text-sm min-h-[80px] text-gray-900 placeholder:text-gray-400" placeholder="Product description..." /></div>
+                    <Button className="w-full bg-[#A2FF86] hover:bg-[#8be371] text-[#164B60] font-bold shadow-md hover:shadow-lg transition-all duration-200" onClick={async () => {
                       // basic client-side validation
                       if (!form.name.trim()) return toast.error('Name required');
                       const maxSize = 5 * 1024 * 1024; // 5MB
