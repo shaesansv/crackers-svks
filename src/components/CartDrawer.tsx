@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { ProductImage } from './ProductImage';
 import type { Product } from '../types';
 
 interface CartItem {
@@ -64,7 +65,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
         {/* Header */}
         <div
           className="flex items-center justify-between px-5 py-4 border-b border-gray-100"
-          style={{ background: '#1F2A44' }}
+          style={{ background: '#164B60' }}
         >
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center">
@@ -136,9 +137,9 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                 key={product.id}
                 className="bg-white rounded-2xl p-3.5 shadow-sm border border-gray-100 flex gap-3 items-start animate-fade-in"
               >
-                {/* Icon */}
-                <div className="w-12 h-12 rounded-xl bg-primary-light flex items-center justify-center flex-shrink-0 text-xl">
-                  🎆
+                {/* Image or Icon */}
+                <div className="w-12 h-12 rounded-xl bg-primary-light flex items-center justify-center flex-shrink-0 overflow-hidden border border-gray-100 shadow-xs">
+                  <ProductImage src={(product as any).image || (product as any).imageUrl} type={product.imageType} alt={product.name} />
                 </div>
 
                 {/* Info */}
@@ -235,7 +236,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
               disabled={!isMinMet}
               className={`w-full h-12 rounded-2xl font-bold text-[14px] font-poppins flex items-center justify-center gap-2 transition-all duration-300 ${
                 isMinMet
-                  ? 'bg-primary-blue text-white hover:bg-primary-hover hover:shadow-[0_8px_20px_rgba(36,190,100,0.35)] hover:-translate-y-0.5'
+                  ? 'bg-[#A2FF86] text-[#164B60] hover:bg-[#8be371] hover:shadow-[0_8px_20px_rgba(162,255,134,0.4)] hover:-translate-y-0.5'
                   : 'bg-gray-100 text-gray-400 cursor-not-allowed'
               }`}
             >

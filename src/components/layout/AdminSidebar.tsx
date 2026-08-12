@@ -65,12 +65,12 @@ const AdminSidebar = () => {
           </Button>
         </div>
         {!isCollapsed ? (
-          <Link to="/" className="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors mt-1">
+          <Link to="/" className="flex items-center gap-1 text-xs text-cyan-200 hover:text-[#A2FF86] transition-colors mt-1">
             <ArrowLeft className="h-3 w-3 shrink-0" /> Back to Store
           </Link>
         ) : (
           <Link to="/" className="flex items-center justify-center mt-1" title="Back to Store">
-            <ArrowLeft className="h-4 w-4 text-muted-foreground hover:text-primary transition-colors" />
+            <ArrowLeft className="h-4 w-4 text-cyan-200 hover:text-[#A2FF86] transition-colors" />
           </Link>
         )}
       </div>

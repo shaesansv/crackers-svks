@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ProductImage } from '../components/ProductImage';
+import { ProductImage, formatImageUrl } from '../components/ProductImage';
 import { Fireworks } from '@fireworks-js/react';
 import type { Category, Product } from '../types';
 import { useSiteSettings } from '../context/SiteSettingsContext';
@@ -20,6 +20,7 @@ interface HomeProps {
 export const Home: React.FC<HomeProps> = ({
   quantities,
   handleQtyChange,
+  adjustQty,
   searchTerm,
   setSearchTerm,
   selectedCategory,
@@ -84,7 +85,7 @@ export const Home: React.FC<HomeProps> = ({
       <div 
         className="w-full h-[300px] md:h-[400px] relative overflow-hidden flex-shrink-0"
         style={{
-          backgroundImage: `linear-gradient(to bottom right, rgba(15, 76, 129, 0.85), rgba(30, 58, 138, 0.95)), url('/banner.png')`,
+          backgroundImage: `linear-gradient(to bottom right, rgba(22, 75, 96, 0.9), rgba(27, 107, 147, 0.95)), url('/banner.png')`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundAttachment: 'fixed'
@@ -193,8 +194,19 @@ export const Home: React.FC<HomeProps> = ({
               <div key={category.id} className="mb-6">
                 {/* Category Header */}
                 <div className="bg-white px-6 py-4 border-b border-gray-100 flex items-center gap-3 rounded-t-[18px]">
-                  <div className="w-8 h-8 rounded-full bg-primary-blue/10 flex items-center justify-center text-primary-blue font-bold">
-                    ✨
+                  <div className="w-8 h-8 rounded-full overflow-hidden bg-primary-blue/10 flex items-center justify-center text-primary-blue font-bold shrink-0 border border-[#4FC0D0]/30 shadow-xs">
+                    {category.image ? (
+                      <img
+                        src={formatImageUrl(category.image)}
+                        alt={category.name}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          (e.target as HTMLElement).style.display = 'none';
+                        }}
+                      />
+                    ) : (
+                      '✨'
+                    )}
                   </div>
                   <h2 className="text-primary-blue text-[18px] font-bold uppercase tracking-wide">
                     {category.name.replace(' (80% DISCOUNT)', '')}
@@ -220,7 +232,7 @@ export const Home: React.FC<HomeProps> = ({
                         {/* Product Details */}
                         <div className="flex items-center gap-4 w-full md:w-auto">
                           <div className="relative w-[60px] h-[60px] md:w-[60px] md:h-[60px] flex-shrink-0 flex items-center justify-center bg-white border border-border-gray rounded-[18px] overflow-hidden shadow-sm">
-                            <ProductImage type={product.imageType} />
+                            <ProductImage src={product.image || (product as any).imageUrl} type={product.imageType} alt={product.name} />
                             {isOutOfStock && (
                               <div className="absolute inset-0 bg-black/60 flex items-center justify-center rounded-[18px]">
                                 <span className="text-white text-[8px] font-bold text-center leading-tight px-1">OUT OF{"\n"}STOCK</span>
@@ -298,37 +310,57 @@ export const Home: React.FC<HomeProps> = ({
 
                         {/* Actions Row (Quantity & Add Button) */}
                         <div className="flex items-center justify-between w-full md:contents mt-2 md:mt-0">
-                          {/* Quantity */}
-                          <div className="flex justify-center items-center w-1/2 md:w-auto pr-2 md:pr-0 border-r md:border-r-0 border-gray-200">
-                            <span className="text-xs font-bold text-gray-500 mr-2 md:hidden">QTY:</span>
+                          {/* Quantity Controls */}
+                          <div className="flex justify-center items-center gap-1.5 w-1/2 md:w-auto pr-2 md:pr-0 border-r md:border-r-0 border-gray-200">
+                            <span className="text-xs font-bold text-gray-500 mr-1 md:hidden">QTY:</span>
+                            {Number(qty) > 0 && (
+                              <button
+                                type="button"
+                                onClick={() => adjustQty(product.id, false)}
+                                className="w-7 h-7 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold text-sm flex items-center justify-center transition-colors shadow-xs"
+                                title="Decrease quantity"
+                              >
+                                -
+                              </button>
+                            )}
                             <input
                               type="number"
                               min="1"
                               value={qty}
                               disabled={isOutOfStock}
                               onChange={(e) => handleQtyChange(product.id, e.target.value)}
-                              className={`w-[60px] h-[36px] border rounded-[4px] text-center text-[14px] outline-none transition-colors ${
+                              placeholder="0"
+                              className={`w-[55px] h-[36px] border rounded-[8px] text-center text-[14px] font-bold outline-none transition-colors ${
                                 isOutOfStock
                                   ? 'bg-gray-100 border-gray-200 text-gray-300 cursor-not-allowed'
-                                  : 'border-gray-300 focus:border-primary-blue'
+                                  : 'border-gray-300 focus:border-[#4FC0D0] focus:ring-1 focus:ring-[#4FC0D0]'
                               }`}
                             />
+                            {Number(qty) > 0 && (
+                              <button
+                                type="button"
+                                onClick={() => adjustQty(product.id, true)}
+                                className="w-7 h-7 rounded-lg bg-[#A2FF86] hover:bg-[#8be371] text-[#164B60] font-bold text-sm flex items-center justify-center transition-colors shadow-xs"
+                                title="Increase quantity"
+                              >
+                                +
+                              </button>
+                            )}
                           </div>
 
-                          {/* Action */}
+                          {/* Action Button */}
                           <div className="flex justify-center items-center w-1/2 md:w-auto pl-2 md:pl-0">
                             {isOutOfStock ? (
-                              <div className="w-full md:w-[70px] max-w-[120px] h-[36px] flex items-center justify-center text-[11px] font-bold text-red-400 bg-red-50 border border-red-200 rounded-[6px] cursor-not-allowed select-none">
+                              <div className="w-full md:w-[75px] max-w-[120px] h-[36px] flex items-center justify-center text-[11px] font-bold text-red-400 bg-red-50 border border-red-200 rounded-[6px] cursor-not-allowed select-none">
                                 🚫 N/A
                               </div>
                             ) : (
                               <button
-                                onClick={() => {
-                                  if (!qty) handleQtyChange(product.id, '1');
-                                }}
-                                className="w-full md:w-[70px] max-w-[120px] btn-primary flex items-center justify-center text-[13px] !h-[36px] shadow-sm"
+                                type="button"
+                                onClick={() => adjustQty(product.id, true)}
+                                className="w-full md:w-[75px] max-w-[120px] btn-primary flex items-center justify-center text-[13px] font-bold !h-[36px] shadow-sm cursor-pointer"
                               >
-                                ADD
+                                {Number(qty) > 0 ? `+ ADD` : `ADD`}
                               </button>
                             )}
                           </div>

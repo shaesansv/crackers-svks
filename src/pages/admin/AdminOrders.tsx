@@ -1,7 +1,7 @@
+import { useState, useEffect } from "react";
 import AdminSidebar from "@/components/layout/AdminSidebar";
 import AdminNavbar from "@/components/layout/AdminNavbar";
-import { useEffect, useState } from "react";
-import { getOrders, approveOrder, updatePackingStatus, updateHoldDays } from "@/lib/api";
+import { getOrders, approveOrder, updatePackingStatus } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Link } from "react-router-dom";
@@ -12,36 +12,11 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { Badge } from "@/components/ui/badge";
 import { generateOrderReceiptPDF } from "@/lib/pdf-generator";
 import { useSiteSettings } from "@/context/SiteSettingsContext";
-import { Input } from "@/components/ui/input";
+import { formatImageUrl } from "@/components/ProductImage";
 
-/** Returns true when today is BEFORE the hold window expires */
-const isOrderOnHold = (order: any): boolean => {
-  if (!order.holdDays || order.holdDays <= 0) return false;
-  const createdAt = order.createdAt ? new Date(order.createdAt) : null;
-  if (!createdAt) return false;
-  const holdUntil = new Date(createdAt);
-  holdUntil.setDate(holdUntil.getDate() + Number(order.holdDays));
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  holdUntil.setHours(0, 0, 0, 0);
-  return today < holdUntil;
-};
 
-/** Returns true when the hold window has EXPIRED (ready to send) */
-const isHoldReady = (order: any): boolean => {
-  if (!order.holdDays || order.holdDays <= 0) return false;
-  const createdAt = order.createdAt ? new Date(order.createdAt) : null;
-  if (!createdAt) return false;
-  const holdUntil = new Date(createdAt);
-  holdUntil.setDate(holdUntil.getDate() + Number(order.holdDays));
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  holdUntil.setHours(0, 0, 0, 0);
-  return today >= holdUntil;
-};
 
 const AdminOrders = () => {
   const [currentPage, setCurrentPage] = useState(1);
@@ -82,59 +57,9 @@ const AdminOrders = () => {
     toast.success("Downloading PDF...");
   };
   const [phoneFilter, setPhoneFilter] = useState("");
-  type StatusFilter = 'all' | 'approved' | 'packing' | 'hold';
+  type StatusFilter = 'all' | 'approved' | 'packing';
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
   const [isUpdatingPacking, setIsUpdatingPacking] = useState(false);
-  const [isUpdatingHold, setIsUpdatingHold] = useState(false);
-  const [holdDaysInput, setHoldDaysInput] = useState<number>(0);
-
-  useEffect(() => {
-    if (selectedOrder) {
-      setHoldDaysInput(selectedOrder.holdDays || 0);
-    }
-  }, [selectedOrder]);
-
-  const handleUpdateHoldDays = async () => {
-    if (!selectedOrder) return;
-
-    try {
-      setIsUpdatingHold(true);
-      await updateHoldDays(selectedOrder._id, holdDaysInput);
-      
-      // Update local state lists
-      setOrderList((prev) =>
-        prev.map((o) =>
-          o._id === selectedOrder._id ? { ...o, holdDays: holdDaysInput } : o
-        )
-      );
-      
-      setSelectedOrder((prev: any) => ({ ...prev, holdDays: holdDaysInput }));
-      toast.success(`Hold duration updated to ${holdDaysInput} days!`);
-    } catch (error) {
-      console.error("Error updating hold days:", error);
-      toast.error(error instanceof Error ? error.message : "Failed to update hold days");
-    } finally {
-      setIsUpdatingHold(false);
-    }
-  };
-
-  const handleRemoveHold = async (orderId: string) => {
-    try {
-      await updateHoldDays(orderId, 0);
-      setOrderList((prev) =>
-        prev.map((o) =>
-          o._id === orderId ? { ...o, holdDays: 0 } : o
-        )
-      );
-      if (selectedOrder && selectedOrder._id === orderId) {
-        setSelectedOrder((prev: any) => ({ ...prev, holdDays: 0 }));
-      }
-      toast.success(`Hold removed successfully!`);
-    } catch (error) {
-      console.error("Error removing hold:", error);
-      toast.error(error instanceof Error ? error.message : "Failed to remove hold");
-    }
-  };
 
   useEffect(() => {
     getOrders().then(setOrderList).catch(() => setOrderList([]));
@@ -197,29 +122,15 @@ const AdminOrders = () => {
     all: phoneFiltered.length,
     approved: phoneFiltered.filter((o) => o.approved).length,
     packing: phoneFiltered.filter((o) => o.packingStatus === 'packed').length,
-    // Count any order where admin set hold days (> 0)
-    hold: phoneFiltered.filter((o) => o.holdDays && Number(o.holdDays) > 0).length,
   };
 
   const filteredOrders = phoneFiltered
     .filter((o) => {
       if (statusFilter === 'approved') return o.approved;
       if (statusFilter === 'packing') return o.packingStatus === 'packed';
-      // Show any order where admin set hold days (> 0), active or expired
-      if (statusFilter === 'hold') return o.holdDays && Number(o.holdDays) > 0;
       return true;
     })
     .sort((a, b) => {
-      // Ready (expired) hold orders float to the absolute top
-      const aReady = isHoldReady(a) ? 1 : 0;
-      const bReady = isHoldReady(b) ? 1 : 0;
-      if (bReady !== aReady) return bReady - aReady;
-
-      // Active hold orders float to the top
-      const aOnHold = isOrderOnHold(a) ? 1 : 0;
-      const bOnHold = isOrderOnHold(b) ? 1 : 0;
-      if (bOnHold !== aOnHold) return bOnHold - aOnHold;
-      // Within the same group, newest first
       const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
       const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
       return dateB - dateA;
@@ -245,7 +156,6 @@ const AdminOrders = () => {
             { key: 'all',      label: 'All Orders',  icon: '📋', activeClass: 'bg-primary text-primary-foreground border-primary' },
             { key: 'approved', label: 'Approved',     icon: '✅', activeClass: 'bg-green-600 text-white border-green-600' },
             { key: 'packing',  label: 'Shipped',      icon: '🚚', activeClass: 'bg-teal-600 text-white border-teal-600' },
-            { key: 'hold',     label: 'On Hold',      icon: '🔒', activeClass: 'bg-amber-500 text-white border-amber-500' },
           ] as { key: StatusFilter; label: string; icon: string; activeClass: string }[]).map(({ key, label, icon, activeClass }) => (
             <button
               key={key}
@@ -304,19 +214,10 @@ const AdminOrders = () => {
                 </tr>
               </thead>
               <tbody>
-                {paginatedData.map((o) => {
-                  const onHold = isOrderOnHold(o);
-                  const isReady = isHoldReady(o);
-                  return (
+                {paginatedData.map((o) => (
                   <tr
                     key={o._id}
-                    className={`border-b transition-colors ${
-                      isReady
-                        ? "bg-red-500/10 border-l-4 border-l-red-500 hover:bg-red-500/20"
-                        : onHold
-                        ? "bg-amber-500/10 border-l-4 border-l-amber-500 hover:bg-amber-500/20"
-                        : "border-border hover:bg-secondary/30"
-                    }`}
+                    className="border-b border-border transition-colors hover:bg-secondary/30"
                   >
                     <td className="p-3 font-semibold">{o.orderNumber || o._id?.slice(-8)}</td>
                     <td className="p-3">
@@ -364,8 +265,7 @@ const AdminOrders = () => {
                       </div>
                     </td>
                   </tr>
-                  );
-                })}
+                ))}
               </tbody>
             </table>
           </div>
@@ -445,7 +345,19 @@ const AdminOrders = () => {
                         {selectedOrder.items?.map((item: any, idx: number) => (
                           <tr key={idx} className="border-t border-gray-200 dark:border-zinc-700 text-gray-800 dark:text-gray-200">
                             <td className="px-3 py-2 text-gray-400">{idx + 1}</td>
-                            <td className="px-3 py-2 font-medium">{item.product?.name || item.productName || 'Product'}</td>
+                            <td className="px-3 py-2 font-medium">
+                              <div className="flex items-center gap-2">
+                                {(item.product?.image || item.image) && (
+                                  <img
+                                    src={formatImageUrl(item.product?.image || item.image)}
+                                    alt=""
+                                    className="w-8 h-8 rounded object-cover border border-gray-200 shrink-0"
+                                    onError={(e) => { (e.target as HTMLElement).style.display = 'none'; }}
+                                  />
+                                )}
+                                <span>{item.product?.name || item.productName || 'Product'}</span>
+                              </div>
+                            </td>
                             <td className="px-3 py-2 text-center">{item.quantity}</td>
                             <td className="px-3 py-2 text-right">₹{item.price}</td>
                             <td className="px-3 py-2 text-right font-semibold">₹{(item.quantity * item.price).toFixed(2)}</td>

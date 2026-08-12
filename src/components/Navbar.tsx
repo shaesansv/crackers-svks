@@ -35,17 +35,17 @@ export const Navbar: React.FC<NavbarProps> = ({
       {/* 1. Top Minimal Contact Bar */}
       <div className="bg-primary-blue text-white text-xs py-2 px-6 md:px-12 flex flex-col md:flex-row items-center justify-between font-inter tracking-wide">
         <div className="flex items-center gap-6">
-          <span className="flex items-center gap-2 hover:text-secondary-gold transition-colors cursor-pointer">
+          <span className="flex items-center gap-2 hover:text-[#4FC0D0] transition-colors cursor-pointer">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path></svg>
             {phone}
           </span>
-          <span className="hidden md:flex items-center gap-2 hover:text-secondary-gold transition-colors cursor-pointer">
+          <span className="hidden md:flex items-center gap-2 hover:text-[#4FC0D0] transition-colors cursor-pointer">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
             {address}
           </span>
         </div>
         <div className="hidden md:flex items-center gap-4">
-          <span className="text-gray-200">Premium Festival Collection</span>
+          <span className="text-cyan-100 font-medium">Premium Festival Collection</span>
         </div>
       </div>
 
@@ -53,7 +53,7 @@ export const Navbar: React.FC<NavbarProps> = ({
       <div className="flex flex-col md:flex-row items-center justify-between py-4 px-6 md:px-12 bg-transparent">
         {/* Logo */}
         <div className="flex items-center justify-center cursor-pointer" onClick={() => setCurrentPage('home')}>
-          <img src={sarguruLogo} alt="Sarguru Crackers Logo" className="h-20 w-20 md:h-24 md:w-24 rounded-full object-cover shadow-[var(--shadow-premium)] border-2 border-secondary-gold/20" />
+          <img src={sarguruLogo} alt="Sarguru Crackers Logo" className="h-20 w-20 md:h-24 md:w-24 rounded-full object-cover shadow-[var(--shadow-premium)] border-2 border-[#4FC0D0]/50" />
         </div>
         
         {/* Links */}
@@ -65,7 +65,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               onClick={() => setCurrentPage(page)}
               className={`tracking-widest uppercase transition-all duration-300 ${
                 currentPage === page 
-                  ? 'text-primary-blue font-bold' 
+                  ? 'text-primary-blue font-bold border-b-2 border-[#4FC0D0]' 
                   : 'text-text-primary hover:text-primary-blue font-medium'
               }`}
             >
@@ -103,7 +103,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z" />
               </svg>
               {cartCount > 0 && (
-                <span className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-accent-orange text-white text-[10px] font-bold flex items-center justify-center shadow">
+                <span className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-[#164B60] text-white text-[10px] font-bold flex items-center justify-center shadow">
                   {cartCount > 99 ? '99+' : cartCount}
                 </span>
               )}
