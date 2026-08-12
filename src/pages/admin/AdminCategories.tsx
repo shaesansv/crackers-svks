@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Plus, Pencil, Trash2, FolderTree } from "lucide-react";
+import { Plus, Pencil, Trash2, FolderTree, Loader2 } from "lucide-react";
 import AdminSidebar from "@/components/layout/AdminSidebar"; 
 import AdminNavbar from "@/components/layout/AdminNavbar"; 
 import { getCategories, getProducts, API_BASE_URL } from "@/lib/api";
@@ -21,6 +21,8 @@ const AdminCategories = () => {
   const [deleting, setDeleting] = useState<Category | null>(null);
   const [form, setForm] = useState({ name: "", image: "" });
   const [imageFile, setImageFile] = useState<File | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const openCreate = () => {
     setEditing(null);
@@ -99,6 +101,7 @@ const AdminCategories = () => {
       fd.append('image', imageFile);
     }
 
+    setIsSaving(true);
     try {
       const headers: Record<string, string> = {};
       if (token) {
@@ -172,12 +175,15 @@ const AdminCategories = () => {
       console.error('Save error:', err);
       const errorMessage = err instanceof Error ? err.message : 'Save failed';
       toast.error(errorMessage);
+    } finally {
+      setIsSaving(false);
     }
   };
 
   const handleDelete = async () => {
     if (!deleting) return;
 
+    setIsDeleting(true);
     try {
       const headers: Record<string, string> = {};
       if (token) {
@@ -203,12 +209,13 @@ const AdminCategories = () => {
 
       setCats((prev) => prev.filter((c) => c.id !== deleting.id));
       toast.success(`"${deleting.name}" deleted successfully`);
+      setDeleteOpen(false);
+      setDeleting(null);
     } catch (err) {
       console.error('Delete error:', err);
       toast.error(err instanceof Error ? err.message : 'Failed to delete category');
     } finally {
-      setDeleteOpen(false);
-      setDeleting(null);
+      setIsDeleting(false);
     }
   };
 
@@ -343,15 +350,23 @@ const AdminCategories = () => {
                     variant="outline"
                     className="flex-1 border-gray-300 text-gray-600 hover:bg-gray-50"
                     onClick={() => setDialogOpen(false)}
+                    disabled={isSaving}
                   >
                     Cancel
                   </Button>
                   <Button
-                    className="flex-1 bg-[#A2FF86] hover:bg-[#8be371] text-[#164B60] font-bold shadow-md transition-all duration-200"
+                    className="flex-1 bg-[#A2FF86] hover:bg-[#8be371] text-[#164B60] font-bold shadow-md transition-all duration-200 flex items-center justify-center gap-2"
                     onClick={handleSave}
-                    disabled={!form.name.trim()}
+                    disabled={isSaving || !form.name.trim()}
                   >
-                    {editing ? "Save Changes" : "Create Category"}
+                    {isSaving ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        {editing ? "Saving..." : "Creating..."}
+                      </>
+                    ) : (
+                      editing ? "Save Changes" : "Create Category"
+                    )}
                   </Button>
                 </div>
               </div>
@@ -359,15 +374,24 @@ const AdminCategories = () => {
           </Dialog>
 
           {/* Delete Confirmation */}
-          <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+          <Dialog open={deleteOpen} onOpenChange={(open) => { if (!isDeleting) setDeleteOpen(open); }}>
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>Delete Category</DialogTitle>
                 <DialogDescription>Are you sure you want to delete "{deleting?.name}"? This action cannot be undone.</DialogDescription>
               </DialogHeader>
               <DialogFooter>
-                <Button variant="outline" onClick={() => setDeleteOpen(false)}>Cancel</Button>
-                <Button variant="destructive" onClick={handleDelete}>Delete</Button>
+                <Button variant="outline" onClick={() => setDeleteOpen(false)} disabled={isDeleting}>Cancel</Button>
+                <Button variant="destructive" onClick={handleDelete} disabled={isDeleting} className="flex items-center gap-2">
+                  {isDeleting ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Deleting...
+                    </>
+                  ) : (
+                    "Delete"
+                  )}
+                </Button>
               </DialogFooter>
             </DialogContent>
           </Dialog>

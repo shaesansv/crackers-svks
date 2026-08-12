@@ -80,6 +80,7 @@ const AdminContent = () => {
               <button
                 type="button"
                 onClick={handleReset}
+                disabled={isSaving}
                 style={{
                   display: 'inline-flex',
                   alignItems: 'center',
@@ -88,10 +89,11 @@ const AdminContent = () => {
                   borderRadius: '8px',
                   border: '1px solid #d1d5db',
                   background: '#ffffff',
-                  color: '#374151',
+                  color: isSaving ? '#9ca3af' : '#374151',
                   fontWeight: 600,
                   fontSize: '14px',
-                  cursor: 'pointer',
+                  cursor: isSaving ? 'not-allowed' : 'pointer',
+                  opacity: isSaving ? 0.6 : 1,
                 }}
               >
                 <RotateCcw size={15} /> Reset

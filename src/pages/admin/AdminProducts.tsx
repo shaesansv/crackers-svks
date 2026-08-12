@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Plus, Pencil, Trash2, Search } from "lucide-react";
+import { Plus, Pencil, Trash2, Search, Loader2 } from "lucide-react";
 import AdminSidebar from "@/components/layout/AdminSidebar";
 import AdminNavbar from "@/components/layout/AdminNavbar";
 import { getProducts, getCategories, API_BASE_URL } from "@/lib/api";
@@ -21,6 +21,9 @@ const AdminProducts = () => {
   const [search, setSearch] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [isSaving, setIsSaving] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [updatingPricingId, setUpdatingPricingId] = useState<string | null>(null);
 
   const [form, setForm] = useState({ name: "", price: "", wholesalePrice: "", netRate: "", stock: "", brand: "", category: "", description: "", quantity: "", hasDiscount: false, displayNetRate: false, storeStockPieces: "0", godownStockCases: "0", piecesPerCase: "1" });
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -76,6 +79,7 @@ const AdminProducts = () => {
     }
 
     const newHasDiscount = !newDisplayNetRate;
+    setUpdatingPricingId(p.id);
 
     // Optimistic update
     setProductList((prev) =>
@@ -106,6 +110,8 @@ const AdminProducts = () => {
           prod.id === p.id ? { ...prod, displayNetRate: p.displayNetRate, hasDiscount: p.hasDiscount } : prod
         )
       );
+    } finally {
+      setUpdatingPricingId(null);
     }
   };
 
@@ -155,6 +161,7 @@ const AdminProducts = () => {
     }
     if (!confirm('Are you sure you want to delete this product?')) return;
 
+    setDeletingId(id);
     try {
       const headers: Record<string, string> = {};
       if (token) {
@@ -179,6 +186,8 @@ const AdminProducts = () => {
       console.error('Delete error:', err);
       const msg = err instanceof Error ? err.message : "Failed to delete product";
       toast.error(msg);
+    } finally {
+      setDeletingId(null);
     }
   };
   const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
@@ -331,88 +340,105 @@ const AdminProducts = () => {
                       </div>
                     </div>
                     <div><Label>Description</Label><textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} className="w-full rounded-lg border border-gray-300 focus:border-[#4FC0D0] bg-white p-2 text-sm min-h-[80px] text-gray-900 placeholder:text-gray-400" placeholder="Product description..." /></div>
-                    <Button className="w-full bg-[#A2FF86] hover:bg-[#8be371] text-[#164B60] font-bold shadow-md hover:shadow-lg transition-all duration-200" onClick={async () => {
-                      // basic client-side validation
-                      if (!form.name.trim()) return toast.error('Name required');
-                      const maxSize = 5 * 1024 * 1024; // 5MB
-                      if (imageFile && imageFile.size > maxSize) return toast.error('Image must be less than 5MB');
+                    <Button
+                      className="w-full bg-[#A2FF86] hover:bg-[#8be371] text-[#164B60] font-bold shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center gap-2"
+                      disabled={isSaving}
+                      onClick={async () => {
+                        if (isSaving) return;
+                        // basic client-side validation
+                        if (!form.name.trim()) return toast.error('Name required');
+                        const maxSize = 5 * 1024 * 1024; // 5MB
+                        if (imageFile && imageFile.size > maxSize) return toast.error('Image must be less than 5MB');
 
-                      let finalDisplayNetRate = form.displayNetRate;
-                      let finalHasDiscount = form.hasDiscount;
-                      const netRateNum = Number(form.netRate);
+                        setIsSaving(true);
+                        let finalDisplayNetRate = form.displayNetRate;
+                        let finalHasDiscount = form.hasDiscount;
+                        const netRateNum = Number(form.netRate);
 
-                      if (finalDisplayNetRate && (!form.netRate || isNaN(netRateNum) || netRateNum <= 0)) {
-                        toast.warning("Net-Rate amount is required for Display Net-Rate. Switched to Has Discount mode.");
-                        finalDisplayNetRate = false;
-                        finalHasDiscount = true;
-                      }
-                      if (!finalDisplayNetRate) {
-                        finalHasDiscount = true;
-                      }
-
-                      const fd = new FormData();
-                      fd.append('name', form.name);
-                      fd.append('price', form.price);
-                      fd.append('stock', form.stock);
-                      fd.append('brand', form.brand);
-                      fd.append('category', form.category);
-                      fd.append('description', form.description);
-                      fd.append('quantity', form.quantity);
-                      fd.append('wholesalePrice', form.wholesalePrice || "");
-                      fd.append('netRate', form.netRate || "");
-                      fd.append('hasDiscount', finalHasDiscount.toString());
-                      fd.append('displayNetRate', finalDisplayNetRate.toString());
-                      fd.append('storeStockPieces', form.storeStockPieces);
-                      fd.append('godownStockCases', form.godownStockCases);
-                      fd.append('piecesPerCase', form.piecesPerCase);
-                      if (imageFile) {
-                        fd.append('image', imageFile);
-                      }
-
-                      try {
-                        const headers: Record<string, string> = {};
-                        if (token) {
-                          headers['Authorization'] = `Bearer ${token}`;
+                        if (finalDisplayNetRate && (!form.netRate || isNaN(netRateNum) || netRateNum <= 0)) {
+                          toast.warning("Net-Rate amount is required for Display Net-Rate. Switched to Has Discount mode.");
+                          finalDisplayNetRate = false;
+                          finalHasDiscount = true;
+                        }
+                        if (!finalDisplayNetRate) {
+                          finalHasDiscount = true;
                         }
 
-                        const url = editing ? `${API_BASE_URL}/api/products/${editing.id}` : `${API_BASE_URL}/api/products`;
-                        const method = editing ? 'PUT' : 'POST';
-
-                        const res = await fetch(url, {
-                          method,
-                          body: fd,
-                          headers,
-                          credentials: 'include'
-                        });
-
-                        if (!res.ok) {
-                          const data = await res.json();
-                          const errorMsg = data.error?.message || 'Upload failed';
-                          throw new Error(errorMsg);
+                        const fd = new FormData();
+                        fd.append('name', form.name);
+                        fd.append('price', form.price);
+                        fd.append('stock', form.stock);
+                        fd.append('brand', form.brand);
+                        fd.append('category', form.category);
+                        fd.append('description', form.description);
+                        fd.append('quantity', form.quantity);
+                        fd.append('wholesalePrice', form.wholesalePrice || "");
+                        fd.append('netRate', form.netRate || "");
+                        fd.append('hasDiscount', finalHasDiscount.toString());
+                        fd.append('displayNetRate', finalDisplayNetRate.toString());
+                        fd.append('storeStockPieces', form.storeStockPieces);
+                        fd.append('godownStockCases', form.godownStockCases);
+                        fd.append('piecesPerCase', form.piecesPerCase);
+                        if (imageFile) {
+                          fd.append('image', imageFile);
                         }
 
-                        setDialogOpen(false);
-                        setForm({ name: '', price: '', wholesalePrice: '', netRate: '', stock: '', brand: '', category: '', description: '', quantity: '', hasDiscount: false, displayNetRate: false, storeStockPieces: '0', godownStockCases: '0', piecesPerCase: '1' });
-                        setImageFile(null);
-                        setEditing(null);
-                        toast.success(editing ? 'Product updated!' : 'Product added!');
+                        try {
+                          const headers: Record<string, string> = {};
+                          if (token) {
+                            headers['Authorization'] = `Bearer ${token}`;
+                          }
 
-                        // refresh products — handle both { products: [] } and plain [] responses
-                        getProducts().then((d) => {
-                          const rawList = Array.isArray(d) ? d : (d && Array.isArray(d.products) ? d.products : []);
-                          const mappedProducts = rawList.map((p: any) => ({
-                            ...p,
-                            id: p._id || p.id,
-                          }));
-                          setProductList(mappedProducts);
-                        }).catch(() => { });
-                      } catch (err) {
-                        const errorMsg = err instanceof Error ? err.message : 'Failed to save product';
-                        console.error('Product save error:', err);
-                        toast.error(errorMsg);
-                      }
-                    }}>{editing ? 'Update Product' : 'Save Product'}</Button>
-                    <Button variant="outline" className="w-full mt-2" onClick={() => setDialogOpen(false)}>Close</Button>
+                          const url = editing ? `${API_BASE_URL}/api/products/${editing.id}` : `${API_BASE_URL}/api/products`;
+                          const method = editing ? 'PUT' : 'POST';
+
+                          const res = await fetch(url, {
+                            method,
+                            body: fd,
+                            headers,
+                            credentials: 'include'
+                          });
+
+                          if (!res.ok) {
+                            const data = await res.json();
+                            const errorMsg = data.error?.message || 'Upload failed';
+                            throw new Error(errorMsg);
+                          }
+
+                          setDialogOpen(false);
+                          setForm({ name: '', price: '', wholesalePrice: '', netRate: '', stock: '', brand: '', category: '', description: '', quantity: '', hasDiscount: false, displayNetRate: false, storeStockPieces: '0', godownStockCases: '0', piecesPerCase: '1' });
+                          setImageFile(null);
+                          setEditing(null);
+                          toast.success(editing ? 'Product updated!' : 'Product added!');
+
+                          // refresh products — handle both { products: [] } and plain [] responses
+                          getProducts().then((d) => {
+                            const rawList = Array.isArray(d) ? d : (d && Array.isArray(d.products) ? d.products : []);
+                            const mappedProducts = rawList.map((p: any) => ({
+                              ...p,
+                              id: p._id || p.id,
+                            }));
+                            setProductList(mappedProducts);
+                          }).catch(() => { });
+                        } catch (err) {
+                          const errorMsg = err instanceof Error ? err.message : 'Failed to save product';
+                          console.error('Product save error:', err);
+                          toast.error(errorMsg);
+                        } finally {
+                          setIsSaving(false);
+                        }
+                      }}
+                    >
+                      {isSaving ? (
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          {editing ? 'Updating Product...' : 'Saving Product...'}
+                        </>
+                      ) : (
+                        editing ? 'Update Product' : 'Save Product'
+                      )}
+                    </Button>
+                    <Button variant="outline" className="w-full mt-2" onClick={() => setDialogOpen(false)} disabled={isSaving}>Close</Button>
                   </div>
                 </DialogContent>
               </Dialog>
@@ -465,18 +491,20 @@ const AdminProducts = () => {
                         {isDisplayNetRateMode ? (
                           <button
                             onClick={() => togglePricingMode(p)}
-                            className="px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-800 border border-amber-300 hover:bg-amber-200 transition-colors cursor-pointer"
+                            disabled={updatingPricingId === p.id}
+                            className="px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-800 border border-amber-300 hover:bg-amber-200 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                             title="Click to switch to Has Discount mode"
                           >
-                            Net Rate (₹{p.netRate})
+                            {updatingPricingId === p.id ? "Updating..." : `Net Rate (₹${p.netRate})`}
                           </button>
                         ) : (
                           <button
                             onClick={() => togglePricingMode(p)}
-                            className="px-2.5 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800 border border-green-300 hover:bg-green-200 transition-colors cursor-pointer"
+                            disabled={updatingPricingId === p.id}
+                            className="px-2.5 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800 border border-green-300 hover:bg-green-200 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                             title="Click to switch to Display Net Rate mode"
                           >
-                            🔥 Has Discount
+                            {updatingPricingId === p.id ? "Updating..." : "🔥 Has Discount"}
                           </button>
                         )}
                       </td>
@@ -486,7 +514,7 @@ const AdminProducts = () => {
                       <td className="p-3 text-right">
                         <div className="flex justify-end gap-1">
                           <button className="p-1.5 rounded hover:bg-secondary transition-colors text-muted-foreground hover:text-primary" onClick={() => openEdit(p)}><Pencil className="h-4 w-4" /></button>
-                          <button className="p-1.5 rounded hover:bg-secondary transition-colors text-muted-foreground hover:text-destructive" onClick={() => handleDelete(p.id || "")}><Trash2 className="h-4 w-4" /></button>
+                          <button className="p-1.5 rounded hover:bg-secondary transition-colors text-muted-foreground hover:text-destructive disabled:opacity-50 disabled:cursor-not-allowed" onClick={() => handleDelete(p.id || "")} disabled={deletingId === p.id}><Trash2 className="h-4 w-4" /></button>
                         </div>
                       </td>
                     </tr>

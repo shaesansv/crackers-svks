@@ -28,6 +28,7 @@ const AdminInventory = () => {
   const { toast } = useToast();
   const [inventory, setInventory] = useState<InventoryItem[]>([]);
   const [loading, setLoading] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<string | null>(null);
 
@@ -79,6 +80,7 @@ const AdminInventory = () => {
     const quantity = parseInt(form.quantity);
     const adjustmentType = form.type === "inward" ? "INCREASE" : "DECREASE";
 
+    setIsSaving(true);
     try {
       const response = await fetch("/api/inventory/adjust-stock", {
         method: "POST",
@@ -105,6 +107,8 @@ const AdminInventory = () => {
       }
     } catch (err) {
       toast({ title: "Error", description: "Failed to update stock", variant: "destructive" });
+    } finally {
+      setIsSaving(false);
     }
   };
   const totalPages = Math.ceil(lowStockProducts.length / ITEMS_PER_PAGE);
@@ -274,8 +278,17 @@ const AdminInventory = () => {
                 </div>
               </div>
               <DialogFooter>
-                <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
-                <Button onClick={handleSave} disabled={!form.productId || !form.quantity}>Apply Adjustment</Button>
+                <Button variant="outline" onClick={() => setDialogOpen(false)} disabled={isSaving}>Cancel</Button>
+                <Button onClick={handleSave} disabled={isSaving || !form.productId || !form.quantity} className="flex items-center gap-2">
+                  {isSaving ? (
+                    <>
+                      <Loader className="h-4 w-4 animate-spin" />
+                      Applying...
+                    </>
+                  ) : (
+                    "Apply Adjustment"
+                  )}
+                </Button>
               </DialogFooter>
             </DialogContent>
           </Dialog>
