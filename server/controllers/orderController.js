@@ -79,8 +79,29 @@ export const createOrder = async (req, res, next) => {
     const count = await Order.countDocuments().session(session);
     const orderNumber = (count + 1).toString().padStart(5, '0');
 
-    // Attempt to link to an existing customer
-    const existingCustomer = await Customer.findOne({ email: customerEmail }).session(session);
+    // Attempt to link to an existing customer or create a new one
+    let existingCustomer = await Customer.findOne({ 
+      $or: [
+        { email: customerEmail },
+        { phone: customerPhone }
+      ]
+    }).session(session);
+
+    if (!existingCustomer) {
+      existingCustomer = new Customer({
+        name: customerName,
+        email: customerEmail,
+        phone: customerPhone,
+        customerType: 'WEBSITE',
+        deliveryAddress: {
+          fullAddress: deliveryAddress,
+          street: deliveryAddress,
+          city: district || '',
+          state: state || ''
+        }
+      });
+      await existingCustomer.save({ session });
+    }
 
     const newOrder = new Order({
       customerName,

@@ -31,29 +31,30 @@ export const Navbar: React.FC<NavbarProps> = ({
   const phone = settings.contact?.phone || '+91 78680 77818';
   const address = settings.contact?.address || 'Sivakasi, Tamil Nadu';
   return (
-    <header className="sticky top-0 z-50 bg-off-white/90 backdrop-blur-md border-b border-gray-200/50 shadow-sm animate-fade-in">
+    <header className="sticky top-0 z-50 bg-[#0B0F19]/80 backdrop-blur-xl border-b border-gray-800 shadow-[0_4px_30px_rgba(0,0,0,0.5)] animate-fade-in">
       {/* 1. Top Minimal Contact Bar */}
-      <div className="bg-primary-blue text-white text-xs py-2 px-6 md:px-12 flex flex-col md:flex-row items-center justify-between font-inter tracking-wide">
+      <div className="bg-[#FFC107] text-[#0f172a] font-bold text-xs py-2 px-6 md:px-12 flex flex-col md:flex-row items-center justify-between font-inter tracking-wide shadow-md">
         <div className="flex items-center gap-6">
-          <span className="flex items-center gap-2 hover:text-secondary-gold transition-colors cursor-pointer">
+          <span className="flex items-center gap-2 hover:text-[#0B0F19]/80 transition-colors cursor-pointer">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path></svg>
             {phone}
           </span>
-          <span className="hidden md:flex items-center gap-2 hover:text-secondary-gold transition-colors cursor-pointer">
+          <span className="hidden md:flex items-center gap-2 hover:text-[#0B0F19]/80 transition-colors cursor-pointer">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
             {address}
           </span>
         </div>
         <div className="hidden md:flex items-center gap-4">
-          <span className="text-gray-200">Premium Festival Collection</span>
+          <span className="text-[#0f172a]/80">Premium Festival Collection</span>
         </div>
       </div>
 
       {/* 2. Main Navigation Bar */}
       <div className="flex flex-col md:flex-row items-center justify-between py-4 px-6 md:px-12 bg-transparent">
         {/* Logo */}
-        <div className="flex items-center justify-center cursor-pointer" onClick={() => setCurrentPage('home')}>
-          <img src={sarguruLogo} alt="Sarguru Crackers Logo" className="h-20 w-20 md:h-24 md:w-24 rounded-full object-cover shadow-[var(--shadow-premium)] border-2 border-secondary-gold/20" />
+        <div className="flex items-center justify-center cursor-pointer relative group" onClick={() => setCurrentPage('home')}>
+          <div className="absolute inset-0 bg-[#FFC107] rounded-full blur-md opacity-30 group-hover:opacity-60 transition-opacity duration-300"></div>
+          <img src={sarguruLogo} alt="Sarguru Crackers Logo" className="h-20 w-20 md:h-24 md:w-24 rounded-full object-cover relative z-10 border-2 border-[#FFC107]/50 shadow-[0_0_15px_rgba(255,193,7,0.3)]" />
         </div>
         
         {/* Links */}
@@ -90,7 +91,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                     setCurrentPage('home');
                   }
                 }}
-                className="py-2 pl-4 pr-10 border border-border-gray rounded-[12px] text-sm bg-white focus:bg-white text-text-primary w-[220px] outline-none transition-all duration-300 focus:shadow-[var(--shadow-premium)] focus:border-primary-blue font-inter"
+                className="py-2 pl-4 pr-10 border border-[#374151] rounded-[12px] text-sm bg-[#111827] focus:bg-[#1f2937] text-white w-[220px] outline-none transition-all duration-300 focus:shadow-[0_0_15px_rgba(255,193,7,0.2)] focus:border-[#FFC107] font-inter"
               />
               <svg className="w-4 h-4 absolute right-3 top-2.5 text-gray-400 group-focus-within:text-primary-blue transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
             </div>
@@ -117,7 +118,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
       {/* 3. Category Filter Bar (Shown on storefront pages) */}
       {currentPage !== 'admin-login' && currentPage !== 'admin-dashboard' && (
-        <div className="bg-white/80 border-t border-gray-100 flex flex-col md:flex-row items-center justify-center p-3 gap-4 font-inter text-sm">
+        <div className="bg-[#0B0F19]/80 border-t border-gray-800 flex flex-col md:flex-row items-center justify-center p-3 gap-4 font-inter text-sm shadow-[0_4px_20px_rgba(0,0,0,0.3)]">
           <div className="flex items-center gap-3 w-full max-w-md mx-auto justify-center">
             <span className="text-gray-500 hidden md:inline">Filter by:</span>
             <select
@@ -128,7 +129,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   setCurrentPage('home');
                 }
               }}
-              className="py-2 px-4 border border-border-gray rounded-[12px] bg-white text-text-primary outline-none font-medium cursor-pointer hover:border-primary-blue transition-colors w-full md:w-auto shadow-sm"
+              className="py-2 px-4 border border-[#374151] rounded-[12px] bg-[#111827] text-white outline-none font-medium cursor-pointer hover:border-[#FFC107] focus:ring-1 focus:ring-[#FFC107] transition-colors w-full md:w-auto shadow-sm"
             >
               <option value="all">All Premium Collections</option>
               {categories.map((cat) => (

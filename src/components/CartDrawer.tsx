@@ -56,15 +56,15 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
 
       {/* Drawer */}
       <aside
-        className={`fixed top-0 right-0 z-[999] h-full w-full max-w-[420px] flex flex-col shadow-2xl transition-transform duration-400 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+        className={`fixed top-0 right-0 z-[999] h-full w-full max-w-[420px] flex flex-col shadow-[0_0_50px_rgba(0,0,0,0.5)] transition-transform duration-400 ease-[cubic-bezier(0.16,1,0.3,1)] ${
           isOpen ? 'translate-x-0' : 'translate-x-full'
         }`}
-        style={{ background: '#FFFDF8' }}
+        style={{ background: '#0B0F19' }}
       >
         {/* Header */}
         <div
-          className="flex items-center justify-between px-5 py-4 border-b border-gray-100"
-          style={{ background: '#1F2A44' }}
+          className="flex items-center justify-between px-5 py-4 border-b border-[#374151]"
+          style={{ background: '#111827' }}
         >
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center">
@@ -89,7 +89,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
 
         {/* Min order progress */}
         {!isMinMet && (
-          <div className="px-5 py-3 bg-amber-50 border-b border-amber-100">
+          <div className="px-5 py-3 bg-[#111827] border-b border-[#374151]">
             <div className="flex items-center justify-between mb-1.5">
               <span className="text-xs font-medium text-amber-700">
                 Add ₹{remaining.toLocaleString('en-IN')} more to place order
@@ -106,7 +106,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
         )}
 
         {isMinMet && (
-          <div className="px-5 py-2.5 bg-green-50 border-b border-green-100 flex items-center gap-2">
+          <div className="px-5 py-2.5 bg-[#111827] border-b border-[#374151] flex items-center gap-2">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#22C55E" strokeWidth="2.5" strokeLinecap="round">
               <polyline points="20 6 9 17 4 12"/>
             </svg>
@@ -134,11 +134,15 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
             cartItems.map(({ product, qty }) => (
               <div
                 key={product.id}
-                className="bg-white rounded-2xl p-3.5 shadow-sm border border-gray-100 flex gap-3 items-start animate-fade-in"
+                className="bg-[#111827] rounded-2xl p-3.5 shadow-sm border border-[#374151] flex gap-3 items-start animate-fade-in"
               >
                 {/* Icon */}
-                <div className="w-12 h-12 rounded-xl bg-primary-light flex items-center justify-center flex-shrink-0 text-xl">
-                  🎆
+                <div className="w-12 h-12 rounded-xl bg-[#1f2937] border border-[#374151] flex items-center justify-center flex-shrink-0 text-xl overflow-hidden">
+                  {product.imageUrl ? (
+                    <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover" />
+                  ) : (
+                    <span>🎆</span>
+                  )}
                 </div>
 
                 {/* Info */}
@@ -148,14 +152,14 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
 
                   <div className="flex items-center justify-between mt-2">
                     {/* Qty controls */}
-                    <div className="flex items-center gap-1.5 bg-gray-50 rounded-xl px-1 py-0.5 border border-gray-200">
+                    <div className="flex items-center gap-1.5 bg-[#1f2937] rounded-xl px-1 py-0.5 border border-[#374151]">
                       <button
                         onClick={() => onQtyChange(product.id, false)}
-                        className="w-6 h-6 rounded-lg bg-white shadow-sm text-text-primary font-bold text-sm flex items-center justify-center hover:bg-danger-red hover:text-white transition-colors"
+                        className="w-6 h-6 rounded-lg bg-[#111827] shadow-sm text-white font-bold text-sm flex items-center justify-center hover:bg-danger-red hover:text-white transition-colors"
                       >
                         −
                       </button>
-                      <span className="text-[13px] font-bold text-text-primary w-5 text-center">{qty}</span>
+                      <span className="text-[13px] font-bold text-white w-5 text-center">{qty}</span>
                       <button
                         onClick={() => onQtyChange(product.id, true)}
                         className="w-6 h-6 rounded-lg bg-primary-blue text-white font-bold text-sm flex items-center justify-center hover:bg-primary-hover transition-colors"
@@ -192,7 +196,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                 {/* Remove */}
                 <button
                   onClick={() => onRemove(product.id)}
-                  className="flex-shrink-0 w-7 h-7 rounded-full bg-gray-100 hover:bg-red-100 flex items-center justify-center transition-colors mt-0.5"
+                  className="flex-shrink-0 w-7 h-7 rounded-full bg-[#1f2937] hover:bg-red-500 flex items-center justify-center transition-colors mt-0.5 text-gray-400 hover:text-white"
                 >
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2.5" strokeLinecap="round">
                     <polyline points="3 6 5 6 21 6"/>
@@ -207,7 +211,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
 
         {/* Footer / Totals */}
         {cartItems.length > 0 && (
-          <div className="border-t border-gray-100 px-5 py-4 space-y-3 bg-white">
+          <div className="border-t border-[#374151] px-5 py-4 space-y-3 bg-[#111827]">
             {/* Breakdown */}
             <div className="space-y-1.5">
               <div className="flex justify-between text-[13px] text-text-secondary">
@@ -218,7 +222,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                 <span>Packing charge (3%)</span>
                 <span className="font-medium text-text-primary">₹{packingCharge.toLocaleString('en-IN')}</span>
               </div>
-              <div className="border-t border-dashed border-gray-200 pt-2 flex justify-between font-bold text-[15px]">
+              <div className="border-t border-dashed border-[#374151] pt-2 flex justify-between font-bold text-[15px]">
                 <span className="text-text-primary">Total</span>
                 <span className="text-primary-blue">₹{total.toLocaleString('en-IN')}</span>
               </div>

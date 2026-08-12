@@ -23,7 +23,7 @@ import AdminProducts from './pages/admin/AdminProducts';
 import AdminCategories from './pages/admin/AdminCategories';
 import AdminOrders from './pages/admin/AdminOrders';
 import AdminCustomers from './pages/admin/AdminCustomers';
-import AdminInventory from './pages/admin/AdminInventory';
+import AdminReports from './pages/admin/AdminReports';
 import AdminContent from './pages/admin/AdminContent';
 
 
@@ -317,9 +317,9 @@ function AppContent() {
           <AdminCustomers />
         </ProtectedRoute>
       } />
-      <Route path="/admin/inventory" element={
+      <Route path="/admin/reports" element={
         <ProtectedRoute>
-          <AdminInventory />
+          <AdminReports />
         </ProtectedRoute>
       } />
       <Route path="/admin/content" element={

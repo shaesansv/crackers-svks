@@ -1,35 +1,35 @@
 @import "tailwindcss";
 
 @theme {
-  --color-primary-blue: #24BE64;
-  --color-secondary-gold: #FFC107;
-  --color-accent-orange: #FF6B00;
-  --color-success-green: #22C55E;
+  --color-primary-blue: #FFC107; /* Changed to Gold for primary accents */
+  --color-secondary-gold: #FF9800; /* Deeper gold/orange */
+  --color-accent-orange: #FF5722;
+  --color-success-green: #10B981;
   --color-danger-red: #EF4444;
-  --color-bg-light: #FFFDF8;
-  --color-section-bg: #FFF8ED;
+  --color-bg-light: #0B0F19; /* Deep midnight blue/black background */
+  --color-section-bg: #111827; /* Darker card background */
   --color-dark-section: #1F2A44;
-  --color-border-gray: #E5E7EB;
-  --color-text-primary: #1F2937;
-  --color-text-secondary: #6B7280;
+  --color-border-gray: #374151; /* Dark border */
+  --color-text-primary: #F9FAFB; /* Off-white text */
+  --color-text-secondary: #9CA3AF; /* Gray text */
   
-  --color-royal-red: #E53935; /* Festival Red */
-  --color-luxury-gold: #FFC107; /* Golden Yellow */
-  --color-off-white: #FFFDF8; /* Off White */
+  --color-royal-red: #E53935;
+  --color-luxury-gold: #FFC107;
+  --color-off-white: #0B0F19; 
 
   /* Sidebar Theme Variables for Admin Panel */
-  --color-sidebar: #1F2A44; /* Secondary: Deep Navy */
-  --color-sidebar-foreground: #FFFDF8; /* Background: Off White */
-  --color-sidebar-primary: #24BE64; /* Primary: Green */
-  --color-sidebar-primary-foreground: #FFFFFF;
-  --color-sidebar-accent: #169A4E; /* Primary Hover: Dark Green */
-  --color-sidebar-accent-foreground: #FFFFFF;
-  --color-sidebar-border: #E5E7EB; /* Border: Light Gray */
-  --color-sidebar-ring: #24BE64;
+  --color-sidebar: #0f172a; 
+  --color-sidebar-foreground: #F9FAFB;
+  --color-sidebar-primary: #FFC107; 
+  --color-sidebar-primary-foreground: #000000;
+  --color-sidebar-accent: #1e293b; 
+  --color-sidebar-accent-foreground: #F9FAFB;
+  --color-sidebar-border: #334155;
+  --color-sidebar-ring: #FFC107;
 
-  --color-border: #E5E7EB; /* Border */
-  --color-primary-hover: #169A4E;
-  --color-primary-light: #E8F9EF;
+  --color-border: #374151;
+  --color-primary-hover: #F59E0B;
+  --color-primary-light: rgba(255, 193, 7, 0.1);
   --color-secondary: #1F2A44;
 
   --font-sans: "Inter", sans-serif;

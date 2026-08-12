@@ -129,10 +129,10 @@ export const Home: React.FC<HomeProps> = ({
         </div>
       </div>
 
-      <main className="flex-grow w-full max-w-[1200px] mx-auto bg-white shadow-sm mt-6 mb-10 relative z-40 rounded-lg">
+      <main className="flex-grow w-full max-w-[1200px] mx-auto bg-transparent mt-6 mb-10 relative z-40 rounded-lg">
         
         {/* 1. Top Filters & Search Box */}
-        <div className="bg-white border border-gray-100 rounded-[20px] p-5 shadow-[0_8px_30px_rgb(0,0,0,0.02)] mb-6 flex flex-col gap-3.5">
+        <div className="bg-[#111827] border border-[#374151] rounded-[20px] p-5 shadow-[0_8px_30px_rgba(0,0,0,0.3)] mb-6 flex flex-col gap-3.5">
           {/* Dropdowns */}
           <div className="grid grid-cols-2 gap-3.5">
             {/* Brand Dropdown */}
@@ -140,7 +140,7 @@ export const Home: React.FC<HomeProps> = ({
               <select
                 value={selectedBrand}
                 onChange={(e) => setSelectedBrand(e.target.value)}
-                className="w-full py-3 pl-4 pr-10 border border-gray-200 rounded-[14px] text-sm bg-white text-dark-navy font-semibold outline-none transition-all duration-300 focus:border-violet-500 focus:ring-1 focus:ring-violet-100 cursor-pointer appearance-none"
+                className="w-full py-3 pl-4 pr-10 border border-[#374151] rounded-[14px] text-sm bg-[#1f2937] text-white font-semibold outline-none transition-all duration-300 focus:border-[#FFC107] focus:ring-1 focus:ring-[#FFC107] cursor-pointer appearance-none"
               >
                 <option value="all">All Brands</option>
                 <option value="laxmi">Laxmi Brand</option>
@@ -156,7 +156,7 @@ export const Home: React.FC<HomeProps> = ({
               <select
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
-                className="w-full py-3 pl-4 pr-10 border border-gray-200 rounded-[14px] text-sm bg-white text-dark-navy font-semibold outline-none transition-all duration-300 focus:border-violet-500 focus:ring-1 focus:ring-violet-100 cursor-pointer appearance-none"
+                className="w-full py-3 pl-4 pr-10 border border-[#374151] rounded-[14px] text-sm bg-[#1f2937] text-white font-semibold outline-none transition-all duration-300 focus:border-[#FFC107] focus:ring-1 focus:ring-[#FFC107] cursor-pointer appearance-none"
               >
                 <option value="all">All Categories</option>
                 {categories.map((cat: Category) => (
@@ -178,7 +178,7 @@ export const Home: React.FC<HomeProps> = ({
               placeholder="Search products..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full py-3 pl-11 pr-4 border border-gray-200 rounded-[14px] text-sm bg-gray-50/50 focus:bg-white text-dark-navy outline-none transition-all duration-300 focus:border-violet-500 focus:ring-1 focus:ring-violet-100 font-inter"
+              className="w-full py-3 pl-11 pr-4 border border-[#374151] rounded-[14px] text-sm bg-[#1f2937] focus:bg-[#374151] text-white outline-none transition-all duration-300 focus:border-[#FFC107] focus:ring-1 focus:ring-[#FFC107] font-inter"
             />
             <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
@@ -192,17 +192,17 @@ export const Home: React.FC<HomeProps> = ({
             filteredCategories.map((category) => (
               <div key={category.id} className="mb-6">
                 {/* Category Header */}
-                <div className="bg-white px-6 py-4 border-b border-gray-100 flex items-center gap-3 rounded-t-[18px]">
-                  <div className="w-8 h-8 rounded-full bg-primary-blue/10 flex items-center justify-center text-primary-blue font-bold">
+                <div className="bg-[#111827] px-6 py-4 border-b border-[#374151] flex items-center gap-3 rounded-t-[18px]">
+                  <div className="w-8 h-8 rounded-full bg-[#FFC107]/10 flex items-center justify-center text-[#FFC107] font-bold">
                     ✨
                   </div>
-                  <h2 className="text-primary-blue text-[18px] font-bold uppercase tracking-wide">
+                  <h2 className="text-[#FFC107] text-[18px] font-bold uppercase tracking-wide">
                     {category.name.replace(' (80% DISCOUNT)', '')}
                   </h2>
                 </div>
 
                 {/* Category Products */}
-                <div className="flex flex-col bg-white rounded-b-[18px] shadow-[var(--shadow-premium)]">
+                <div className="flex flex-col bg-[#111827] rounded-b-[18px] shadow-[var(--shadow-premium)]">
                   {category.products.map((product: Product) => {
                     const qty = quantities[product.id] || '';
                     const isLow = product.id === 'sp3' || product.id === 'gc2';
@@ -211,16 +211,20 @@ export const Home: React.FC<HomeProps> = ({
                     return (
                       <div 
                         key={product.id} 
-                        className={`flex flex-col md:grid md:grid-cols-[3fr_1fr_1fr_1fr_1fr_1fr] items-center px-4 md:px-6 py-5 md:py-4 border-b border-gray-100 transition-all duration-300 gap-4 md:gap-0 ${
+                        className={`flex flex-col md:grid md:grid-cols-[3fr_1fr_1fr_1fr_1fr_1fr] items-center px-4 md:px-6 py-5 md:py-4 border-b border-[#374151] transition-all duration-300 gap-4 md:gap-0 ${
                           isOutOfStock
-                            ? 'bg-gray-50 opacity-75 cursor-not-allowed'
-                            : 'bg-white hover:bg-white hover:shadow-[var(--shadow-premium-hover)] hover:-translate-y-1'
+                            ? 'bg-[#0B0F19] opacity-75 cursor-not-allowed'
+                            : 'bg-[#111827] hover:bg-[#1f2937] hover:shadow-[var(--shadow-premium-hover)] hover:-translate-y-1'
                         }`}
                       >
                         {/* Product Details */}
                         <div className="flex items-center gap-4 w-full md:w-auto">
-                          <div className="relative w-[60px] h-[60px] md:w-[60px] md:h-[60px] flex-shrink-0 flex items-center justify-center bg-white border border-border-gray rounded-[18px] overflow-hidden shadow-sm">
-                            <ProductImage type={product.imageType} />
+                          <div className="relative w-[60px] h-[60px] md:w-[60px] md:h-[60px] flex-shrink-0 flex items-center justify-center bg-[#1f2937] border border-[#374151] rounded-[18px] overflow-hidden shadow-sm">
+                            {product.image || product.imageUrl ? (
+                              <img src={product.image || product.imageUrl} alt={product.name} className="w-full h-full object-cover" />
+                            ) : (
+                              <ProductImage type={product.imageType} />
+                            )}
                             {isOutOfStock && (
                               <div className="absolute inset-0 bg-black/60 flex items-center justify-center rounded-[18px]">
                                 <span className="text-white text-[8px] font-bold text-center leading-tight px-1">OUT OF{"\n"}STOCK</span>

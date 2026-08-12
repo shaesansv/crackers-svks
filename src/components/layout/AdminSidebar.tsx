@@ -1,6 +1,6 @@
 import companyLogo from "@/assets/sarguru.png";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { LayoutDashboard, Package, FolderTree, ShoppingBag, Users, Settings, ArrowLeft, LogOut, Menu } from "lucide-react";
+import { LayoutDashboard, Package, FolderTree, ShoppingBag, Users, Settings, ArrowLeft, LogOut, Menu, BarChart } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";
@@ -12,7 +12,7 @@ const navItems = [
   { label: "Categories", icon: FolderTree, href: "/admin/categories" },
   { label: "Orders", icon: ShoppingBag, href: "/admin/orders" },
   { label: "Customers", icon: Users, href: "/admin/customers" },
-  { label: "Inventory Management", icon: Package, href: "/admin/inventory" },
+  { label: "Reports", icon: BarChart, href: "/admin/reports" },
   { label: "Content", icon: Settings, href: "/admin/content" },
 ];
 

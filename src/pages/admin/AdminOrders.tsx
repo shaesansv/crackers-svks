@@ -1,7 +1,7 @@
 import AdminSidebar from "@/components/layout/AdminSidebar";
 import AdminNavbar from "@/components/layout/AdminNavbar";
 import { useEffect, useState } from "react";
-import { getOrders, approveOrder, updatePackingStatus, updateHoldDays } from "@/lib/api";
+import { getOrders, approveOrder, updatePackingStatus } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Link } from "react-router-dom";
@@ -12,10 +12,8 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { Badge } from "@/components/ui/badge";
 import { generateOrderReceiptPDF } from "@/lib/pdf-generator";
 import { useSiteSettings } from "@/context/SiteSettingsContext";
-import { Input } from "@/components/ui/input";
 
 /** Returns true when today is BEFORE the hold window expires */
 const isOrderOnHold = (order: any): boolean => {
@@ -85,56 +83,9 @@ const AdminOrders = () => {
   type StatusFilter = 'all' | 'approved' | 'packing' | 'hold';
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
   const [isUpdatingPacking, setIsUpdatingPacking] = useState(false);
-  const [isUpdatingHold, setIsUpdatingHold] = useState(false);
-  const [holdDaysInput, setHoldDaysInput] = useState<number>(0);
-
   useEffect(() => {
-    if (selectedOrder) {
-      setHoldDaysInput(selectedOrder.holdDays || 0);
-    }
   }, [selectedOrder]);
 
-  const handleUpdateHoldDays = async () => {
-    if (!selectedOrder) return;
-
-    try {
-      setIsUpdatingHold(true);
-      await updateHoldDays(selectedOrder._id, holdDaysInput);
-      
-      // Update local state lists
-      setOrderList((prev) =>
-        prev.map((o) =>
-          o._id === selectedOrder._id ? { ...o, holdDays: holdDaysInput } : o
-        )
-      );
-      
-      setSelectedOrder((prev: any) => ({ ...prev, holdDays: holdDaysInput }));
-      toast.success(`Hold duration updated to ${holdDaysInput} days!`);
-    } catch (error) {
-      console.error("Error updating hold days:", error);
-      toast.error(error instanceof Error ? error.message : "Failed to update hold days");
-    } finally {
-      setIsUpdatingHold(false);
-    }
-  };
-
-  const handleRemoveHold = async (orderId: string) => {
-    try {
-      await updateHoldDays(orderId, 0);
-      setOrderList((prev) =>
-        prev.map((o) =>
-          o._id === orderId ? { ...o, holdDays: 0 } : o
-        )
-      );
-      if (selectedOrder && selectedOrder._id === orderId) {
-        setSelectedOrder((prev: any) => ({ ...prev, holdDays: 0 }));
-      }
-      toast.success(`Hold removed successfully!`);
-    } catch (error) {
-      console.error("Error removing hold:", error);
-      toast.error(error instanceof Error ? error.message : "Failed to remove hold");
-    }
-  };
 
   useEffect(() => {
     getOrders().then(setOrderList).catch(() => setOrderList([]));

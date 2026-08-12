@@ -1,6 +1,7 @@
 import { uploadToCloudinary, deleteFromCloudinary } from './cloudinary.js';
 import fs from 'fs';
 import path from 'path';
+import { fileURLToPath } from 'url';
 
 const SERVER_BASE = process.env.SERVER_URL || `http://localhost:${process.env.PORT || 5000}`;
 
@@ -19,9 +20,28 @@ export const uploadToBoth = async (file, folder) => {
         const result = await uploadToCloudinary(file.buffer, file.originalname, folder);
         return { url: result.url, public_id: result.public_id };
     } catch (error) {
-        const errorMsg = `Cloudinary upload failed: ${error.message || error}. Verify CLOUDINARY_URL or CLOUDINARY_CLOUD_NAME/API_KEY/API_SECRET in .env file`;
-        console.error(errorMsg);
-        throw new Error(errorMsg);
+        console.error(`Cloudinary upload failed: ${error.message || error}. Falling back to local upload.`);
+        try {
+            // Local fallback logic
+            const timestamp = Date.now();
+            const filename = `${timestamp}_${file.originalname.replace(/[^a-zA-Z0-9.\-_]/g, '_')}`;
+            
+            // Ensure folder exists
+            const __filename = fileURLToPath(import.meta.url);
+            const __dirname = path.dirname(__filename);
+            const uploadDir = path.join(__dirname, '..', 'public', 'uploads', folder);
+            fs.mkdirSync(uploadDir, { recursive: true });
+            
+            const filePath = path.join(uploadDir, filename);
+            fs.writeFileSync(filePath, file.buffer);
+            
+            // Construct the URL to access it locally
+            const url = `${SERVER_BASE}/uploads/${folder}/${filename}`;
+            return { url, public_id: null };
+        } catch (localError) {
+            console.error('Local fallback upload failed:', localError);
+            throw new Error('Image upload failed completely (Cloudinary and local).');
+        }
     }
 };
 

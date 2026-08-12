@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
 import { useSiteSettings } from '../context/SiteSettingsContext';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { CheckCircle2 } from 'lucide-react';
 interface Product {
   id: string;
   name: string;
@@ -45,6 +48,7 @@ export const Footer: React.FC<FooterProps> = ({
   const [mobile, setMobile] = useState('');
   const [email, setEmail] = useState('');
   const [address, setAddress] = useState('');
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   // Cart math calculations
   const allProducts = products;
@@ -82,7 +86,6 @@ export const Footer: React.FC<FooterProps> = ({
       return;
     }
 
-    let orderIdStr = '';
     try {
       const orderItems = Object.entries(quantities).map(([productId, qty]) => {
         const p = allProducts.find((product) => product.id === productId);
@@ -100,8 +103,11 @@ export const Footer: React.FC<FooterProps> = ({
         },
         body: JSON.stringify({
           customerName: name,
-          customerEmail: email,
+          customerEmail: email || `${mobile}@noemail.com`,
           customerPhone: mobile,
+          deliveryAddress: address,
+          state: state,
+          district: city,
           items: orderItems,
           total: subTotal,
           packingCharge: packingCharges,
@@ -110,55 +116,14 @@ export const Footer: React.FC<FooterProps> = ({
       });
 
       if (response.ok) {
-        const savedOrder = await response.json();
-        orderIdStr = `• *Order ID:* #${savedOrder.orderId}\n`;
+        setShowSuccessModal(true);
+      } else {
+        alert('There was a problem placing your order. Please try again.');
       }
     } catch (err) {
       console.log('Failed to save order to local database server', err);
+      alert('Network error. Please try again.');
     }
-
-    // Assemble WhatsApp order details
-    let message = `*Sarguru TRADERS ORDER*\n`;
-    message += `=========================\n`;
-    if (orderIdStr) {
-      message += orderIdStr;
-      message += `=========================\n`;
-    }
-    message += `*Customer Details:*\n`;
-    message += `• *Name:* ${name}\n`;
-    message += `• *Mobile:* ${mobile}\n`;
-    message += `• *State:* ${state}\n`;
-    message += `• *City:* ${city}\n`;
-    if (email) message += `• *Email:* ${email}\n`;
-    message += `• *Address:* ${address}\n`;
-    message += `=========================\n`;
-    message += `*Ordered Items:*\n`;
-    
-    Object.entries(quantities).forEach(([productId, qty]) => {
-      const product = allProducts.find((p) => p.id === productId);
-      if (product) {
-        const lineTotal = product.discountPrice * qty;
-        message += `• ${product.name} - Qty: ${qty} x Rs. ${product.discountPrice} = Rs. ${lineTotal}\n`;
-      }
-    });
-
-    message += `=========================\n`;
-    message += `*Order Summary:*\n`;
-    message += `• Mkt Total (MRP): Rs. ${mktTotal.toFixed(2)}\n`;
-    message += `• Discount Total (80%): Rs. ${discountTotal.toFixed(2)}\n`;
-    message += `• *Sub Total:* Rs. ${subTotal.toFixed(2)}\n`;
-    message += `• Packing Charges (3%): Rs. ${packingCharges.toFixed(2)}\n`;
-    message += `• Round Off: Rs. ${roundOff >= 0 ? '+' : ''}${roundOff.toFixed(2)}\n`;
-    message += `• *Overall Amount:* Rs. ${overallAmount.toFixed(2)}\n`;
-    message += `=========================\n`;
-    message += `Please confirm my order. Thank you!`;
-
-    // Fetch the merchant phone number from settings if saved
-    const savedMerchantPhone = settings?.merchantPhone || '917868077818';
-
-    const encodedMessage = encodeURIComponent(message);
-    const whatsappUrl = `https://wa.me/${savedMerchantPhone}?text=${encodedMessage}`;
-    window.open(whatsappUrl, '_blank');
   };
 
   return (
@@ -185,7 +150,7 @@ export const Footer: React.FC<FooterProps> = ({
                 <select
                   value={state}
                   onChange={(e) => setState(e.target.value)}
-                  className="p-3 border border-border-gray rounded-[12px] text-sm bg-white text-text-primary outline-none focus:border-primary-blue focus:shadow-sm transition-all"
+                  className="p-3 border border-[#374151] rounded-[12px] text-sm bg-[#111827] text-white outline-none focus:border-[#FFC107] focus:ring-1 focus:ring-[#FFC107] shadow-sm transition-all"
                   required
                 >
                   <option value="Tamil Nadu">Tamil Nadu</option>
@@ -201,7 +166,7 @@ export const Footer: React.FC<FooterProps> = ({
                 <select
                   value={city}
                   onChange={(e) => setCity(e.target.value)}
-                  className="p-3 border border-border-gray rounded-[12px] text-sm bg-white text-text-primary outline-none focus:border-primary-blue focus:shadow-sm transition-all"
+                  className="p-3 border border-[#374151] rounded-[12px] text-sm bg-[#111827] text-white outline-none focus:border-[#FFC107] focus:ring-1 focus:ring-[#FFC107] shadow-sm transition-all"
                   required
                 >
                   <option value="Sivakasi">Sivakasi</option>
@@ -222,7 +187,7 @@ export const Footer: React.FC<FooterProps> = ({
                   placeholder="Enter your name"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="p-3 border border-border-gray rounded-[12px] text-sm bg-white text-text-primary outline-none focus:border-primary-blue focus:shadow-sm transition-all w-full"
+                  className="p-3 border border-[#374151] rounded-[12px] text-sm bg-[#111827] text-white outline-none focus:border-[#FFC107] focus:ring-1 focus:ring-[#FFC107] shadow-sm transition-all w-full"
                   required
                 />
               </div>
@@ -234,7 +199,7 @@ export const Footer: React.FC<FooterProps> = ({
                   placeholder="Enter mobile number"
                   value={mobile}
                   onChange={(e) => setMobile(e.target.value)}
-                  className="p-3 border border-border-gray rounded-[12px] text-sm bg-white text-text-primary outline-none focus:border-primary-blue focus:shadow-sm transition-all w-full"
+                  className="p-3 border border-[#374151] rounded-[12px] text-sm bg-[#111827] text-white outline-none focus:border-[#FFC107] focus:ring-1 focus:ring-[#FFC107] shadow-sm transition-all w-full"
                   required
                 />
               </div>
@@ -246,7 +211,7 @@ export const Footer: React.FC<FooterProps> = ({
                   placeholder="Enter email address"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="p-3 border border-border-gray rounded-[12px] text-sm bg-white text-text-primary outline-none focus:border-primary-blue focus:shadow-sm transition-all w-full"
+                  className="p-3 border border-[#374151] rounded-[12px] text-sm bg-[#111827] text-white outline-none focus:border-[#FFC107] focus:ring-1 focus:ring-[#FFC107] shadow-sm transition-all w-full"
                 />
               </div>
 
@@ -256,31 +221,31 @@ export const Footer: React.FC<FooterProps> = ({
                   placeholder="Enter your full delivery address"
                   value={address}
                   onChange={(e) => setAddress(e.target.value)}
-                  className="p-3 border border-border-gray rounded-[12px] text-sm bg-white text-text-primary outline-none focus:border-primary-blue focus:shadow-sm transition-all w-full h-24 resize-none"
+                  className="p-3 border border-[#374151] rounded-[12px] text-sm bg-[#111827] text-white outline-none focus:border-[#FFC107] focus:ring-1 focus:ring-[#FFC107] shadow-sm transition-all w-full h-24 resize-none"
                   required
                 />
               </div>
             </div>
 
             {/* Right side: Calculations */}
-            <div className="w-full lg:w-1/3 flex flex-col bg-white border border-gray-100 p-6 md:p-8 rounded-[24px] shadow-[var(--shadow-premium)] relative overflow-hidden">
-              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-secondary-gold to-primary-blue"></div>
-              <h3 className="text-xl font-poppins font-bold text-text-primary mb-6">Order Summary</h3>
+            <div className="w-full lg:w-1/3 flex flex-col bg-[#111827] border border-[#374151] p-6 md:p-8 rounded-[24px] shadow-[0_4px_30px_rgba(0,0,0,0.3)] relative overflow-hidden">
+              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#FFC107] to-[#FF5722]"></div>
+              <h3 className="text-xl font-poppins font-bold text-white mb-6">Order Summary</h3>
               
               <div className="flex flex-col gap-4 text-sm font-inter">
-                <div className="flex justify-between border-b border-gray-100 pb-2 text-gray-500">
+                <div className="flex justify-between border-b border-[#374151] pb-2 text-gray-400">
                   <span>Market Total (MRP):</span>
                   <span className="font-medium line-through">₹{mktTotal.toFixed(2)}</span>
                 </div>
-                <div className="flex justify-between border-b border-gray-100 pb-2">
-                  <span className="font-medium text-green-600">Premium Discount (80%):</span>
-                  <span className="font-bold text-green-600">-₹{discountTotal.toFixed(2)}</span>
+                <div className="flex justify-between border-b border-[#374151] pb-2">
+                  <span className="font-medium text-[#10B981]">Premium Discount (80%):</span>
+                  <span className="font-bold text-[#10B981]">-₹{discountTotal.toFixed(2)}</span>
                 </div>
-                <div className="flex justify-between border-b border-gray-100 pb-2 text-text-primary">
+                <div className="flex justify-between border-b border-[#374151] pb-2 text-white">
                   <span className="font-semibold">Sub Total:</span>
                   <span className="font-bold">₹{subTotal.toFixed(2)}</span>
                 </div>
-                <div className="flex justify-between border-b border-gray-100 pb-2 text-gray-500">
+                <div className="flex justify-between border-b border-[#374151] pb-2 text-gray-400">
                   <span>Packing Charges (3%):</span>
                   <span className="font-medium">₹{packingCharges.toFixed(2)}</span>
                 </div>
@@ -310,7 +275,7 @@ export const Footer: React.FC<FooterProps> = ({
                     : 'bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200 rounded-[12px]'
                 }`}
               >
-                Proceed via WhatsApp
+                Place Order / Enquiry
               </button>
             </div>
           </form>
@@ -319,25 +284,28 @@ export const Footer: React.FC<FooterProps> = ({
 
       {/* Terms & Conditions Section (Only visible on home page) */}
       {showCheckout && (
-        <section className="bg-bg-light border-t border-gray-200/50 py-16 px-6 relative overflow-hidden">
+        <section className="bg-[#0B0F19] border-t border-[#374151] py-16 px-6 relative overflow-hidden">
           {/* Subtle background decoration */}
           <div className="absolute top-0 right-0 w-64 h-64 bg-secondary-gold/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3"></div>
           
           <div className="max-w-4xl mx-auto relative z-10">
-            <h3 className="text-2xl font-poppins font-bold text-text-primary text-center mb-10">Terms & Conditions</h3>
+            <h3 className="text-2xl font-poppins font-bold text-white text-center mb-10">Terms & Conditions</h3>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6 text-sm text-gray-600 font-inter">
-              {[
-                'Minimum order value is Rs. 3,000 only (after discount).',
-                'All orders will be dispatched from Sivakasi warehouse.',
-                '3% packing and handling charges will apply on all orders.',
-                'Products will be dispatched only after full payment verification.',
-                'Deliveries will be handled via third-party logistics on a To-Pay basis.',
-                'WhatsApp order submission is required to process and verify stock availability.',
-                'Images of items in the price list are for visual representations only.',
-                'The prices quoted are valid up to Diwali season or subject to manufacturer changes.'
-              ].map((term, idx) => (
-                <div key={idx} className="flex items-start gap-3 bg-white p-4 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6 text-sm text-gray-300 font-inter">
+              {(siteSettings.termsAndConditions && siteSettings.termsAndConditions.length > 0
+                ? siteSettings.termsAndConditions
+                : [
+                    'Minimum order value is Rs. 3,000 only (after discount).',
+                    'All orders will be dispatched from Sivakasi warehouse.',
+                    '3% packing and handling charges will apply on all orders.',
+                    'Products will be dispatched only after full payment verification.',
+                    'Deliveries will be handled via third-party logistics on a To-Pay basis.',
+                    'Order submission is required to process and verify stock availability.',
+                    'Images of items in the price list are for visual representations only.',
+                    'The prices quoted are valid up to Diwali season or subject to manufacturer changes.'
+                  ]
+              ).map((term, idx) => (
+                <div key={idx} className="flex items-start gap-3 bg-[#111827] p-4 rounded-2xl shadow-sm border border-[#374151] hover:shadow-md transition-shadow">
                   <div className="w-6 h-6 rounded-full bg-secondary-gold/20 text-secondary-gold flex items-center justify-center flex-shrink-0 mt-0.5">
                     <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"></path></svg>
                   </div>
@@ -386,15 +354,15 @@ export const Footer: React.FC<FooterProps> = ({
             
             {/* Social Icons */}
             <div className="flex gap-4 mt-2">
-              <a href={instagramUrl} target="_blank" rel="noreferrer" className="w-10 h-10 rounded-full bg-primary-blue border border-primary-blue hover:border-secondary-gold hover:text-secondary-gold flex items-center justify-center text-white transition-all duration-300">
+              <a href={instagramUrl} target="_blank" rel="noreferrer" className="w-10 h-10 rounded-full bg-[#111827] border border-[#374151] hover:border-[#FFC107] hover:text-[#FFC107] flex items-center justify-center text-white transition-all duration-300">
                 <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
               </a>
               {facebookUrl && (
-                <a href={facebookUrl} target="_blank" rel="noreferrer" className="w-10 h-10 rounded-full bg-primary-blue border border-primary-blue hover:border-secondary-gold hover:text-secondary-gold flex items-center justify-center text-white transition-all duration-300">
+                <a href={facebookUrl} target="_blank" rel="noreferrer" className="w-10 h-10 rounded-full bg-[#111827] border border-[#374151] hover:border-[#FFC107] hover:text-[#FFC107] flex items-center justify-center text-white transition-all duration-300">
                   <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M9 8h-3v4h3v12h5v-12h3.642l.358-4h-4v-1.667c0-.955.192-1.333 1.115-1.333h2.885v-5h-3.808c-3.596 0-5.192 1.583-5.192 4.615v3.385z"/></svg>
                 </a>
               )}
-              <a href="https://maps.google.com" target="_blank" rel="noreferrer" className="w-10 h-10 rounded-full bg-primary-blue border border-primary-blue hover:border-secondary-gold hover:text-secondary-gold flex items-center justify-center text-white transition-all duration-300">
+              <a href="https://maps.google.com" target="_blank" rel="noreferrer" className="w-10 h-10 rounded-full bg-[#111827] border border-[#374151] hover:border-[#FFC107] hover:text-[#FFC107] flex items-center justify-center text-white transition-all duration-300">
                 <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C7.58 0 4 3.58 4 8c0 5.25 8 16 8 16s8-10.75 8-16c0-4.42-3.58-8-8-8zm0 11.5c-1.93 0-3.5-1.57-3.5-3.5S10.07 4.5 12 4.5 15.5 6.07 15.5 8 13.93 11.5 12 11.5z"/></svg>
               </a>
             </div>
@@ -473,6 +441,36 @@ export const Footer: React.FC<FooterProps> = ({
           </p>
         </div>
       </footer>
+
+      <Dialog open={showSuccessModal} onOpenChange={(open) => {
+        if (!open) {
+          setShowSuccessModal(false);
+          window.location.reload();
+        }
+      }}>
+        <DialogContent className="sm:max-w-md text-center border-0 shadow-2xl p-8 rounded-3xl" style={{ background: '#FFFDF8' }}>
+          <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4 shadow-inner">
+            <CheckCircle2 className="w-8 h-8 text-green-600" />
+          </div>
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-poppins font-bold text-center text-gray-900 mb-2">Order Placed Successfully!</DialogTitle>
+            <DialogDescription className="text-center text-gray-600 text-base leading-relaxed">
+              Thank you for choosing <strong>{siteName}</strong>! Your order/enquiry has been recorded. Our team will contact you shortly to confirm stock availability and payment details.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="mt-6">
+            <Button
+              onClick={() => {
+                setShowSuccessModal(false);
+                window.location.reload();
+              }}
+              className="w-full bg-[#1F2A44] hover:bg-[#1F2A44]/90 text-white font-semibold py-6 rounded-xl"
+            >
+              Continue Browsing
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
