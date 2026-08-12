@@ -16,7 +16,7 @@ const Dashboard = () => {
     getProducts()
       .then((data) => {
         console.log('Products loaded (Dashboard):', data, Array.isArray(data));
-        setProducts(Array.isArray(data) ? data : []);
+        setProducts(Array.isArray(data) ? data : (data && Array.isArray(data.products) ? data.products : []));
       })
       .catch((err) => {
         console.error('Failed to fetch products (Dashboard):', err);
@@ -60,7 +60,7 @@ const Dashboard = () => {
   const productSalesMap = new Map<string, number>();
   orders.forEach(order => {
     order.items?.forEach((item: any) => {
-      const id = item.product;
+      const id = typeof item.product === 'object' ? (item.product?._id || item.product?.id) : item.product;
       if (id) {
         productSalesMap.set(id, (productSalesMap.get(id) || 0) + (item.quantity || 0));
       }

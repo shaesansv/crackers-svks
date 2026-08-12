@@ -1,45 +1,44 @@
 @import "tailwindcss";
 
 @theme {
-  --color-primary-blue: #164B60;
-  --color-secondary-gold: #1B6B93;
-  --color-accent-teal: #4FC0D0;
-  --color-btn-green: #A2FF86;
-  --color-success-green: #22C55E;
+  --color-primary-blue: #FFC107; /* Changed to Gold for primary accents */
+  --color-secondary-gold: #FF9800; /* Deeper gold/orange */
+  --color-accent-orange: #FF5722;
+  --color-success-green: #10B981;
   --color-danger-red: #EF4444;
-  --color-bg-light: #F6FAF9;
-  --color-section-bg: #EBF4F6;
-  --color-dark-section: #164B60;
-  --color-border-gray: #E5E7EB;
-  --color-text-primary: #0F2D3A;
-  --color-text-secondary: #4B6B7A;
+  --color-bg-light: #0B0F19; /* Deep midnight blue/black background */
+  --color-section-bg: #111827; /* Darker card background */
+  --color-dark-section: #1F2A44;
+  --color-border-gray: #374151; /* Dark border */
+  --color-text-primary: #F9FAFB; /* Off-white text */
+  --color-text-secondary: #9CA3AF; /* Gray text */
   
-  --color-royal-red: #E53935; /* Festival Red */
-  --color-luxury-gold: #4FC0D0; /* Accent Cyan */
-  --color-off-white: #F6FAF9; /* Off White */
+  --color-royal-red: #E53935;
+  --color-luxury-gold: #FFC107;
+  --color-off-white: #0B0F19; 
 
   /* Sidebar Theme Variables for Admin Panel */
-  --color-sidebar: #164B60; /* Primary: Deep Petrol Teal */
-  --color-sidebar-foreground: #FFFFFF; /* White */
-  --color-sidebar-primary: #A2FF86; /* Accent Btn Lime Green */
-  --color-sidebar-primary-foreground: #164B60;
-  --color-sidebar-accent: #1B6B93; /* Secondary Ocean Blue */
-  --color-sidebar-accent-foreground: #FFFFFF;
-  --color-sidebar-border: rgba(255, 255, 255, 0.1);
-  --color-sidebar-ring: #4FC0D0;
+  --color-sidebar: #0f172a; 
+  --color-sidebar-foreground: #F9FAFB;
+  --color-sidebar-primary: #FFC107; 
+  --color-sidebar-primary-foreground: #000000;
+  --color-sidebar-accent: #1e293b; 
+  --color-sidebar-accent-foreground: #F9FAFB;
+  --color-sidebar-border: #334155;
+  --color-sidebar-ring: #FFC107;
 
-  --color-border: #CBD5E1; /* Border */
-  --color-primary-hover: #113A4B;
-  --color-primary-light: #E6F4F8;
-  --color-secondary: #1B6B93;
+  --color-border: #374151;
+  --color-primary-hover: #F59E0B;
+  --color-primary-light: rgba(255, 193, 7, 0.1);
+  --color-secondary: #1F2A44;
 
   --font-sans: "Inter", sans-serif;
   --font-poppins: "Poppins", sans-serif;
 
   --radius-xl: 18px;
 
-  --shadow-premium: 0 10px 40px -10px rgba(22, 75, 96, 0.12), 0 4px 10px -5px rgba(22, 75, 96, 0.06);
-  --shadow-premium-hover: 0 20px 50px -10px rgba(22, 75, 96, 0.18), 0 10px 20px -5px rgba(22, 75, 96, 0.1);
+  --shadow-premium: 0 10px 40px -10px rgba(0,0,0,0.08), 0 4px 10px -5px rgba(0,0,0,0.04);
+  --shadow-premium-hover: 0 20px 50px -10px rgba(0,0,0,0.12), 0 10px 20px -5px rgba(0,0,0,0.08);
 
   --animate-fade-in: fade-in 0.8s ease-out forwards;
   --animate-slide-up: slide-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
@@ -77,31 +76,31 @@ input[type=number] {
 
 /* Premium Buttons */
 .btn-primary {
-  background-color: #A2FF86;
-  color: #164B60;
-  border-radius: 12px;
-  height: 48px;
-  font-weight: 700;
-  transition: all 0.3s ease;
-}
-.btn-primary:hover {
-  background-color: #8be371;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 14px rgba(162, 255, 134, 0.4);
-}
-
-.btn-secondary {
-  background-color: #1B6B93;
+  background-color: var(--color-primary-blue);
   color: #ffffff;
   border-radius: 12px;
   height: 48px;
   font-weight: 600;
   transition: all 0.3s ease;
 }
-.btn-secondary:hover {
-  background-color: #164B60;
+.btn-primary:hover {
+  background-color: var(--color-primary-hover);
   transform: translateY(-2px);
-  box-shadow: 0 4px 14px rgba(27, 107, 147, 0.3);
+  box-shadow: 0 4px 12px rgba(36, 190, 100, 0.3);
+}
+
+.btn-secondary {
+  background-color: var(--color-secondary-gold);
+  color: var(--color-text-primary);
+  border-radius: 12px;
+  height: 48px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+.btn-secondary:hover {
+  background-color: #E0A800;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 193, 7, 0.3);
 }
 
 .btn-premium {

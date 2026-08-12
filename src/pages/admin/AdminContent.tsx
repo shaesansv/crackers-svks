@@ -45,6 +45,9 @@ const AdminContent = () => {
         socialLinks: form.socialLinks,
         news: form.news,
         enablePackingCharge: form.enablePackingCharge,
+        aboutUs: form.aboutUs,
+        safetyTips: form.safetyTips,
+        termsAndConditions: form.termsAndConditions,
       });
       await updateSettings(form);
       toast.success("Settings saved! Changes are now live on the website.");
@@ -308,6 +311,90 @@ const AdminContent = () => {
                     />
                   </div>
                 ))}
+              </div>
+            </div>
+
+            {/* ── About Us ── */}
+            <div className="bg-white border border-gray-200 rounded-xl p-6 space-y-4 shadow-sm">
+              <h2 className="font-bold text-lg text-gray-900 border-b pb-2">About Us Content</h2>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label className="font-semibold text-gray-700">Our Story</Label>
+                  <textarea
+                    className={taBase}
+                    value={form.aboutUs?.story ?? ""}
+                    onChange={(e) => setForm({ ...form, aboutUs: { ...form.aboutUs, story: e.target.value } })}
+                    rows={4}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="font-semibold text-gray-700">Vision</Label>
+                  <textarea
+                    className={taBase}
+                    value={form.aboutUs?.vision ?? ""}
+                    onChange={(e) => setForm({ ...form, aboutUs: { ...form.aboutUs, vision: e.target.value } })}
+                    rows={3}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="font-semibold text-gray-700">Mission</Label>
+                  <textarea
+                    className={taBase}
+                    value={form.aboutUs?.mission ?? ""}
+                    onChange={(e) => setForm({ ...form, aboutUs: { ...form.aboutUs, mission: e.target.value } })}
+                    rows={3}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* ── Safety Tips ── */}
+            <div className="bg-white border border-gray-200 rounded-xl p-6 space-y-4 shadow-sm">
+              <h2 className="font-bold text-lg text-gray-900 border-b pb-2">Safety Tips Content</h2>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label className="font-semibold text-gray-700">Introduction</Label>
+                  <textarea
+                    className={taBase}
+                    value={form.safetyTips?.intro ?? ""}
+                    onChange={(e) => setForm({ ...form, safetyTips: { ...form.safetyTips, intro: e.target.value } })}
+                    rows={3}
+                  />
+                </div>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label className="font-semibold text-gray-700">Do's (One per line)</Label>
+                    <textarea
+                      className={taBase}
+                      value={form.safetyTips?.dos?.join('\n') ?? ""}
+                      onChange={(e) => setForm({ ...form, safetyTips: { ...form.safetyTips, dos: e.target.value.split('\n') } })}
+                      rows={6}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="font-semibold text-gray-700">Don'ts (One per line)</Label>
+                    <textarea
+                      className={taBase}
+                      value={form.safetyTips?.donts?.join('\n') ?? ""}
+                      onChange={(e) => setForm({ ...form, safetyTips: { ...form.safetyTips, donts: e.target.value.split('\n') } })}
+                      rows={6}
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* ── Terms & Conditions ── */}
+            <div className="bg-white border border-gray-200 rounded-xl p-6 space-y-4 shadow-sm">
+              <h2 className="font-bold text-lg text-gray-900 border-b pb-2">Terms & Conditions</h2>
+              <div className="space-y-2">
+                <Label className="font-semibold text-gray-700">Terms (One per line)</Label>
+                <textarea
+                  className={taBase}
+                  value={form.termsAndConditions?.join('\n') ?? ""}
+                  onChange={(e) => setForm({ ...form, termsAndConditions: e.target.value.split('\n') })}
+                  rows={8}
+                />
               </div>
             </div>
 

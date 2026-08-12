@@ -1,23 +1,9 @@
 import React from 'react';
+import { useSiteSettings } from '../context/SiteSettingsContext';
 
 export const SafetyTips: React.FC = () => {
-  const dos = [
-    "Display fireworks as per the warnings and instructions mentioned on the pack.",
-    "Buy fireworks directly from Manufacturer or from authorized dealer only.",
-    "Always follow the Safety tips marked on the fireworks.",
-    "Use an agarbatti to ignite the fireworks.",
-    "Always wear eye protection when lightening fireworks.",
-    "Keep a bucket of water or a garden hose handy in case of fire or other mishap."
-  ];
-
-  const donts = [
-    "Never try to re-light or pick up fireworks that have not ignited fully.",
-    "Never shoot fireworks in a metal or glass containers.",
-    "Never point or throw fireworks at another person.",
-    "Do not wear loose clothing while using fireworks.",
-    "Never carry fireworks in your pockets.",
-    "After fireworks display never pick up fireworks that may be left over, they may still active."
-  ];
+  const { settings } = useSiteSettings();
+  const { intro, dos = [], donts = [] } = settings.safetyTips || {};
 
   return (
     <div className="flex-grow bg-bg-light pb-20">
@@ -53,10 +39,8 @@ export const SafetyTips: React.FC = () => {
         <div className="bg-white rounded-[24px] shadow-[var(--shadow-premium)] p-8 md:p-10 mb-16 text-center border border-gray-100 relative overflow-hidden">
           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-secondary-gold to-primary-blue"></div>
           <h2 className="text-2xl font-poppins font-bold text-text-primary mb-4">Sarguru Crackers</h2>
-          <p className="text-gray-600 font-inter text-sm md:text-base leading-relaxed max-w-3xl mx-auto">
-            There are certain Do's & Don'ts to follow while purchasing, bursting and storing crackers. Thus, it is very important to follow the precautions while bursting crackers.
-            <br className="hidden md:block" />
-            <strong className="text-danger-red mt-2 block">A little negligence, ignorance and carelessness can cause a fatal injury.</strong>
+          <p className="text-gray-600 font-inter text-sm md:text-base leading-relaxed max-w-3xl mx-auto whitespace-pre-line">
+            {intro}
           </p>
         </div>
 

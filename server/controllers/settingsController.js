@@ -61,7 +61,10 @@ export const getSiteInfo = async (req, res, next) => {
       maintenanceMessage: settings.maintenanceMessage || '',
       news: settings.news || '',
       billing: settings.billing || {},
-      enablePackingCharge: settings.enablePackingCharge !== undefined ? settings.enablePackingCharge : true
+      enablePackingCharge: settings.enablePackingCharge !== undefined ? settings.enablePackingCharge : true,
+      aboutUs: settings.aboutUs || {},
+      safetyTips: settings.safetyTips || {},
+      termsAndConditions: settings.termsAndConditions || []
     };
 
     res.json(info);

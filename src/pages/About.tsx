@@ -1,6 +1,9 @@
 import React from 'react';
+import { useSiteSettings } from '../context/SiteSettingsContext';
 
 export const About: React.FC = () => {
+  const { settings } = useSiteSettings();
+  const { story, vision, mission } = settings.aboutUs || {};
   // Gallery images (alternating our generated images for variety)
   const galleryImages = [
     { src: '/shop_shelf_1.png', alt: 'Cracker Shop Stock' },
@@ -52,11 +55,8 @@ export const About: React.FC = () => {
             </h2>
             <div className="w-16 h-1 bg-secondary-gold mx-auto mt-4 mb-8 rounded-full"></div>
             
-            <p className="text-gray-600 text-sm md:text-base leading-relaxed text-justify md:text-center font-inter px-4 mb-6">
-              We are in the field of <strong>manufacturing & selling crackers since 1994</strong>. We have direct buying customers from Maharashtra, Kerala, Karnataka, and Tamil Nadu. We have 2 manufacturing units in Sivakasi and an exclusive showroom with 2 licensed godowns to stock crackers for our customer needs for all occasions throughout the year. 
-            </p>
-            <p className="text-gray-600 text-sm md:text-base leading-relaxed text-justify md:text-center font-inter px-4">
-              We have a wide variety of crackers such as sky-shots to fountains, color smoke to paper shots. We provide customized fund orders with separate packing and wholesale prices.
+            <p className="text-gray-600 text-sm md:text-base leading-relaxed text-justify md:text-center font-inter px-4 mb-6 whitespace-pre-line">
+              {story}
             </p>
           </div>
         </div>
@@ -102,7 +102,7 @@ export const About: React.FC = () => {
             </div>
             <h4 className="text-primary-blue font-poppins font-bold text-lg mb-3">Vision</h4>
             <p className="text-gray-700 font-inter text-base leading-relaxed max-w-2xl mx-auto italic">
-              "To be the best wholesale & retail dealer for all kinds of fancy crackers & gift boxes to our beloved customers."
+              "{vision}"
             </p>
           </div>
           
@@ -111,7 +111,7 @@ export const About: React.FC = () => {
           <div className="relative">
             <h4 className="text-primary-blue font-poppins font-bold text-lg mb-3">Mission</h4>
             <p className="text-gray-700 font-inter text-base leading-relaxed max-w-2xl mx-auto italic">
-              "Our Mission is to provide Quality & Innovative Fireworks products to our valuable customers at reasonable prices and light up all their celebrations."
+              "{mission}"
             </p>
           </div>
         </div>

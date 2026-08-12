@@ -36,12 +36,12 @@ const seedSampleData = async () => {
 
     // Seed Categories
     const categoriesData = [
-      { name: 'Sparklers', categoryCode: '100', description: 'Sparkling hand-held fireworks', icon: 'sparkles', displayOrder: 1, image: 'https://images.unsplash.com/photo-1542385151-efd9000785a0?q=80&w=200&auto=format&fit=crop' },
-      { name: 'Ground Chakkars', categoryCode: '110', description: 'Spinning ground wheels', icon: 'rotate-cw', displayOrder: 2, image: 'https://images.unsplash.com/photo-1517260911058-0fcfd733c021?q=80&w=200&auto=format&fit=crop' },
-      { name: 'Flower Pots', categoryCode: '120', description: 'Fountain of colorful sparks', icon: 'flower', displayOrder: 3, image: 'https://images.unsplash.com/photo-1498804103079-a6351b050096?q=80&w=200&auto=format&fit=crop' },
-      { name: 'Rockets', categoryCode: '130', description: 'Sky soaring high-altitude rockets', icon: 'rocket', displayOrder: 4, image: 'https://images.unsplash.com/photo-1481156828551-87ee09e4693a?q=80&w=200&auto=format&fit=crop' },
-      { name: 'Garland Crackers', categoryCode: '140', description: 'Series of loud crackers', icon: 'flame', displayOrder: 5, image: 'https://images.unsplash.com/photo-1518837695005-2083093ee35b?q=80&w=200&auto=format&fit=crop' },
-      { name: 'Fancy Fountains', categoryCode: '150', description: 'Visual delight multi-shot fountains', icon: 'zap', displayOrder: 6, image: 'https://images.unsplash.com/photo-1467810563316-b5476525c0f9?q=80&w=200&auto=format&fit=crop' }
+      { name: 'Sparklers', categoryCode: '100', description: 'Sparkling hand-held fireworks', icon: 'sparkles', displayOrder: 1, image: 'https://images.unsplash.com/photo-1484920274317-87885bfc39f4?auto=format&fit=crop&q=80&w=600' },
+      { name: 'Ground Chakkars', categoryCode: '110', description: 'Spinning ground wheels', icon: 'rotate-cw', displayOrder: 2, image: 'https://images.unsplash.com/photo-1543621453-911e3b5e4070?auto=format&fit=crop&q=80&w=600' },
+      { name: 'Flower Pots', categoryCode: '120', description: 'Fountain of colorful sparks', icon: 'flower', displayOrder: 3, image: 'https://images.unsplash.com/photo-1603513360677-33a758d601b0?auto=format&fit=crop&q=80&w=600' },
+      { name: 'Rockets', categoryCode: '130', description: 'Sky soaring high-altitude rockets', icon: 'rocket', displayOrder: 4, image: 'https://images.unsplash.com/photo-1498804103079-a6351b050096?auto=format&fit=crop&q=80&w=600' },
+      { name: 'Garland Crackers', categoryCode: '140', description: 'Series of loud crackers', icon: 'flame', displayOrder: 5, image: 'https://images.unsplash.com/photo-1518837695005-2083093ee35b?auto=format&fit=crop&q=80&w=600' },
+      { name: 'Fancy Fountains', categoryCode: '150', description: 'Visual delight multi-shot fountains', icon: 'zap', displayOrder: 6, image: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&q=80&w=600' }
     ];
 
     const savedCategories = {};
@@ -66,7 +66,7 @@ const seedSampleData = async () => {
         netRate: 35,
         stock: 500,
         minimumStock: 50,
-        image: 'https://images.unsplash.com/photo-1542385151-efd9000785a0?q=80&w=200&auto=format&fit=crop',
+        image: 'https://images.unsplash.com/photo-1484920274317-87885bfc39f4?auto=format&fit=crop&q=80&w=600',
         isActive: true
       },
       {
@@ -80,7 +80,7 @@ const seedSampleData = async () => {
         netRate: 100,
         stock: 300,
         minimumStock: 30,
-        image: 'https://images.unsplash.com/photo-1542385151-efd9000785a0?q=80&w=200&auto=format&fit=crop',
+        image: 'https://images.unsplash.com/photo-1484920274317-87885bfc39f4?auto=format&fit=crop&q=80&w=600',
         isActive: true
       },
       // Ground Chakkars
@@ -95,7 +95,7 @@ const seedSampleData = async () => {
         netRate: 50,
         stock: 400,
         minimumStock: 40,
-        image: 'https://images.unsplash.com/photo-1517260911058-0fcfd733c021?q=80&w=200&auto=format&fit=crop',
+        image: 'https://images.unsplash.com/photo-1543621453-911e3b5e4070?auto=format&fit=crop&q=80&w=600',
         isActive: true
       },
       {
@@ -109,7 +109,7 @@ const seedSampleData = async () => {
         netRate: 80,
         stock: 250,
         minimumStock: 25,
-        image: 'https://images.unsplash.com/photo-1517260911058-0fcfd733c021?q=80&w=200&auto=format&fit=crop',
+        image: 'https://images.unsplash.com/photo-1543621453-911e3b5e4070?auto=format&fit=crop&q=80&w=600',
         isActive: true
       },
       // Flower Pots
@@ -124,7 +124,7 @@ const seedSampleData = async () => {
         netRate: 70,
         stock: 350,
         minimumStock: 35,
-        image: 'https://images.unsplash.com/photo-1498804103079-a6351b050096?q=80&w=200&auto=format&fit=crop',
+        image: 'https://images.unsplash.com/photo-1603513360677-33a758d601b0?auto=format&fit=crop&q=80&w=600',
         isActive: true
       },
       {
@@ -138,7 +138,7 @@ const seedSampleData = async () => {
         netRate: 130,
         stock: 200,
         minimumStock: 20,
-        image: 'https://images.unsplash.com/photo-1498804103079-a6351b050096?q=80&w=200&auto=format&fit=crop',
+        image: 'https://images.unsplash.com/photo-1603513360677-33a758d601b0?auto=format&fit=crop&q=80&w=600',
         isActive: true
       },
       // Rockets
@@ -153,7 +153,7 @@ const seedSampleData = async () => {
         netRate: 140,
         stock: 150,
         minimumStock: 15,
-        image: 'https://images.unsplash.com/photo-1481156828551-87ee09e4693a?q=80&w=200&auto=format&fit=crop',
+        image: 'https://images.unsplash.com/photo-1498804103079-a6351b050096?auto=format&fit=crop&q=80&w=600',
         isActive: true
       },
       {
@@ -167,7 +167,7 @@ const seedSampleData = async () => {
         netRate: 180,
         stock: 120,
         minimumStock: 12,
-        image: 'https://images.unsplash.com/photo-1481156828551-87ee09e4693a?q=80&w=200&auto=format&fit=crop',
+        image: 'https://images.unsplash.com/photo-1498804103079-a6351b050096?auto=format&fit=crop&q=80&w=600',
         isActive: true
       },
       // Garland Crackers
@@ -182,7 +182,7 @@ const seedSampleData = async () => {
         netRate: 40,
         stock: 500,
         minimumStock: 50,
-        image: 'https://images.unsplash.com/photo-1518837695005-2083093ee35b?q=80&w=200&auto=format&fit=crop',
+        image: 'https://images.unsplash.com/photo-1518837695005-2083093ee35b?auto=format&fit=crop&q=80&w=600',
         isActive: true
       },
       {
@@ -196,7 +196,7 @@ const seedSampleData = async () => {
         netRate: 85,
         stock: 300,
         minimumStock: 30,
-        image: 'https://images.unsplash.com/photo-1518837695005-2083093ee35b?q=80&w=200&auto=format&fit=crop',
+        image: 'https://images.unsplash.com/photo-1518837695005-2083093ee35b?auto=format&fit=crop&q=80&w=600',
         isActive: true
       },
       // Fancy Fountains
@@ -211,7 +211,7 @@ const seedSampleData = async () => {
         netRate: 210,
         stock: 100,
         minimumStock: 10,
-        image: 'https://images.unsplash.com/photo-1467810563316-b5476525c0f9?q=80&w=200&auto=format&fit=crop',
+        image: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&q=80&w=600',
         isActive: true
       },
       {
@@ -225,7 +225,7 @@ const seedSampleData = async () => {
         netRate: 310,
         stock: 80,
         minimumStock: 8,
-        image: 'https://images.unsplash.com/photo-1467810563316-b5476525c0f9?q=80&w=200&auto=format&fit=crop',
+        image: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&q=80&w=600',
         isActive: true
       }
     ];
