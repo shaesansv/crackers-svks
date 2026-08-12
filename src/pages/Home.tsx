@@ -1,8 +1,11 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { ProductImage } from '../components/ProductImage';
+import { ImageSlider } from '../components/ImageSlider';
 import { Fireworks } from '@fireworks-js/react';
 import type { Category, Product } from '../types';
 import { useSiteSettings } from '../context/SiteSettingsContext';
+import sar1 from '../assets/sar-1.png';
+import sar4 from '../assets/sar-4.jpg';
 
 interface HomeProps {
   quantities: Record<string, number>;
@@ -20,33 +23,26 @@ interface HomeProps {
 export const Home: React.FC<HomeProps> = ({
   quantities,
   handleQtyChange,
+  adjustQty,
   searchTerm,
   setSearchTerm,
   selectedCategory,
   setSelectedCategory,
   categories
 }) => {
-  const [selectedBrand, setSelectedBrand] = useState('all');
   const { settings } = useSiteSettings();
   const marqueeText = settings.news || '';
   const heroTitle = settings.siteName ? `Welcome to ${settings.siteName}` : 'Celebrate with Premium Fireworks';
   const heroDesc = settings.siteDescription || "Sivakasi's finest crackers at wholesale prices. Light up your celebrations!";
 
-  // Filter products and categories based on search, category, and brand state
+  // Filter products and categories based on search and category state
   const filteredCategories = categories
     .map((category) => {
       const matchedProducts = category.products.filter((product: Product) => {
         const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase());
         const matchesCategory = selectedCategory === 'all' || selectedCategory === category.id;
         
-        let matchesBrand = true;
-        if (selectedBrand === 'laxmi') {
-          matchesBrand = product.name.toLowerCase().includes('laxmi');
-        } else if (selectedBrand === 'standard') {
-          matchesBrand = !product.name.toLowerCase().includes('laxmi');
-        }
-        
-        return matchesSearch && matchesCategory && matchesBrand;
+        return matchesSearch && matchesCategory;
       });
 
       return {
@@ -80,16 +76,12 @@ export const Home: React.FC<HomeProps> = ({
         </div>
       )}
 
-      {/* Hero Section with Fireworks */}
-      <div 
-        className="w-full h-[300px] md:h-[400px] relative overflow-hidden flex-shrink-0"
-        style={{
-          backgroundImage: `linear-gradient(to bottom right, rgba(15, 76, 129, 0.85), rgba(30, 58, 138, 0.95)), url('/banner.png')`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundAttachment: 'fixed'
-        }}
-      >
+      {/* Hero Section with Image Slider & Fireworks */}
+      <div className="w-full h-[280px] sm:h-[380px] md:h-[460px] relative overflow-hidden flex-shrink-0">
+        <ImageSlider 
+          images={[sar1, sar4]} 
+          heightClass="h-full w-full rounded-none" 
+        />
         <Fireworks
           options={{
             rocketsPoint: { min: 10, max: 90 },
@@ -119,7 +111,7 @@ export const Home: React.FC<HomeProps> = ({
             pointerEvents: 'none'
           }}
         />
-        <div className="absolute inset-0 flex flex-col items-center justify-center z-20 bg-black/20">
+        <div className="absolute inset-0 flex flex-col items-center justify-center z-10 bg-black/40 backdrop-blur-[1px]">
           <h1 className="text-3xl md:text-5xl font-bold text-white text-center px-4 tracking-wide shadow-black drop-shadow-md">
             {heroTitle}
           </h1>
@@ -132,47 +124,28 @@ export const Home: React.FC<HomeProps> = ({
       <main className="flex-grow w-full max-w-[1200px] mx-auto bg-transparent mt-6 mb-10 relative z-40 rounded-lg">
         
         {/* 1. Top Filters & Search Box */}
-        <div className="bg-[#111827] border border-[#374151] rounded-[20px] p-5 shadow-[0_8px_30px_rgba(0,0,0,0.3)] mb-6 flex flex-col gap-3.5">
-          {/* Dropdowns */}
-          <div className="grid grid-cols-2 gap-3.5">
-            {/* Brand Dropdown */}
-            <div className="relative">
-              <select
-                value={selectedBrand}
-                onChange={(e) => setSelectedBrand(e.target.value)}
-                className="w-full py-3 pl-4 pr-10 border border-[#374151] rounded-[14px] text-sm bg-[#1f2937] text-white font-semibold outline-none transition-all duration-300 focus:border-[#FFC107] focus:ring-1 focus:ring-[#FFC107] cursor-pointer appearance-none"
-              >
-                <option value="all">All Brands</option>
-                <option value="laxmi">Laxmi Brand</option>
-                <option value="standard">Standard Quality</option>
-              </select>
-              <div className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
-              </div>
-            </div>
-
-            {/* Category Dropdown */}
-            <div className="relative">
-              <select
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-                className="w-full py-3 pl-4 pr-10 border border-[#374151] rounded-[14px] text-sm bg-[#1f2937] text-white font-semibold outline-none transition-all duration-300 focus:border-[#FFC107] focus:ring-1 focus:ring-[#FFC107] cursor-pointer appearance-none"
-              >
-                <option value="all">All Categories</option>
-                {categories.map((cat: Category) => (
-                  <option key={cat.id} value={cat.id}>
-                    {cat.name.replace(' (80% DISCOUNT)', '')}
-                  </option>
-                ))}
-              </select>
-              <div className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
-              </div>
+        <div className="bg-[#111827] border border-[#374151] rounded-[20px] p-5 shadow-[0_8px_30px_rgba(0,0,0,0.3)] mb-6 flex flex-col sm:flex-row gap-3.5">
+          {/* Category Dropdown */}
+          <div className="relative w-full sm:w-1/3">
+            <select
+              value={selectedCategory}
+              onChange={(e) => setSelectedCategory(e.target.value)}
+              className="w-full py-3 pl-4 pr-10 border border-[#374151] rounded-[14px] text-sm bg-[#1f2937] text-white font-semibold outline-none transition-all duration-300 focus:border-[#FFC107] focus:ring-1 focus:ring-[#FFC107] cursor-pointer appearance-none"
+            >
+              <option value="all">All Categories</option>
+              {categories.map((cat: Category) => (
+                <option key={cat.id} value={cat.id}>
+                  {cat.name.replace(' (80% DISCOUNT)', '')}
+                </option>
+              ))}
+            </select>
+            <div className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
             </div>
           </div>
 
           {/* Search Field */}
-          <div className="relative">
+          <div className="relative w-full sm:w-2/3">
             <input
               type="text"
               placeholder="Search products..."
@@ -180,9 +153,9 @@ export const Home: React.FC<HomeProps> = ({
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full py-3 pl-11 pr-4 border border-[#374151] rounded-[14px] text-sm bg-[#1f2937] focus:bg-[#374151] text-white outline-none transition-all duration-300 focus:border-[#FFC107] focus:ring-1 focus:ring-[#FFC107] font-inter"
             />
-            <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-            </div>
+            <svg className="w-5 h-5 absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 0 0114 0z"></path>
+            </svg>
           </div>
         </div>
 
@@ -211,10 +184,10 @@ export const Home: React.FC<HomeProps> = ({
                     return (
                       <div 
                         key={product.id} 
-                        className={`flex flex-col md:grid md:grid-cols-[3fr_1fr_1fr_1fr_1fr_1fr] items-center px-4 md:px-6 py-5 md:py-4 border-b border-[#374151] transition-all duration-300 gap-4 md:gap-0 ${
+                        className={`flex flex-col md:grid md:grid-cols-[3fr_1fr_1fr_1fr_2fr] items-center px-4 md:px-6 py-5 md:py-4 border-b border-[#374151] transition-all duration-300 gap-4 md:gap-0 ${
                           isOutOfStock
                             ? 'bg-[#0B0F19] opacity-75 cursor-not-allowed'
-                            : 'bg-[#111827] hover:bg-[#1f2937] hover:shadow-[var(--shadow-premium-hover)] hover:-translate-y-1'
+                            : 'bg-[#111827] hover:bg-[#1f2937] hover:shadow-[var(--shadow-premium-hover)]'
                         }`}
                       >
                         {/* Product Details */}
@@ -252,7 +225,7 @@ export const Home: React.FC<HomeProps> = ({
                         </div>
 
                         {/* Mobile Details Row */}
-                        <div className="flex items-center justify-between w-full md:hidden text-sm text-text-secondary bg-bg-light p-2 rounded-[12px]">
+                        <div className="flex items-center justify-between w-full md:hidden text-sm text-text-secondary bg-bg-light p-2.5 rounded-[12px]">
                           <div className="font-medium">Unit: <span className="font-normal">{product.unit}</span></div>
                           <div className={`font-bold ${
                             isOutOfStock ? 'text-red-500' : isLow ? 'text-accent-orange' : 'text-success-green'
@@ -300,42 +273,49 @@ export const Home: React.FC<HomeProps> = ({
                           )}
                         </div>
 
-                        {/* Actions Row (Quantity & Add Button) */}
-                        <div className="flex items-center justify-between w-full md:contents mt-2 md:mt-0">
-                          {/* Quantity */}
-                          <div className="flex justify-center items-center w-1/2 md:w-auto pr-2 md:pr-0 border-r md:border-r-0 border-gray-200">
-                            <span className="text-xs font-bold text-gray-500 mr-2 md:hidden">QTY:</span>
-                            <input
-                              type="number"
-                              min="1"
-                              value={qty}
-                              disabled={isOutOfStock}
-                              onChange={(e) => handleQtyChange(product.id, e.target.value)}
-                              className={`w-[60px] h-[36px] border rounded-[4px] text-center text-[14px] outline-none transition-colors ${
-                                isOutOfStock
-                                  ? 'bg-gray-100 border-gray-200 text-gray-300 cursor-not-allowed'
-                                  : 'border-gray-300 focus:border-primary-blue'
-                              }`}
-                            />
-                          </div>
-
-                          {/* Action */}
-                          <div className="flex justify-center items-center w-1/2 md:w-auto pl-2 md:pl-0">
-                            {isOutOfStock ? (
-                              <div className="w-full md:w-[70px] max-w-[120px] h-[36px] flex items-center justify-center text-[11px] font-bold text-red-400 bg-red-50 border border-red-200 rounded-[6px] cursor-not-allowed select-none">
-                                🚫 N/A
-                              </div>
-                            ) : (
+                        {/* Actions Row (Touch-Friendly Quantity & Stepper Controls) */}
+                        <div className="flex items-center justify-center w-full md:w-auto mt-1 md:mt-0">
+                          {isOutOfStock ? (
+                            <div className="w-full md:w-[120px] h-[38px] flex items-center justify-center text-[12px] font-bold text-red-400 bg-red-500/10 border border-red-500/30 rounded-xl cursor-not-allowed select-none">
+                              🚫 Out of Stock
+                            </div>
+                          ) : qty && Number(qty) > 0 ? (
+                            /* Stepper Control when item is added */
+                            <div className="flex items-center justify-between w-full md:w-[130px] bg-[#1f2937] border border-[#FFC107]/60 rounded-xl overflow-hidden shadow-sm">
                               <button
-                                onClick={() => {
-                                  if (!qty) handleQtyChange(product.id, '1');
-                                }}
-                                className="w-full md:w-[70px] max-w-[120px] btn-primary flex items-center justify-center text-[13px] !h-[36px] shadow-sm"
+                                type="button"
+                                onClick={() => adjustQty(product.id, false)}
+                                className="w-10 h-10 flex items-center justify-center text-[#FFC107] font-extrabold hover:bg-[#374151] active:bg-[#4b5563] active:scale-95 transition-all text-lg cursor-pointer"
+                                aria-label="Decrease quantity"
                               >
-                                ADD
+                                -
                               </button>
-                            )}
-                          </div>
+                              <input
+                                type="number"
+                                min="0"
+                                value={qty}
+                                onChange={(e) => handleQtyChange(product.id, e.target.value)}
+                                className="w-12 h-10 bg-transparent text-center font-extrabold text-white text-sm outline-none border-none p-0"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => adjustQty(product.id, true)}
+                                className="w-10 h-10 flex items-center justify-center text-[#FFC107] font-extrabold hover:bg-[#374151] active:bg-[#4b5563] active:scale-95 transition-all text-lg cursor-pointer"
+                                aria-label="Increase quantity"
+                              >
+                                +
+                              </button>
+                            </div>
+                          ) : (
+                            /* Initial ADD Button */
+                            <button
+                              type="button"
+                              onClick={() => adjustQty(product.id, true)}
+                              className="w-full md:w-[120px] h-[38px] bg-[#FFC107] hover:bg-[#ffcd38] text-[#0f172a] font-poppins font-bold text-xs rounded-xl shadow-md transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-1"
+                            >
+                              <span>+</span> ADD
+                            </button>
+                          )}
                         </div>
                       </div>
                     );

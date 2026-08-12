@@ -3,6 +3,8 @@ import { useSiteSettings } from '../context/SiteSettingsContext';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { CheckCircle2 } from 'lucide-react';
+import { ImageSlider } from './ImageSlider';
+
 interface Product {
   id: string;
   name: string;
@@ -131,6 +133,9 @@ export const Footer: React.FC<FooterProps> = ({
       {/* Checkout Form Container (Only visible on home page) */}
       {showCheckout && (
         <section id="checkout-section" className="bg-white border-t border-gray-100 pt-10 pb-16 px-6 md:px-12 select-none relative z-10">
+          <div className="max-w-6xl mx-auto mb-8">
+            <ImageSlider heightClass="h-[180px] sm:h-[280px] md:h-[360px]" />
+          </div>
           {/* Red Title Banner */}
           <div className="flex justify-center mb-10">
             <h2 className="text-2xl md:text-3xl font-poppins font-bold text-text-primary relative inline-block">

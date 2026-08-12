@@ -1,18 +1,20 @@
 import React from 'react';
 import { useSiteSettings } from '../context/SiteSettingsContext';
+import sar3 from '../assets/sar-3.jpg';
 
 export const About: React.FC = () => {
   const { settings } = useSiteSettings();
   const { story, vision, mission } = settings.aboutUs || {};
-  // Gallery images (alternating our generated images for variety)
+  
+  // Gallery images including sar-3.jpg
   const galleryImages = [
+    { src: sar3, alt: 'Sarguru Crackers Store' },
     { src: '/shop_shelf_1.png', alt: 'Cracker Shop Stock' },
     { src: '/gift_box_1.png', alt: 'Premium Gift Boxes' },
-    { src: '/shop_shelf_1.png', alt: 'Crackers Warehouse' },
+    { src: sar3, alt: 'Diwali Crackers Showcase' },
     { src: '/gift_box_1.png', alt: 'Diwali Gift Hamper' },
     { src: '/gift_box_1.png', alt: 'Sivakasi Crackers Display' },
-    { src: '/shop_shelf_1.png', alt: 'Traditional Firework Boxes' },
-    { src: '/shop_shelf_1.png', alt: 'Storefront Crackers Stack' },
+    { src: sar3, alt: 'Traditional Firework Boxes' },
     { src: '/gift_box_1.png', alt: 'Fancy Cracker Assortment' },
   ];
 
@@ -22,7 +24,7 @@ export const About: React.FC = () => {
       <section 
         className="relative w-full h-[320px] overflow-hidden flex items-center justify-center px-10 md:px-20 select-none"
         style={{
-          backgroundImage: `linear-gradient(to bottom right, rgba(22, 75, 96, 0.9), rgba(27, 107, 147, 0.95)), url('/shop_shelf_1.png')`,
+          backgroundImage: `linear-gradient(to bottom right, rgba(22, 75, 96, 0.85), rgba(27, 107, 147, 0.9)), url(${sar3})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundAttachment: 'fixed'
@@ -47,15 +49,22 @@ export const About: React.FC = () => {
 
       {/* 2. Main About Section */}
       <section className="max-w-5xl mx-auto px-6 mt-16 relative">
-        <div className="bg-white rounded-[24px] shadow-[var(--shadow-premium)] p-8 md:p-12 relative z-10 border border-gray-100">
-          <div className="text-center max-w-3xl mx-auto">
+        <div className="bg-white rounded-[24px] shadow-[var(--shadow-premium)] p-8 md:p-12 relative z-10 border border-gray-100 flex flex-col md:flex-row items-center gap-10">
+          <div className="w-full md:w-1/2 overflow-hidden rounded-2xl shadow-md border border-gray-100 shrink-0">
+            <img 
+              src={sar3} 
+              alt="Sarguru Crackers Store" 
+              className="w-full h-[280px] md:h-[360px] object-cover object-center hover:scale-105 transition-transform duration-500 rounded-2xl" 
+            />
+          </div>
+          <div className="w-full md:w-1/2 text-left">
             <span className="text-xs uppercase text-primary-blue font-bold tracking-widest block mb-2 font-poppins">Our Story</span>
             <h2 className="text-3xl font-poppins font-extrabold text-text-primary m-0 leading-tight">
               Sarguru Crackers
             </h2>
-            <div className="w-16 h-1 bg-secondary-gold mx-auto mt-4 mb-8 rounded-full"></div>
+            <div className="w-16 h-1 bg-secondary-gold mt-4 mb-6 rounded-full"></div>
             
-            <p className="text-gray-600 text-sm md:text-base leading-relaxed text-justify md:text-center font-inter px-4 mb-6 whitespace-pre-line">
+            <p className="text-gray-600 text-sm md:text-base leading-relaxed font-inter mb-4 whitespace-pre-line">
               {story}
             </p>
           </div>

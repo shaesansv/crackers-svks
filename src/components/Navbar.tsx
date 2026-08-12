@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import sarguruLogo from '../assets/sarguru.png';
 import { useSiteSettings } from '../context/SiteSettingsContext';
+import { Menu, X, ShoppingCart, Search, Phone } from 'lucide-react';
 
 interface NavbarProps {
   currentPage: string;
@@ -20,127 +21,184 @@ export const Navbar: React.FC<NavbarProps> = ({
   setCurrentPage,
   searchTerm,
   setSearchTerm,
-  selectedCategory,
-  setSelectedCategory,
-  categories,
   cartCount,
   cartTotal,
   onCartOpen
 }) => {
+  const [menuOpen, setMenuOpen] = useState(false);
   const { settings } = useSiteSettings();
   const phone = settings.contact?.phone || '+91 78680 77818';
-  const address = settings.contact?.address || 'Sivakasi, Tamil Nadu';
+
+  const navLinks = [
+    { key: 'home', label: 'Home', isPage: true },
+    { key: 'about', label: 'About', isPage: true },
+    { key: 'order', label: 'Order', isPage: true },
+    { key: '#safety', label: 'Safety Tips', isPage: false },
+    { key: '#contact', label: 'Contact Us', isPage: false },
+  ];
+
+  const handleNavClick = (link: { key: string; label: string; isPage: boolean }) => {
+    setMenuOpen(false);
+    if (link.isPage) {
+      setCurrentPage(link.key);
+    } else {
+      if (currentPage !== 'home') {
+        setCurrentPage('home');
+      }
+      setTimeout(() => {
+        const el = document.querySelector(link.key);
+        if (el) el.scrollIntoView({ behavior: 'smooth' });
+      }, 100);
+    }
+  };
+
   return (
-    <header className="sticky top-0 z-50 bg-[#0B0F19]/80 backdrop-blur-xl border-b border-gray-800 shadow-[0_4px_30px_rgba(0,0,0,0.5)] animate-fade-in">
-      {/* 1. Top Minimal Contact Bar */}
-      <div className="bg-[#FFC107] text-[#0f172a] font-bold text-xs py-2 px-6 md:px-12 flex flex-col md:flex-row items-center justify-between font-inter tracking-wide shadow-md">
-        <div className="flex items-center gap-6">
-          <span className="flex items-center gap-2 hover:text-[#0B0F19]/80 transition-colors cursor-pointer">
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path></svg>
-            {phone}
-          </span>
-          <span className="hidden md:flex items-center gap-2 hover:text-[#0B0F19]/80 transition-colors cursor-pointer">
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-            {address}
-          </span>
+    <header className="sticky top-0 z-50 bg-[#0B0F19]/90 backdrop-blur-xl border-b border-gray-800 shadow-md transition-all">
+      {/* Slim Top Contact Bar */}
+      <div className="bg-[#FFC107] text-[#0f172a] font-bold text-[11px] sm:text-xs py-1 px-4 sm:px-8 flex items-center justify-between font-inter">
+        <div className="flex items-center gap-2">
+          <Phone className="w-3.5 h-3.5" />
+          <span>{phone}</span>
         </div>
-        <div className="hidden md:flex items-center gap-4">
-          <span className="text-[#0f172a]/80">Premium Festival Collection</span>
-        </div>
+        <span className="hidden sm:inline text-[#0f172a]/80">Wholesale Sivakasi Crackers</span>
       </div>
 
-      {/* 2. Main Navigation Bar */}
-      <div className="flex flex-col md:flex-row items-center justify-between py-4 px-6 md:px-12 bg-transparent">
-        {/* Logo */}
-        <div className="flex items-center justify-center cursor-pointer relative group" onClick={() => setCurrentPage('home')}>
-          <div className="absolute inset-0 bg-[#FFC107] rounded-full blur-md opacity-30 group-hover:opacity-60 transition-opacity duration-300"></div>
-          <img src={sarguruLogo} alt="Sarguru Crackers Logo" className="h-20 w-20 md:h-24 md:w-24 rounded-full object-cover relative z-10 border-2 border-[#FFC107]/50 shadow-[0_0_15px_rgba(255,193,7,0.3)]" />
-        </div>
+      {/* Compact Main Navigation Header */}
+      <div className="flex items-center justify-between py-2 px-4 md:px-8 max-w-7xl mx-auto">
         
-        {/* Links */}
-        <nav className="flex flex-wrap justify-center gap-6 md:gap-10 mt-4 md:mt-0 font-poppins text-sm">
-          {['home', 'about', 'order'].map((page) => (
-            <button 
-              key={page}
-              type="button"
-              onClick={() => setCurrentPage(page)}
-              className={`tracking-widest uppercase transition-all duration-300 ${
-                currentPage === page 
-                  ? 'text-primary-blue font-bold' 
-                  : 'text-text-primary hover:text-primary-blue font-medium'
-              }`}
-            >
-              {page.replace('-', ' ')}
-            </button>
-          ))}
-          <a href="#safety" className="tracking-widest uppercase text-text-primary hover:text-primary-blue font-medium transition-all duration-300">Safety Tips</a>
-          <a href="#contact" className="tracking-widest uppercase text-text-primary hover:text-primary-blue font-medium transition-all duration-300">Contact Us</a>
-        </nav>
+        {/* Left: Compact Logo & Brand Name */}
+        <div 
+          className="flex items-center gap-2.5 cursor-pointer group" 
+          onClick={() => { setCurrentPage('home'); setMenuOpen(false); }}
+        >
+          <img 
+            src={sarguruLogo} 
+            alt="Sarguru Crackers Logo" 
+            className="h-10 w-10 sm:h-12 sm:w-12 rounded-full object-cover border-2 border-[#FFC107]/60 shadow-[0_0_10px_rgba(255,193,7,0.3)] group-hover:scale-105 transition-transform" 
+          />
+          <span className="font-poppins font-black text-white text-base sm:text-lg tracking-wide hidden xs:inline">
+            Sarguru <span className="text-[#FFC107]">Crackers</span>
+          </span>
+        </div>
 
-        {/* Search & Cart (Shown on storefront pages) */}
+        {/* Desktop Search Bar (Hidden on Mobile) */}
         {currentPage !== 'admin-login' && currentPage !== 'admin-dashboard' && (
-          <div className="flex items-center gap-4 mt-4 md:mt-0">
-            <div className="relative group">
-              <input
-                type="text"
-                placeholder="Search premium products..."
-                value={searchTerm}
-                onChange={(e) => {
-                  setSearchTerm(e.target.value);
-                  if (currentPage !== 'home' && currentPage !== 'order') {
-                    setCurrentPage('home');
-                  }
-                }}
-                className="py-2 pl-4 pr-10 border border-[#374151] rounded-[12px] text-sm bg-[#111827] focus:bg-[#1f2937] text-white w-[220px] outline-none transition-all duration-300 focus:shadow-[0_0_15px_rgba(255,193,7,0.2)] focus:border-[#FFC107] font-inter"
-              />
-              <svg className="w-4 h-4 absolute right-3 top-2.5 text-gray-400 group-focus-within:text-primary-blue transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-            </div>
-            
-            <div 
-              onClick={onCartOpen}
-              className="flex items-center justify-center gap-2 px-5 cursor-pointer shadow-[var(--shadow-premium)] btn-primary font-poppins text-sm relative"
-            >
-              <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
-                <path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z" />
-              </svg>
-              {cartCount > 0 && (
-                <span className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-accent-orange text-white text-[10px] font-bold flex items-center justify-center shadow">
-                  {cartCount > 99 ? '99+' : cartCount}
-                </span>
-              )}
-              <span>
-                {cartCount > 0 ? `₹${cartTotal.toLocaleString('en-IN')}` : 'Cart'}
-              </span>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* 3. Category Filter Bar (Shown on storefront pages) */}
-      {currentPage !== 'admin-login' && currentPage !== 'admin-dashboard' && (
-        <div className="bg-[#0B0F19]/80 border-t border-gray-800 flex flex-col md:flex-row items-center justify-center p-3 gap-4 font-inter text-sm shadow-[0_4px_20px_rgba(0,0,0,0.3)]">
-          <div className="flex items-center gap-3 w-full max-w-md mx-auto justify-center">
-            <span className="text-gray-500 hidden md:inline">Filter by:</span>
-            <select
-              value={selectedCategory}
+          <div className="hidden md:flex items-center relative w-64 lg:w-80">
+            <input
+              type="text"
+              placeholder="Search products..."
+              value={searchTerm}
               onChange={(e) => {
-                setSelectedCategory(e.target.value);
+                setSearchTerm(e.target.value);
                 if (currentPage !== 'home' && currentPage !== 'order') {
                   setCurrentPage('home');
                 }
               }}
-              className="py-2 px-4 border border-[#374151] rounded-[12px] bg-[#111827] text-white outline-none font-medium cursor-pointer hover:border-[#FFC107] focus:ring-1 focus:ring-[#FFC107] transition-colors w-full md:w-auto shadow-sm"
+              className="w-full py-1.5 pl-9 pr-4 border border-[#374151] rounded-full text-xs bg-[#111827] text-white outline-none focus:border-[#FFC107] focus:ring-1 focus:ring-[#FFC107] font-inter"
+            />
+            <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+          </div>
+        )}
+
+        {/* Right Actions: Cart Icon + Menu Toggle Button */}
+        <div className="flex items-center gap-3">
+          
+          {/* Cart Button: On Mobile, shows ONLY Cart Icon + Badge */}
+          {currentPage !== 'admin-login' && currentPage !== 'admin-dashboard' && (
+            <button 
+              type="button"
+              onClick={onCartOpen}
+              className="relative p-2.5 sm:px-4 sm:py-2 rounded-full bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-[#0f172a] font-bold text-xs flex items-center gap-2 shadow-md transition-transform active:scale-95 cursor-pointer"
+              aria-label="View Shopping Cart"
             >
-              <option value="all">All Premium Collections</option>
-              {categories.map((cat) => (
-                <option key={cat.id} value={cat.id}>
-                  {cat.name.replace(' (80% DISCOUNT)', '')}
-                </option>
-              ))}
-            </select>
+              <ShoppingCart className="w-4 h-4 text-[#0f172a]" />
+              {cartCount > 0 && (
+                <span className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-red-600 text-white text-[10px] font-bold flex items-center justify-center border-2 border-[#0B0F19] shadow">
+                  {cartCount > 99 ? '99+' : cartCount}
+                </span>
+              )}
+              <span className="hidden sm:inline font-poppins font-semibold">
+                {cartCount > 0 ? `₹${cartTotal.toLocaleString('en-IN')}` : 'Cart'}
+              </span>
+            </button>
+          )}
+
+          {/* Menu Button (Nav Links Toggle) */}
+          <button
+            type="button"
+            onClick={() => setMenuOpen(!menuOpen)}
+            className="p-2 sm:px-3 sm:py-2 rounded-xl bg-[#1f2937] hover:bg-[#374151] text-white border border-[#374151] flex items-center gap-1.5 text-xs font-semibold font-poppins transition-all cursor-pointer shadow-sm active:scale-95"
+            aria-label="Toggle navigation menu"
+          >
+            {menuOpen ? <X className="w-5 h-5 text-amber-400" /> : <Menu className="w-5 h-5 text-amber-400" />}
+            <span className="hidden sm:inline">{menuOpen ? 'Close' : 'Menu'}</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Dropdown Menu Overlay (Shown when Menu Button is clicked, floats over content) */}
+      {menuOpen && (
+        <div className="absolute top-full left-0 right-0 z-50 bg-[#111827]/95 backdrop-blur-2xl border-t border-b border-[#374151] shadow-[0_20px_50px_rgba(0,0,0,0.85)] px-6 py-4 animate-in slide-in-from-top-2 duration-200">
+          <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
+            
+            {/* Search Input in Mobile Menu */}
+            {currentPage !== 'admin-login' && currentPage !== 'admin-dashboard' && (
+              <div className="md:hidden relative w-full mb-2">
+                <input
+                  type="text"
+                  placeholder="Search products..."
+                  value={searchTerm}
+                  onChange={(e) => {
+                    setSearchTerm(e.target.value);
+                    if (currentPage !== 'home' && currentPage !== 'order') {
+                      setCurrentPage('home');
+                    }
+                  }}
+                  className="w-full py-2 pl-9 pr-4 border border-[#374151] rounded-xl text-xs bg-[#1f2937] text-white outline-none focus:border-[#FFC107] font-inter"
+                />
+                <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+              </div>
+            )}
+
+            {/* Navigation Links */}
+            <nav className="flex flex-col md:flex-row gap-3 md:gap-8 font-poppins text-sm">
+              {navLinks.map((link) => {
+                const isActive = link.isPage && currentPage === link.key;
+                return (
+                  <button
+                    key={link.key}
+                    type="button"
+                    onClick={() => handleNavClick(link)}
+                    className={`text-left tracking-wider uppercase py-2 md:py-0 font-medium transition-colors border-b border-gray-800 md:border-none ${
+                      isActive
+                        ? 'text-[#FFC107] font-bold'
+                        : 'text-gray-200 hover:text-[#FFC107]'
+                    }`}
+                  >
+                    {link.label}
+                  </button>
+                );
+              })}
+            </nav>
+
+            {/* Quick Admin Link */}
+            <div className="pt-2 md:pt-0 border-t border-gray-800 md:border-none">
+              <button
+                type="button"
+                onClick={() => {
+                  setMenuOpen(false);
+                  setCurrentPage('admin-dashboard');
+                }}
+                className="text-xs text-amber-400/80 hover:text-amber-400 font-semibold tracking-wider uppercase py-1"
+              >
+                🔐 Admin Panel
+              </button>
+            </div>
           </div>
         </div>
       )}
     </header>
   );
 };
+
+export default Navbar;

@@ -5,6 +5,7 @@ import { getOrders, approveOrder, updatePackingStatus } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Link } from "react-router-dom";
+import { ImageSlider } from "@/components/ImageSlider";
 import {
   Dialog,
   DialogContent,
@@ -185,9 +186,13 @@ const AdminOrders = () => {
       <div className="flex min-h-screen">
       <AdminSidebar />
       <main className="flex-1 p-6 lg:p-8 overflow-auto">
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center justify-between mb-4">
           <h1 className="font-display text-2xl font-bold">Orders</h1>
           <Link to="/" className="text-sm text-primary hover:underline lg:hidden">← Store</Link>
+        </div>
+
+        <div className="mb-6">
+          <ImageSlider heightClass="h-[140px] sm:h-[200px] md:h-[240px]" />
         </div>
 
         {/* Filter tabs */}
