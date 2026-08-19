@@ -86,26 +86,55 @@ export const createProduct = async (req, res, next) => {
     if (!cat || !cat.categoryCode) {
       return next(new AppError('Category not found or missing category code', 400));
     }
-    const categoryCode = cat.categoryCode;
+    const categoryCode = cat.categoryCode.toString().trim();
 
-    // Auto-generate numeric sku
-    let newSkuStr = categoryCode + '1';
-    try {
-      const allProducts = await Product.find({}, 'sku');
-      let maxSeq = 0;
-      for (const p of allProducts) {
-        if (p.sku && p.sku.startsWith(categoryCode)) {
-          const seqStr = p.sku.substring(categoryCode.length).trim();
-          if (/^\d+$/.test(seqStr)) {
-            const seq = parseInt(seqStr, 10);
-            if (seq > maxSeq) maxSeq = seq;
+    // Auto-generate numeric sku & code (e.g. 1001..1009 -> 1010, NOT 10010)
+    let newSkuStr = req.body.code || req.body.sku;
+    if (!newSkuStr) {
+      const catNum = parseInt(categoryCode, 10);
+      let baseCode = 1000;
+      if (!isNaN(catNum) && catNum > 0) {
+        baseCode = catNum;
+        while (baseCode < 1000) {
+          baseCode *= 10;
+        }
+      }
+
+      const categoryProducts = await Product.find({
+        $or: [
+          { category: cat._id },
+          { code: new RegExp(`^${categoryCode}`) },
+          { sku: new RegExp(`^${categoryCode}`) }
+        ]
+      }, 'code sku');
+
+      let maxCode = baseCode;
+
+      for (const p of categoryProducts) {
+        const rawStr = (p.code || p.sku || '').toString().trim();
+        if (!rawStr) continue;
+
+        let numVal = parseInt(rawStr, 10);
+        if (!isNaN(numVal)) {
+          // Normalize legacy string concatenation bug (e.g. '10010' -> 1010)
+          if (numVal >= baseCode * 10 && rawStr.startsWith(categoryCode)) {
+            const seqPart = rawStr.substring(categoryCode.length);
+            const seqNum = parseInt(seqPart, 10);
+            if (!isNaN(seqNum)) {
+              numVal = baseCode + seqNum;
+            }
+          }
+
+          if (numVal >= baseCode && numVal < baseCode + 1000) {
+            if (numVal > maxCode) {
+              maxCode = numVal;
+            }
           }
         }
       }
-      newSkuStr = categoryCode + (maxSeq + 1).toString();
-    } catch (err) {
-      console.error('Error generating SKU', err);
-      newSkuStr = categoryCode + Date.now().toString().substring(5);
+
+      const nextCode = maxCode + 1;
+      newSkuStr = nextCode.toString();
     }
 
     const newProduct = new Product({

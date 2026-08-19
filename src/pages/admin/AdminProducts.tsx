@@ -4,6 +4,8 @@ import AdminSidebar from "@/components/layout/AdminSidebar";
 import AdminNavbar from "@/components/layout/AdminNavbar";
 import { getProducts, getCategories, API_BASE_URL } from "@/lib/api";
 import type { Product, Category } from "@/data/products";
+import { processAndResizeImage, PRODUCT_IMAGE_DIMENSIONS, type ProcessedImageResult } from "@/lib/imageUtils";
+import { ProductDetailModal } from "@/components/ProductDetailModal";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,9 +26,12 @@ const AdminProducts = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [updatingPricingId, setUpdatingPricingId] = useState<string | null>(null);
+  const [viewingProduct, setViewingProduct] = useState<Product | null>(null);
 
   const [form, setForm] = useState({ name: "", price: "", wholesalePrice: "", netRate: "", stock: "", brand: "", category: "", description: "", quantity: "", hasDiscount: false, displayNetRate: false, storeStockPieces: "0", godownStockCases: "0", piecesPerCase: "1" });
   const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imageMeta, setImageMeta] = useState<ProcessedImageResult | null>(null);
+  const [isProcessingImage, setIsProcessingImage] = useState(false);
   const [editing, setEditing] = useState<Product | null>(null);
 
   const getCategoryName = (category: string | any) => {
@@ -35,6 +40,37 @@ const AdminProducts = () => {
     }
     const cat = categories.find((c) => c.id === category);
     return cat?.name || category;
+  };
+
+  const handleProductFileChange = async (file: File | null) => {
+    if (!file) {
+      setImageFile(null);
+      setImageMeta(null);
+      return;
+    }
+    const maxSize = 5 * 1024 * 1024; // 5MB
+    if (file.size > maxSize) {
+      toast.error('Image must be less than 5MB');
+      return;
+    }
+    try {
+      setIsProcessingImage(true);
+      const result = await processAndResizeImage(
+        file,
+        PRODUCT_IMAGE_DIMENSIONS.width,
+        PRODUCT_IMAGE_DIMENSIONS.height,
+        'contain'
+      );
+      setImageFile(result.file);
+      setImageMeta(result);
+      toast.success(`Product image adjusted to ${PRODUCT_IMAGE_DIMENSIONS.label}`);
+    } catch (err) {
+      console.error('Image processing error:', err);
+      setImageFile(file);
+      setImageMeta(null);
+    } finally {
+      setIsProcessingImage(false);
+    }
   };
 
   const openEdit = (product: Product) => {
@@ -59,6 +95,7 @@ const AdminProducts = () => {
       piecesPerCase: product.piecesPerCase?.toString() || "1"
     });
     setImageFile(null);
+    setImageMeta(null);
     setDialogOpen(true);
   };
 
@@ -66,6 +103,7 @@ const AdminProducts = () => {
     setEditing(null);
     setForm({ name: "", price: "", wholesalePrice: "", netRate: "", stock: "", brand: "", category: "", description: "", quantity: "", hasDiscount: true, displayNetRate: false, storeStockPieces: "0", godownStockCases: "0", piecesPerCase: "1" });
     setImageFile(null);
+    setImageMeta(null);
     setDialogOpen(true);
   };
 
@@ -298,10 +336,31 @@ const AdminProducts = () => {
                         {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
                       </select>
                     </div>
-                    <div>
-                      <Label>Product Image (Max 5MB, optional)</Label>
+                    {/* Product Image Section */}
+                    <div className="space-y-2">
+                      {/* Dimension Notice Mentioned ON TOP of Upload Button */}
+                      <div className="flex items-center justify-between">
+                        <Label className="text-gray-700 font-semibold">Product Image (Max 5MB, optional)</Label>
+                        <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-800 border border-blue-300">
+                          Proper Dimension: {PRODUCT_IMAGE_DIMENSIONS.label}
+                        </span>
+                      </div>
+
+                      <div className="bg-blue-50/90 border border-blue-200 rounded-lg p-2.5 flex items-center justify-between text-xs text-blue-900 shadow-sm">
+                        <div className="flex items-center gap-2">
+                          <span className="text-base">📐</span>
+                          <div>
+                            <p className="font-bold text-[#164B60]">Recommended Dimension: {PRODUCT_IMAGE_DIMENSIONS.label}</p>
+                            <p className="text-[11px] text-blue-700">Aspect Ratio: {PRODUCT_IMAGE_DIMENSIONS.aspectRatio} &bull; Auto-resized on upload</p>
+                          </div>
+                        </div>
+                        <span className="text-[10px] bg-[#164B60] text-white font-mono px-2 py-0.5 rounded font-bold uppercase tracking-wider">
+                          {PRODUCT_IMAGE_DIMENSIONS.width}x{PRODUCT_IMAGE_DIMENSIONS.height}
+                        </span>
+                      </div>
+
                       <div
-                        className="mt-1 flex flex-col items-center justify-center gap-2 border-2 border-dashed border-[#4FC0D0] rounded-xl p-4 cursor-pointer hover:bg-cyan-50/50 transition-colors group"
+                        className="mt-1 flex flex-col items-center justify-center gap-2 border-2 border-dashed border-[#4FC0D0] rounded-xl p-4 cursor-pointer hover:bg-cyan-50/50 transition-colors group relative"
                         onClick={() => document.getElementById('product-image-input')?.click()}
                       >
                         <input
@@ -309,23 +368,44 @@ const AdminProducts = () => {
                           type="file"
                           accept="image/*"
                           className="hidden"
-                          onChange={(e) => setImageFile(e.target.files?.[0] || null)}
+                          onChange={(e) => {
+                            const file = e.target.files?.[0] || null;
+                            handleProductFileChange(file);
+                          }}
                         />
-                        {imageFile ? (
+                        {isProcessingImage ? (
+                          <div className="flex items-center gap-2 py-4 text-xs font-medium text-cyan-700">
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                            Processing & adjusting image to {PRODUCT_IMAGE_DIMENSIONS.label}...
+                          </div>
+                        ) : imageFile ? (
                           <div className="flex items-center gap-3 w-full">
                             <img
-                              src={URL.createObjectURL(imageFile)}
+                              src={imageMeta?.previewUrl || URL.createObjectURL(imageFile)}
                               alt="Preview"
                               className="w-16 h-16 object-cover rounded-lg border border-gray-200 shadow-sm"
                             />
                             <div className="flex flex-col text-left">
                               <span className="text-sm font-semibold text-gray-700 truncate max-w-[200px]">{imageFile.name}</span>
                               <span className="text-xs text-gray-400">{(imageFile.size / 1024).toFixed(1)} KB</span>
-                              <span className="text-xs text-[#164B60] font-medium mt-0.5">✓ Image selected</span>
+                              {imageMeta ? (
+                                <span className="text-xs text-blue-700 font-semibold mt-0.5 flex items-center gap-1">
+                                  ✓ Dimensions set: {imageMeta.width} × {imageMeta.height} px
+                                  <span className="text-[10px] text-gray-400 font-normal">
+                                    ({imageMeta.originalWidth}×{imageMeta.originalHeight})
+                                  </span>
+                                </span>
+                              ) : (
+                                <span className="text-xs text-[#164B60] font-medium mt-0.5">✓ Image selected</span>
+                              )}
                             </div>
                             <button
                               type="button"
-                              onClick={(e) => { e.stopPropagation(); setImageFile(null); }}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setImageFile(null);
+                                setImageMeta(null);
+                              }}
                               className="ml-auto text-red-400 hover:text-red-600 text-lg font-bold transition-colors"
                               title="Remove image"
                             >✕</button>
@@ -333,8 +413,10 @@ const AdminProducts = () => {
                         ) : (
                           <div className="flex flex-col items-center gap-1 py-2">
                             <div className="w-12 h-12 rounded-full bg-cyan-50 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">📷</div>
-                            <span className="text-sm font-semibold text-[#164B60]">Click to upload image</span>
-                            <span className="text-xs text-gray-400">PNG, JPG, WEBP up to 5MB</span>
+                            <span className="text-sm font-semibold text-[#164B60]">Click to upload product image</span>
+                            <span className="text-xs text-gray-500 font-medium">
+                              Dimension: <strong>{PRODUCT_IMAGE_DIMENSIONS.label}</strong> (PNG, JPG, WEBP)
+                            </span>
                           </div>
                         )}
                       </div>
@@ -408,6 +490,7 @@ const AdminProducts = () => {
                           setDialogOpen(false);
                           setForm({ name: '', price: '', wholesalePrice: '', netRate: '', stock: '', brand: '', category: '', description: '', quantity: '', hasDiscount: false, displayNetRate: false, storeStockPieces: '0', godownStockCases: '0', piecesPerCase: '1' });
                           setImageFile(null);
+                          setImageMeta(null);
                           setEditing(null);
                           toast.success(editing ? 'Product updated!' : 'Product added!');
 
@@ -472,10 +555,17 @@ const AdminProducts = () => {
                     <tr key={p.id} className="border-b border-border hover:bg-secondary/30 transition-colors">
                       <td className="p-3 font-mono text-xs text-muted-foreground">{p.sku || p.code || 'N/A'}</td>
                       <td className="p-3">
-                        <div className="flex items-center gap-3">
-                          <img src={p.image} alt={p.name} className="w-10 h-10 rounded object-cover" />
+                        <div
+                          className="flex items-center gap-3 cursor-pointer group hover:opacity-80 transition-opacity"
+                          onClick={() => setViewingProduct(p)}
+                          title="Click to view product expanded details"
+                        >
+                          <img src={p.image} alt={p.name} className="w-10 h-10 rounded object-cover border border-gray-200" />
                           <div>
-                            <p className="font-semibold">{p.name}</p>
+                            <p className="font-semibold group-hover:text-primary transition-colors flex items-center gap-1">
+                              <span>{p.name}</span>
+                              <span className="text-[10px] text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity"></span>
+                            </p>
                             <p className="text-xs text-muted-foreground">{p.brand}</p>
                           </div>
                         </div>
@@ -536,6 +626,13 @@ const AdminProducts = () => {
             </div>
           )}
           </div>
+
+          {/* Product Expanded View Modal */}
+          <ProductDetailModal
+            product={viewingProduct}
+            isOpen={!!viewingProduct}
+            onClose={() => setViewingProduct(null)}
+          />
         </main>
       </div>
     </>

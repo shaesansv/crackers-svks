@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { ProductImage } from '../components/ProductImage';
 import { ImageSlider } from '../components/ImageSlider';
+import { ProductDetailModal } from '../components/ProductDetailModal';
 import { Fireworks } from '@fireworks-js/react';
 import type { Category, Product } from '../types';
 import { useSiteSettings } from '../context/SiteSettingsContext';
@@ -31,6 +32,7 @@ export const Home: React.FC<HomeProps> = ({
   categories
 }) => {
   const { settings } = useSiteSettings();
+  const [viewingProduct, setViewingProduct] = useState<Product | null>(null);
   const marqueeText = settings.news || '';
   const heroTitle = settings.siteName ? `Welcome to ${settings.siteName}` : 'Celebrate with Premium Fireworks';
   const heroDesc = settings.siteDescription || "Sivakasi's finest crackers at wholesale prices. Light up your celebrations!";
@@ -165,10 +167,18 @@ export const Home: React.FC<HomeProps> = ({
             filteredCategories.map((category) => (
               <div key={category.id} className="mb-6">
                 {/* Category Header */}
-                <div className="bg-[#111827] px-6 py-4 border-b border-[#374151] flex items-center gap-3 rounded-t-[18px]">
-                  <div className="w-8 h-8 rounded-full bg-[#FFC107]/10 flex items-center justify-center text-[#FFC107] font-bold">
-                    ✨
-                  </div>
+                <div className="bg-[#111827] px-6 py-4 border-b border-[#374151] flex items-center gap-3.5 rounded-t-[18px]">
+                  {category.image || (category as any).imageUrl ? (
+                    <img
+                      src={category.image || (category as any).imageUrl}
+                      alt={category.name}
+                      className="w-10 h-10 rounded-lg object-cover flex-shrink-0"
+                    />
+                  ) : (
+                    <div className="w-10 h-10 rounded-lg bg-[#FFC107]/20 flex items-center justify-center text-[#FFC107] font-bold text-lg flex-shrink-0">
+                      🎆
+                    </div>
+                  )}
                   <h2 className="text-[#FFC107] text-[18px] font-bold uppercase tracking-wide">
                     {category.name.replace(' (80% DISCOUNT)', '')}
                   </h2>
@@ -191,10 +201,13 @@ export const Home: React.FC<HomeProps> = ({
                         }`}
                       >
                         {/* Product Details */}
-                        <div className="flex items-center gap-4 w-full md:w-auto">
-                          <div className="relative w-[60px] h-[60px] md:w-[60px] md:h-[60px] flex-shrink-0 flex items-center justify-center bg-[#1f2937] border border-[#374151] rounded-[18px] overflow-hidden shadow-sm">
+                        <div
+                          className="flex items-center gap-4 w-full md:w-auto cursor-pointer group/item"
+                          onClick={() => setViewingProduct(product)}
+                        >
+                          <div className="relative w-[60px] h-[60px] md:w-[60px] md:h-[60px] flex-shrink-0 flex items-center justify-center bg-[#1f2937] border border-[#374151] rounded-[18px] overflow-hidden shadow-sm group-hover/item:border-[#FFC107] transition-all">
                             {product.image || product.imageUrl ? (
-                              <img src={product.image || product.imageUrl} alt={product.name} className="w-full h-full object-cover" />
+                              <img src={product.image || product.imageUrl} alt={product.name} className="w-full h-full object-cover group-hover/item:scale-105 transition-transform duration-300" />
                             ) : (
                               <ProductImage type={product.imageType} />
                             )}
@@ -205,7 +218,9 @@ export const Home: React.FC<HomeProps> = ({
                             )}
                           </div>
                           <div className="flex flex-col flex-grow">
-                            <span className={`text-[15px] font-bold mb-0.5 ${isOutOfStock ? 'text-gray-400' : 'text-text-primary'}`}>{product.name}</span>
+                            <span className={`text-[15px] font-bold mb-0.5 group-hover/item:text-[#FFC107] transition-colors ${isOutOfStock ? 'text-gray-400' : 'text-text-primary'}`}>
+                              {product.name} 
+                            </span>
                             {isOutOfStock ? (
                               <span className="text-[11px] font-bold bg-red-500 text-white px-2 py-0.5 rounded-full inline-block w-max">
                                 🚫 Out of Stock
@@ -225,7 +240,10 @@ export const Home: React.FC<HomeProps> = ({
                         </div>
 
                         {/* Mobile Details Row */}
-                        <div className="flex items-center justify-between w-full md:hidden text-sm text-text-secondary bg-bg-light p-2.5 rounded-[12px]">
+                        <div
+                          className="flex items-center justify-between w-full md:hidden text-sm text-text-secondary bg-bg-light p-2.5 rounded-[12px] cursor-pointer"
+                          onClick={() => setViewingProduct(product)}
+                        >
                           <div className="font-medium">Unit: <span className="font-normal">{product.unit}</span></div>
                           <div className={`font-bold ${
                             isOutOfStock ? 'text-red-500' : isLow ? 'text-accent-orange' : 'text-success-green'
@@ -248,19 +266,28 @@ export const Home: React.FC<HomeProps> = ({
                         </div>
 
                         {/* Desktop Unit / Size */}
-                        <div className="hidden md:block text-[14px] text-text-secondary text-center">
+                        <div
+                          className="hidden md:block text-[14px] text-text-secondary text-center cursor-pointer hover:text-white"
+                          onClick={() => setViewingProduct(product)}
+                        >
                           {product.unit}
                         </div>
 
                         {/* Desktop Stock Status */}
-                        <div className={`hidden md:block text-[14px] font-bold text-center ${
-                          isOutOfStock ? 'text-red-500' : isLow ? 'text-accent-orange' : 'text-success-green'
-                        }`}>
+                        <div
+                          className={`hidden md:block text-[14px] font-bold text-center cursor-pointer ${
+                            isOutOfStock ? 'text-red-500' : isLow ? 'text-accent-orange' : 'text-success-green'
+                          }`}
+                          onClick={() => setViewingProduct(product)}
+                        >
                           {isOutOfStock ? 'No' : isLow ? 'Low' : 'Yes'}
                         </div>
 
                         {/* Desktop Price */}
-                        <div className="hidden md:flex flex-col items-center justify-center text-center">
+                        <div
+                          className="hidden md:flex flex-col items-center justify-center text-center cursor-pointer"
+                          onClick={() => setViewingProduct(product)}
+                        >
                           {product.displayNetRate ? (
                             <span className="text-[15px] font-bold text-amber-600">₹{product.discountPrice.toFixed(2)}</span>
                           ) : product.hasDiscount && product.globalDiscountPct && product.globalDiscountPct > 0 && product.price > product.discountPrice ? (
@@ -274,7 +301,7 @@ export const Home: React.FC<HomeProps> = ({
                         </div>
 
                         {/* Actions Row (Touch-Friendly Quantity & Stepper Controls) */}
-                        <div className="flex items-center justify-center w-full md:w-auto mt-1 md:mt-0">
+                        <div className="flex items-center justify-center w-full md:w-auto mt-1 md:mt-0" onClick={(e) => e.stopPropagation()}>
                           {isOutOfStock ? (
                             <div className="w-full md:w-[120px] h-[38px] flex items-center justify-center text-[12px] font-bold text-red-400 bg-red-500/10 border border-red-500/30 rounded-xl cursor-not-allowed select-none">
                               🚫 Out of Stock
@@ -284,7 +311,7 @@ export const Home: React.FC<HomeProps> = ({
                             <div className="flex items-center justify-between w-full md:w-[130px] bg-[#1f2937] border border-[#FFC107]/60 rounded-xl overflow-hidden shadow-sm">
                               <button
                                 type="button"
-                                onClick={() => adjustQty(product.id, false)}
+                                onClick={(e) => { e.stopPropagation(); adjustQty(product.id, false); }}
                                 className="w-10 h-10 flex items-center justify-center text-[#FFC107] font-extrabold hover:bg-[#374151] active:bg-[#4b5563] active:scale-95 transition-all text-lg cursor-pointer"
                                 aria-label="Decrease quantity"
                               >
@@ -294,12 +321,12 @@ export const Home: React.FC<HomeProps> = ({
                                 type="number"
                                 min="0"
                                 value={qty}
-                                onChange={(e) => handleQtyChange(product.id, e.target.value)}
+                                onChange={(e) => { e.stopPropagation(); handleQtyChange(product.id, e.target.value); }}
                                 className="w-12 h-10 bg-transparent text-center font-extrabold text-white text-sm outline-none border-none p-0"
                               />
                               <button
                                 type="button"
-                                onClick={() => adjustQty(product.id, true)}
+                                onClick={(e) => { e.stopPropagation(); adjustQty(product.id, true); }}
                                 className="w-10 h-10 flex items-center justify-center text-[#FFC107] font-extrabold hover:bg-[#374151] active:bg-[#4b5563] active:scale-95 transition-all text-lg cursor-pointer"
                                 aria-label="Increase quantity"
                               >
@@ -310,7 +337,7 @@ export const Home: React.FC<HomeProps> = ({
                             /* Initial ADD Button */
                             <button
                               type="button"
-                              onClick={() => adjustQty(product.id, true)}
+                              onClick={(e) => { e.stopPropagation(); adjustQty(product.id, true); }}
                               className="w-full md:w-[120px] h-[38px] bg-[#FFC107] hover:bg-[#ffcd38] text-[#0f172a] font-poppins font-bold text-xs rounded-xl shadow-md transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-1"
                             >
                               <span>+</span> ADD
@@ -346,8 +373,17 @@ export const Home: React.FC<HomeProps> = ({
           </div>
         )}
 
+        {/* Product Detail Expanded View Modal */}
+        <ProductDetailModal
+          product={viewingProduct}
+          isOpen={!!viewingProduct}
+          onClose={() => setViewingProduct(null)}
+          onAddToCart={(prod, qty) => {
+            handleQtyChange(prod.id, qty.toString());
+          }}
+          initialQuantity={viewingProduct ? Number(quantities[viewingProduct.id]) || 1 : 1}
+        />
       </main>
     </div>
   );
 };
-
