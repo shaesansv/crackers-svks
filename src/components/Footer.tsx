@@ -130,10 +130,10 @@ export const Footer: React.FC<FooterProps> = ({
     <div className="w-full mt-auto">
       {/* Checkout Form Container (Only visible on home page) */}
       {showCheckout && (
-        <section id="checkout-section" className="bg-white border-t border-gray-100 pt-10 pb-16 px-6 md:px-12 select-none relative z-10">
+        <section id="checkout-section" className="bg-section-bg border-t border-border-gray pt-10 pb-16 px-6 md:px-12 select-none relative z-10">
           {/* Red Title Banner */}
           <div className="flex justify-center mb-10">
-            <h2 className="text-2xl md:text-3xl font-poppins font-bold text-text-primary relative inline-block">
+            <h2 className="text-2xl md:text-3xl font-poppins font-bold text-white relative inline-block">
               Review Your Order
               <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 w-16 h-1 bg-primary-blue rounded-full"></div>
             </h2>
@@ -142,8 +142,8 @@ export const Footer: React.FC<FooterProps> = ({
           {/* Form Content Grid */}
           <form onSubmit={handleCheckout} className="max-w-6xl mx-auto flex flex-col lg:flex-row gap-10 items-start justify-between font-inter">
             {/* Left side: Inputs */}
-            <div className="w-full lg:w-2/3 bg-bg-light p-6 md:p-8 rounded-[24px] shadow-[var(--shadow-premium)] border border-gray-100 grid grid-cols-1 md:grid-cols-2 gap-6">
-              <h3 className="md:col-span-2 text-lg font-poppins font-semibold text-text-primary mb-2">Shipping Details</h3>
+            <div className="w-full lg:w-2/3 bg-dark-section p-6 md:p-8 rounded-[24px] shadow-[var(--shadow-premium)] border border-border-gray grid grid-cols-1 md:grid-cols-2 gap-6">
+              <h3 className="md:col-span-2 text-lg font-poppins font-semibold text-white mb-2">Shipping Details</h3>
               
               <div className="flex flex-col gap-2">
                 <label className="text-xs font-bold text-gray-500 tracking-widest uppercase">State *</label>
@@ -228,34 +228,34 @@ export const Footer: React.FC<FooterProps> = ({
             </div>
 
             {/* Right side: Calculations */}
-            <div className="w-full lg:w-1/3 flex flex-col bg-[#111827] border border-[#374151] p-6 md:p-8 rounded-[24px] shadow-[0_4px_30px_rgba(0,0,0,0.3)] relative overflow-hidden">
-              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#FFC107] to-[#FF5722]"></div>
+            <div className="w-full lg:w-1/3 flex flex-col bg-dark-section border border-border-gray p-6 md:p-8 rounded-[24px] shadow-[var(--shadow-premium)] relative overflow-hidden">
+              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary-blue to-accent-orange"></div>
               <h3 className="text-xl font-poppins font-bold text-white mb-6">Order Summary</h3>
               
               <div className="flex flex-col gap-4 text-sm font-inter">
-                <div className="flex justify-between border-b border-[#374151] pb-2 text-gray-400">
+                <div className="flex justify-between border-b border-border-gray pb-2 text-gray-400">
                   <span>Market Total (MRP):</span>
                   <span className="font-medium line-through">₹{mktTotal.toFixed(2)}</span>
                 </div>
-                <div className="flex justify-between border-b border-[#374151] pb-2">
-                  <span className="font-medium text-[#10B981]">Premium Discount (80%):</span>
-                  <span className="font-bold text-[#10B981]">-₹{discountTotal.toFixed(2)}</span>
+                <div className="flex justify-between border-b border-border-gray pb-2">
+                  <span className="font-medium text-success-green">Premium Discount (80%):</span>
+                  <span className="font-bold text-success-green">-₹{discountTotal.toFixed(2)}</span>
                 </div>
-                <div className="flex justify-between border-b border-[#374151] pb-2 text-white">
+                <div className="flex justify-between border-b border-border-gray pb-2 text-white">
                   <span className="font-semibold">Sub Total:</span>
                   <span className="font-bold">₹{subTotal.toFixed(2)}</span>
                 </div>
-                <div className="flex justify-between border-b border-[#374151] pb-2 text-gray-400">
+                <div className="flex justify-between border-b border-border-gray pb-2 text-gray-400">
                   <span>Packing Charges (3%):</span>
                   <span className="font-medium">₹{packingCharges.toFixed(2)}</span>
                 </div>
-                <div className="flex justify-between border-b border-gray-100 pb-2 text-gray-500">
+                <div className="flex justify-between border-b border-border-gray pb-2 text-gray-500">
                   <span>Round Off:</span>
                   <span className="font-medium">{roundOff >= 0 ? '+' : ''}{roundOff.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between items-center pt-4 pb-2 mt-2">
-                  <span className="font-poppins font-bold text-lg text-text-primary">Total Amount:</span>
-                  <span className="font-poppins font-extrabold text-2xl text-secondary-gold">₹{overallAmount.toFixed(2)}</span>
+                  <span className="font-poppins font-bold text-lg text-white">Total Amount:</span>
+                  <span className="font-poppins font-extrabold text-2xl text-primary-blue">₹{overallAmount.toFixed(2)}</span>
                 </div>
               </div>
 
@@ -284,7 +284,7 @@ export const Footer: React.FC<FooterProps> = ({
 
       {/* Terms & Conditions Section (Only visible on home page) */}
       {showCheckout && (
-        <section className="bg-[#0B0F19] border-t border-[#374151] py-16 px-6 relative overflow-hidden">
+        <section className="bg-bg-light border-t border-border-gray py-16 px-6 relative overflow-hidden">
           {/* Subtle background decoration */}
           <div className="absolute top-0 right-0 w-64 h-64 bg-secondary-gold/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3"></div>
           
@@ -305,8 +305,8 @@ export const Footer: React.FC<FooterProps> = ({
                     'The prices quoted are valid up to Diwali season or subject to manufacturer changes.'
                   ]
               ).map((term, idx) => (
-                <div key={idx} className="flex items-start gap-3 bg-[#111827] p-4 rounded-2xl shadow-sm border border-[#374151] hover:shadow-md transition-shadow">
-                  <div className="w-6 h-6 rounded-full bg-secondary-gold/20 text-secondary-gold flex items-center justify-center flex-shrink-0 mt-0.5">
+                <div key={idx} className="flex items-start gap-3 bg-section-bg p-4 rounded-2xl shadow-[var(--shadow-premium)] border border-border-gray hover:border-primary-blue/30 transition-all duration-300 hover:-translate-y-1">
+                  <div className="w-6 h-6 rounded-full bg-primary-blue/10 text-primary-blue flex items-center justify-center flex-shrink-0 mt-0.5">
                     <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"></path></svg>
                   </div>
                   <span className="leading-relaxed">{term}</span>

@@ -1,44 +1,44 @@
 @import "tailwindcss";
 
 @theme {
-  --color-primary-blue: #FFC107; /* Changed to Gold for primary accents */
-  --color-secondary-gold: #FF9800; /* Deeper gold/orange */
-  --color-accent-orange: #FF5722;
-  --color-success-green: #10B981;
+  --color-primary-blue: #F5B800; /* Primary Gold */
+  --color-secondary-gold: #FFD54A; /* Gold Hover */
+  --color-accent-orange: #FF8A00;
+  --color-success-green: #22C55E;
   --color-danger-red: #EF4444;
-  --color-bg-light: #0B0F19; /* Deep midnight blue/black background */
-  --color-section-bg: #111827; /* Darker card background */
-  --color-dark-section: #1F2A44;
-  --color-border-gray: #374151; /* Dark border */
-  --color-text-primary: #F9FAFB; /* Off-white text */
-  --color-text-secondary: #9CA3AF; /* Gray text */
+  --color-bg-light: #070D1A; /* Main Background */
+  --color-section-bg: #0D1628; /* Section Background */
+  --color-dark-section: #111C30; /* Card Background */
+  --color-border-gray: #1E293B; /* Subtle dark border */
+  --color-text-primary: #F8FAFC; /* Off-white text */
+  --color-text-secondary: #94A3B8; /* Gray text */
   
   --color-royal-red: #E53935;
-  --color-luxury-gold: #FFC107;
-  --color-off-white: #0B0F19; 
+  --color-luxury-gold: #F5B800;
+  --color-off-white: #F8FAFC; 
 
   /* Sidebar Theme Variables for Admin Panel */
-  --color-sidebar: #0f172a; 
-  --color-sidebar-foreground: #F9FAFB;
-  --color-sidebar-primary: #FFC107; 
-  --color-sidebar-primary-foreground: #000000;
-  --color-sidebar-accent: #1e293b; 
-  --color-sidebar-accent-foreground: #F9FAFB;
-  --color-sidebar-border: #334155;
-  --color-sidebar-ring: #FFC107;
+  --color-sidebar: #0D1628; 
+  --color-sidebar-foreground: #F8FAFC;
+  --color-sidebar-primary: #F5B800; 
+  --color-sidebar-primary-foreground: #070D1A;
+  --color-sidebar-accent: #111C30; 
+  --color-sidebar-accent-foreground: #F8FAFC;
+  --color-sidebar-border: #1E293B;
+  --color-sidebar-ring: #F5B800;
 
-  --color-border: #374151;
-  --color-primary-hover: #F59E0B;
-  --color-primary-light: rgba(255, 193, 7, 0.1);
-  --color-secondary: #1F2A44;
+  --color-border: #1E293B;
+  --color-primary-hover: #FFD54A;
+  --color-primary-light: rgba(245, 184, 0, 0.1);
+  --color-secondary: #111C30;
 
-  --font-sans: "Inter", sans-serif;
+  --font-sans: "Inter", "Poppins", sans-serif;
   --font-poppins: "Poppins", sans-serif;
 
   --radius-xl: 18px;
 
-  --shadow-premium: 0 10px 40px -10px rgba(0,0,0,0.08), 0 4px 10px -5px rgba(0,0,0,0.04);
-  --shadow-premium-hover: 0 20px 50px -10px rgba(0,0,0,0.12), 0 10px 20px -5px rgba(0,0,0,0.08);
+  --shadow-premium: 0 10px 40px -10px rgba(0,0,0,0.3), 0 4px 10px -5px rgba(0,0,0,0.2);
+  --shadow-premium-hover: 0 20px 50px -10px rgba(245,184,0,0.15), 0 10px 20px -5px rgba(245,184,0,0.1);
 
   --animate-fade-in: fade-in 0.8s ease-out forwards;
   --animate-slide-up: slide-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;

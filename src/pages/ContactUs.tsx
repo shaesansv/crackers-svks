@@ -14,15 +14,12 @@ export const ContactUs: React.FC = () => {
       <section
         className="relative w-full h-[250px] md:h-[320px] overflow-hidden flex items-center justify-center px-10 md:px-20 select-none"
         style={{
-          backgroundImage: `linear-gradient(to bottom right, rgba(22, 75, 96, 0.9), rgba(27, 107, 147, 0.95)), url('/gift_box_1.png')`,
+          backgroundImage: `linear-gradient(to bottom right, rgba(7, 13, 26, 0.4), rgba(7, 13, 26, 0.7)), url('/gift_box_1.png')`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundAttachment: 'fixed'
         }}
       >
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-64 bg-[#4FC0D0]/10 blur-[100px] rounded-full pointer-events-none"></div>
-        <div className="absolute -right-20 -top-20 w-96 h-96 border-[40px] border-[#4FC0D0]/10 rounded-full pointer-events-none"></div>
-        <div className="absolute -left-20 -bottom-20 w-80 h-80 border-[30px] border-[#4FC0D0]/5 rounded-full pointer-events-none"></div>
 
         <div className="relative z-10 flex flex-col items-center text-center gap-2 animate-slide-up">
           <div className="bg-[#4FC0D0]/20 text-[#A2FF86] font-poppins font-bold text-[10px] md:text-xs px-4 py-1.5 uppercase tracking-[0.3em] rounded-full backdrop-blur-sm border border-[#4FC0D0]/30">
@@ -39,29 +36,29 @@ export const ContactUs: React.FC = () => {
         {/* Contact Info Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {/* Address */}
-          <div className="bg-white rounded-[24px] shadow-[var(--shadow-premium)] border border-gray-100 p-8 flex flex-col items-center text-center hover:shadow-[var(--shadow-premium-hover)] hover:-translate-y-1.5 transition-all duration-400 group">
-            <div className="w-16 h-16 rounded-full bg-bg-light border border-border-gray flex items-center justify-center mb-6 group-hover:bg-secondary-gold/10 transition-colors">
+          <div className="bg-section-bg rounded-[24px] shadow-[var(--shadow-premium)] border border-border-gray p-8 flex flex-col items-center text-center hover:shadow-[var(--shadow-premium-hover)] hover:-translate-y-1.5 transition-all duration-400 group">
+            <div className="w-16 h-16 rounded-full bg-dark-section border border-border-gray flex items-center justify-center mb-6 group-hover:bg-secondary-gold/10 transition-colors">
               <svg className="w-8 h-8 text-primary-blue group-hover:text-secondary-gold transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
               </svg>
             </div>
-            <h3 className="font-poppins font-bold text-xl text-text-primary mb-3">Address</h3>
-            <p className="text-gray-600 font-inter text-sm leading-relaxed whitespace-pre-line">
+            <h3 className="font-poppins font-bold text-xl text-white mb-3">Address</h3>
+            <p className="text-text-secondary font-inter text-sm leading-relaxed whitespace-pre-line">
               <strong>{siteName}</strong><br />
               {address}
             </p>
           </div>
 
           {/* Phone */}
-          <div className="bg-white rounded-[24px] shadow-[var(--shadow-premium)] border border-gray-100 p-8 flex flex-col items-center text-center hover:shadow-[var(--shadow-premium-hover)] hover:-translate-y-1.5 transition-all duration-400 group">
-            <div className="w-16 h-16 rounded-full bg-bg-light border border-border-gray flex items-center justify-center mb-6 group-hover:bg-secondary-gold/10 transition-colors">
+          <div className="bg-section-bg rounded-[24px] shadow-[var(--shadow-premium)] border border-border-gray p-8 flex flex-col items-center text-center hover:shadow-[var(--shadow-premium-hover)] hover:-translate-y-1.5 transition-all duration-400 group">
+            <div className="w-16 h-16 rounded-full bg-dark-section border border-border-gray flex items-center justify-center mb-6 group-hover:bg-secondary-gold/10 transition-colors">
               <svg className="w-8 h-8 text-primary-blue group-hover:text-secondary-gold transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
               </svg>
             </div>
-            <h3 className="font-poppins font-bold text-xl text-text-primary mb-3">Phone</h3>
-            <p className="text-gray-600 font-inter text-sm leading-relaxed">
+            <h3 className="font-poppins font-bold text-xl text-white mb-3">Phone</h3>
+            <p className="text-text-secondary font-inter text-sm leading-relaxed">
               Sales &amp; Support<br />
               <a href={`tel:${phone}`} className="text-primary-blue text-lg font-bold mt-1 block hover:underline">
                 {phone}
@@ -70,14 +67,14 @@ export const ContactUs: React.FC = () => {
           </div>
 
           {/* Email */}
-          <div className="bg-white rounded-[24px] shadow-[var(--shadow-premium)] border border-gray-100 p-8 flex flex-col items-center text-center hover:shadow-[var(--shadow-premium-hover)] hover:-translate-y-1.5 transition-all duration-400 group">
-            <div className="w-16 h-16 rounded-full bg-bg-light border border-border-gray flex items-center justify-center mb-6 group-hover:bg-secondary-gold/10 transition-colors">
+          <div className="bg-section-bg rounded-[24px] shadow-[var(--shadow-premium)] border border-border-gray p-8 flex flex-col items-center text-center hover:shadow-[var(--shadow-premium-hover)] hover:-translate-y-1.5 transition-all duration-400 group">
+            <div className="w-16 h-16 rounded-full bg-dark-section border border-border-gray flex items-center justify-center mb-6 group-hover:bg-secondary-gold/10 transition-colors">
               <svg className="w-8 h-8 text-primary-blue group-hover:text-secondary-gold transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
               </svg>
             </div>
-            <h3 className="font-poppins font-bold text-xl text-text-primary mb-3">Email Us</h3>
-            <p className="text-gray-600 font-inter text-sm leading-relaxed mb-4">
+            <h3 className="font-poppins font-bold text-xl text-white mb-3">Email Us</h3>
+            <p className="text-text-secondary font-inter text-sm leading-relaxed mb-4">
               Send us your queries anytime!<br />
               <a href={`mailto:${email}`} className="text-primary-blue font-bold hover:underline break-all">
                 {email}
