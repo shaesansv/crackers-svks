@@ -5,6 +5,8 @@ import { getOrders, approveOrder, updatePackingStatus } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Link } from "react-router-dom";
+import { ImageSlider } from "@/components/ImageSlider";
+import { ProductDetailModal } from "@/components/ProductDetailModal";
 import {
   Dialog,
   DialogContent,
@@ -46,6 +48,7 @@ const AdminOrders = () => {
   const ITEMS_PER_PAGE = 20;
   const [orderList, setOrderList] = useState<any[]>([]);
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
+  const [viewingProduct, setViewingProduct] = useState<any>(null);
   const [isApproving, setIsApproving] = useState(false);
   const { settings } = useSiteSettings();
 
@@ -185,9 +188,13 @@ const AdminOrders = () => {
       <div className="flex min-h-screen">
       <AdminSidebar />
       <main className="flex-1 p-6 lg:p-8 overflow-auto">
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center justify-between mb-4">
           <h1 className="font-display text-2xl font-bold">Orders</h1>
           <Link to="/" className="text-sm text-primary hover:underline lg:hidden">← Store</Link>
+        </div>
+
+        <div className="mb-6">
+          <ImageSlider heightClass="h-[140px] sm:h-[200px] md:h-[240px]" />
         </div>
 
         {/* Filter tabs */}
@@ -380,7 +387,7 @@ const AdminOrders = () => {
                 </div>
 
                 <div>
-                  <h3 className="font-semibold text-sm mb-2 text-gray-800 dark:text-gray-200">Items Ordered</h3>
+                  <h3 className="font-semibold text-sm mb-2 text-gray-800 dark:text-gray-200">Items Ordered (Click item to expand view)</h3>
                   <div className="bg-gray-100 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-lg overflow-hidden">
                     <table className="w-full text-sm">
                       <thead>
@@ -393,21 +400,44 @@ const AdminOrders = () => {
                         </tr>
                       </thead>
                       <tbody>
-                        {selectedOrder.items?.map((item: any, idx: number) => (
-                          <tr key={idx} className="border-t border-gray-200 dark:border-zinc-700 text-gray-800 dark:text-gray-200">
-                            <td className="px-3 py-2 text-gray-400">{idx + 1}</td>
-                            <td className="px-3 py-2 font-medium">{item.product?.name || item.productName || 'Product'}</td>
-                            <td className="px-3 py-2 text-center">{item.quantity}</td>
-                            <td className="px-3 py-2 text-right">₹{item.price}</td>
-                            <td className="px-3 py-2 text-right font-semibold">₹{(item.quantity * item.price).toFixed(2)}</td>
-                          </tr>
-                        ))}
+                        {selectedOrder.items?.map((item: any, idx: number) => {
+                          const prodObj = item.product || {
+                            name: item.productName || 'Product',
+                            price: item.price,
+                            code: item.code || 'N/A',
+                            sku: item.sku || item.code || 'N/A',
+                            image: item.image || item.imageUrl || '',
+                            description: item.description || '',
+                          };
+                          return (
+                            <tr
+                              key={idx}
+                              onClick={() => setViewingProduct(prodObj)}
+                              className="border-t border-gray-200 dark:border-zinc-700 text-gray-800 dark:text-gray-200 hover:bg-cyan-50 dark:hover:bg-zinc-700/60 transition-colors cursor-pointer group"
+                              title="Click to view product expanded details"
+                            >
+                              <td className="px-3 py-2 text-gray-400">{idx + 1}</td>
+                              <td className="px-3 py-2 font-medium flex items-center gap-2 text-cyan-700 dark:text-cyan-400 group-hover:underline">
+                                {(item.product?.image || item.image) && (
+                                  <img
+                                    src={item.product?.image || item.image}
+                                    alt={item.productName}
+                                    className="w-8 h-8 rounded object-cover border border-gray-200"
+                                  />
+                                )}
+                                <span>{item.product?.name || item.productName || 'Product'}</span>
+                                <span className="text-[10px] text-gray-400 font-normal"></span>
+                              </td>
+                              <td className="px-3 py-2 text-center font-bold">{item.quantity}</td>
+                              <td className="px-3 py-2 text-right">₹{item.price}</td>
+                              <td className="px-3 py-2 text-right font-semibold">₹{(item.quantity * item.price).toFixed(2)}</td>
+                            </tr>
+                          );
+                        })}
                       </tbody>
                     </table>
                   </div>
                 </div>
-
-
 
                 <div className="flex gap-2 pt-4">
                   <Button
@@ -451,10 +481,17 @@ const AdminOrders = () => {
             )}
           </DialogContent>
         </Dialog>
+
+        {/* Product Expanded View Modal */}
+        <ProductDetailModal
+          product={viewingProduct}
+          isOpen={!!viewingProduct}
+          onClose={() => setViewingProduct(null)}
+        />
         </main>
       </div>
     </>
   );
-}
+};
 
 export default AdminOrders;
