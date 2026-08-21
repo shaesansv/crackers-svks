@@ -11,24 +11,20 @@ interface NavbarProps {
   categories: { id: string; name: string }[];
   cartCount: number;
   cartTotal: number;
+  mktTotal?: number;
   onCartOpen: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
   currentPage,
   setCurrentPage,
-  searchTerm,
-  setSearchTerm,
-  selectedCategory,
-  setSelectedCategory,
-  categories,
   cartCount,
   cartTotal,
   onCartOpen
 }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   return (
-    <header className="sticky top-0 z-50 bg-bg-light/80 backdrop-blur-xl border-b border-primary-blue/30 shadow-[var(--shadow-premium)] animate-fade-in">
+    <header className="relative z-50 bg-bg-light/80 backdrop-blur-xl border-b border-primary-blue/30 shadow-[var(--shadow-premium)] animate-fade-in">
       {/* Supreme Court Notice Marquee */}
       <div className="w-full bg-danger-red text-white overflow-hidden py-1.5 flex items-center shadow-md relative">
         <span className="font-bold text-xs px-4 shrink-0 uppercase tracking-wider border-r border-red-300 mr-3 pr-3">📢 NOTICE</span>
@@ -81,25 +77,9 @@ export const Navbar: React.FC<NavbarProps> = ({
           <a href="#contact" onClick={() => setCurrentPage('contact')} className="tracking-widest uppercase text-text-primary hover:text-primary-blue font-medium transition-all duration-300">Contact Us</a>
         </nav>
 
-        {/* Search & Cart (Shown on storefront pages) */}
+        {/* Cart (Shown on storefront pages) */}
         {currentPage !== 'admin-login' && currentPage !== 'admin-dashboard' && (
           <div className="flex items-center gap-2 md:gap-4 mt-0 md:mt-0">
-            <div className="relative group">
-              <input
-                type="text"
-                placeholder="Search premium products..."
-                value={searchTerm}
-                onChange={(e) => {
-                  setSearchTerm(e.target.value);
-                  if (currentPage !== 'home' && currentPage !== 'order') {
-                    setCurrentPage('home');
-                  }
-                }}
-                className="py-2 pl-4 pr-10 border border-border-gray rounded-[12px] text-sm bg-section-bg focus:bg-dark-section text-white w-[220px] outline-none transition-all duration-300 focus:shadow-[0_0_15px_rgba(245,184,0,0.2)] focus:border-primary-blue font-inter"
-              />
-              <svg className="w-4 h-4 absolute right-3 top-2.5 text-gray-400 group-focus-within:text-primary-blue transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-            </div>
-            
             <div 
               onClick={onCartOpen}
               className="flex items-center justify-center gap-2 px-5 cursor-pointer shadow-[var(--shadow-premium)] btn-primary font-poppins text-sm relative"
@@ -143,32 +123,6 @@ export const Navbar: React.FC<NavbarProps> = ({
           <a href="#safety" onClick={() => { setCurrentPage('safety'); setIsMobileMenuOpen(false); }} className="tracking-widest uppercase w-full text-center py-2 text-text-primary hover:text-primary-blue font-medium transition-all duration-300">Safety Tips</a>
           <a href="#contact" onClick={() => { setCurrentPage('contact'); setIsMobileMenuOpen(false); }} className="tracking-widest uppercase w-full text-center py-2 text-text-primary hover:text-primary-blue font-medium transition-all duration-300">Contact Us</a>
         </nav>
-      )}
-
-      {/* 3. Category Filter Bar (Shown on storefront pages) */}
-      {currentPage !== 'admin-login' && currentPage !== 'admin-dashboard' && (
-        <div className="bg-bg-light/90 border-t border-border-gray flex flex-col md:flex-row items-center justify-center p-3 gap-4 font-inter text-sm shadow-[var(--shadow-premium)]">
-          <div className="flex items-center gap-3 w-full max-w-md mx-auto justify-center">
-            <span className="text-gray-500 hidden md:inline">Filter by:</span>
-            <select
-              value={selectedCategory}
-              onChange={(e) => {
-                setSelectedCategory(e.target.value);
-                if (currentPage !== 'home' && currentPage !== 'order') {
-                  setCurrentPage('home');
-                }
-              }}
-              className="py-2 px-4 border border-border-gray rounded-[12px] bg-section-bg text-white outline-none font-medium cursor-pointer hover:border-primary-blue focus:ring-1 focus:ring-primary-blue transition-colors w-full md:w-auto shadow-sm"
-            >
-              <option value="all">All Premium Collections</option>
-              {categories.map((cat) => (
-                <option key={cat.id} value={cat.id}>
-                  {cat.name.replace(' (80% DISCOUNT)', '')}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
       )}
     </header>
   );

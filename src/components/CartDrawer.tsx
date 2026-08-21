@@ -1,5 +1,7 @@
-import React, { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import type { Product } from '../types';
+import { INDIAN_STATES_AND_DISTRICTS } from '../data/indianStatesAndDistricts';
+import { loadCustomerDetails, saveCustomerDetails } from '../utils/cookieSessionUtils';
 
 interface CartItem {
   product: Product;
@@ -13,8 +15,10 @@ interface CartDrawerProps {
   onQtyChange: (productId: string, increment: boolean) => void;
   onRemove: (productId: string) => void;
   onCheckout: () => void;
-  settings: { minOrderValue?: number } | null;
+  settings: { minOrderValue?: number; minPurchaseOutsideTN?: number; minimumPurchaseAmount?: number; minOrderValueOutside?: number } | null;
 }
+
+const ALL_STATES = Object.keys(INDIAN_STATES_AND_DISTRICTS);
 
 export const CartDrawer: React.FC<CartDrawerProps> = ({
   isOpen,
@@ -22,10 +26,32 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
   cartItems,
   onQtyChange,
   onRemove,
-  onCheckout,
   settings,
 }) => {
-  const minOrder = settings?.minOrderValue ?? 3000;
+  const tnMinOrder = settings?.minOrderValue ?? settings?.minimumPurchaseAmount ?? 3000;
+  const outsideTNMinOrder = settings?.minPurchaseOutsideTN ?? settings?.minOrderValueOutside ?? 5000;
+
+  const [step, setStep] = useState<'cart' | 'checkout' | 'success'>('cart');
+
+  // Load saved customer details from Cookie / Session Storage
+  const savedDetails = loadCustomerDetails();
+
+  // Customer Details Form State
+  const [state, setState] = useState(savedDetails?.state || 'Tamil Nadu');
+  const [city, setCity] = useState(savedDetails?.city || 'Sivakasi');
+  const [name, setName] = useState(savedDetails?.name || '');
+  const [mobile, setMobile] = useState(savedDetails?.mobile || '');
+  const [email, setEmail] = useState(savedDetails?.email || '');
+  const [address, setAddress] = useState(savedDetails?.address || '');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [placedOrder, setPlacedOrder] = useState<any>(null);
+
+  // Sync customer details entry section to Cookies & Session Storage whenever updated
+  useEffect(() => {
+    if (name || mobile || email || address || state || city) {
+      saveCustomerDetails({ name, mobile, email, address, state, city });
+    }
+  }, [name, mobile, email, address, state, city]);
 
   // Lock body scroll when drawer is open
   useEffect(() => {
@@ -33,16 +59,79 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = '';
+      setStep('cart');
     }
     return () => { document.body.style.overflow = ''; };
   }, [isOpen]);
 
+  const activeMinOrder = state === 'Tamil Nadu' ? tnMinOrder : outsideTNMinOrder;
   const subtotal = cartItems.reduce((sum, { product, qty }) => sum + product.discountPrice * qty, 0);
   const packingCharge = Math.round(subtotal * 0.03);
   const total = subtotal + packingCharge;
   const totalItems = cartItems.reduce((sum, { qty }) => sum + qty, 0);
-  const isMinMet = subtotal >= minOrder;
-  const remaining = Math.max(0, minOrder - subtotal);
+  const isMinMet = subtotal >= activeMinOrder;
+  const remaining = Math.max(0, activeMinOrder - subtotal);
+  const isFormValid = name.trim() !== '' && mobile.trim() !== '' && address.trim() !== '' && isMinMet;
+
+  const handleStateChange = (newState: string) => {
+    setState(newState);
+    const districts = INDIAN_STATES_AND_DISTRICTS[newState] || [];
+    setCity(districts[0] || '');
+  };
+
+  const handlePlaceOrder = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!isMinMet) {
+      alert(`Minimum order value for ${state} is ₹${activeMinOrder.toLocaleString('en-IN')}. Please add ₹${remaining.toLocaleString('en-IN')} more to proceed.`);
+      return;
+    }
+    if (!name.trim() || !mobile.trim() || !address.trim()) {
+      alert('Please fill in all required fields (*)');
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const orderItems = cartItems.map(({ product, qty }) => ({
+        product: product._id || product.id,
+        quantity: qty,
+        price: product.discountPrice
+      }));
+
+      const response = await fetch('http://localhost:5000/api/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          customerName: name,
+          customerEmail: email.trim() || `${mobile}@noemail.com`,
+          customerPhone: mobile,
+          deliveryAddress: address,
+          state: state,
+          district: city,
+          items: orderItems,
+          total: subtotal,
+          packingCharge: packingCharge,
+          overallTotal: total
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setPlacedOrder(data);
+        setStep('success');
+        // Clear items from cart
+        cartItems.forEach(({ product }) => onRemove(product.id));
+      } else {
+        const errData = await response.json().catch(() => ({}));
+        alert(errData.message || 'There was a problem placing your order. Please try again.');
+      }
+    } catch (err) {
+      console.error('Order creation error:', err);
+      alert('Network error. Please check your connection and try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <>
@@ -51,202 +140,382 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
         className={`fixed inset-0 z-[998] bg-black/40 backdrop-blur-sm transition-opacity duration-300 ${
           isOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
         }`}
-        onClick={onClose}
+        onClick={() => {
+          onClose();
+          setStep('cart');
+        }}
       />
 
       {/* Drawer */}
       <aside
-        className={`fixed top-0 right-0 z-[999] h-full w-full max-w-[420px] flex flex-col shadow-[0_0_50px_rgba(0,0,0,0.5)] transition-transform duration-400 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+        className={`fixed top-0 right-0 z-[999] h-full w-full max-w-[420px] flex flex-col shadow-2xl border-l-2 border-[#B69F4C] transition-transform duration-400 ease-[cubic-bezier(0.16,1,0.3,1)] ${
           isOpen ? 'translate-x-0' : 'translate-x-full'
         }`}
-        style={{ background: '#0B0F19' }}
+        style={{ background: '#FDF5CB' }}
       >
         {/* Header */}
         <div
-          className="flex items-center justify-between px-5 py-4 border-b border-[#374151]"
-          style={{ background: '#111827' }}
+          className="flex items-center justify-between px-5 py-4 border-b-2 border-[#B69F4C]"
+          style={{ background: '#15803D' }}
         >
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center">
-              <svg viewBox="0 0 24 24" width="20" height="20" fill="white">
-                <path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/>
-              </svg>
-            </div>
+            {step === 'checkout' ? (
+              <button 
+                onClick={() => setStep('cart')}
+                className="w-8 h-8 rounded-full bg-[#B69F4C]/20 hover:bg-[#B69F4C]/40 text-[#FDF5CB] flex items-center justify-center font-bold text-sm"
+              >
+                ←
+              </button>
+            ) : (
+              <div className="w-9 h-9 rounded-full bg-[#B69F4C] flex items-center justify-center text-[#14532D]">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                  <path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/>
+                </svg>
+              </div>
+            )}
             <div>
-              <h2 className="text-white font-bold text-[16px] font-poppins">Your Cart</h2>
-              <p className="text-white/60 text-[12px]">{totalItems} item{totalItems !== 1 ? 's' : ''} added</p>
+              <h2 className="text-[#FDF5CB] font-bold text-[16px] font-poppins">
+                {step === 'cart' ? 'Your Cart' : step === 'checkout' ? 'Customer Details' : 'Order Placed!'}
+              </h2>
+              <p className="text-[#FBECC0] text-[12px]">
+                {step === 'cart' ? `${totalItems} item${totalItems !== 1 ? 's' : ''} added` : step === 'checkout' ? 'Complete your details' : 'Thank you for choosing us'}
+              </p>
             </div>
           </div>
           <button
-            onClick={onClose}
-            className="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors"
+            onClick={() => {
+              onClose();
+              setStep('cart');
+            }}
+            className="w-9 h-9 rounded-full bg-[#B69F4C]/20 hover:bg-[#B69F4C]/40 text-[#FDF5CB] flex items-center justify-center transition-colors"
           >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
               <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
             </svg>
           </button>
         </div>
 
-        {/* Min order progress */}
-        {!isMinMet && (
-          <div className="px-5 py-3 bg-[#111827] border-b border-[#374151]">
-            <div className="flex items-center justify-between mb-1.5">
-              <span className="text-xs font-medium text-amber-700">
-                Add ₹{remaining.toLocaleString('en-IN')} more to place order
-              </span>
-              <span className="text-xs text-amber-500">Min: ₹{minOrder.toLocaleString('en-IN')}</span>
-            </div>
-            <div className="w-full h-1.5 bg-amber-200 rounded-full overflow-hidden">
-              <div
-                className="h-full rounded-full bg-amber-500 transition-all duration-500"
-                style={{ width: `${Math.min(100, (subtotal / minOrder) * 100)}%` }}
-              />
-            </div>
-          </div>
-        )}
-
-        {isMinMet && (
-          <div className="px-5 py-2.5 bg-[#111827] border-b border-[#374151] flex items-center gap-2">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#22C55E" strokeWidth="2.5" strokeLinecap="round">
-              <polyline points="20 6 9 17 4 12"/>
-            </svg>
-            <span className="text-xs font-semibold text-green-700">Minimum order met! Ready to checkout</span>
-          </div>
-        )}
-
-        {/* Items */}
-        <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
-          {cartItems.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-full gap-4 py-16">
-              <div className="w-20 h-20 rounded-full bg-gray-100 flex items-center justify-center">
-                <svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="#9CA3AF" strokeWidth="1.5">
-                  <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/>
-                  <line x1="3" y1="6" x2="21" y2="6"/>
-                  <path d="M16 10a4 4 0 01-8 0"/>
-                </svg>
-              </div>
-              <div className="text-center">
-                <p className="font-semibold text-gray-500">Your cart is empty</p>
-                <p className="text-gray-400 text-sm mt-1">Add crackers to get started</p>
-              </div>
-            </div>
-          ) : (
-            cartItems.map(({ product, qty }) => (
-              <div
-                key={product.id}
-                className="bg-[#111827] rounded-2xl p-3.5 shadow-sm border border-[#374151] flex gap-3 items-start animate-fade-in"
-              >
-                {/* Icon */}
-                <div className="w-12 h-12 rounded-xl bg-[#1f2937] border border-[#374151] flex items-center justify-center flex-shrink-0 text-xl overflow-hidden">
-                  {product.imageUrl ? (
-                    <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover" />
-                  ) : (
-                    <span>🎆</span>
-                  )}
+        {/* STEP 1: CART ITEMS */}
+        {step === 'cart' && (
+          <>
+            {/* Min order progress */}
+            {!isMinMet && (
+              <div className="px-5 py-3 bg-[#FEF9E1] border-b border-[#B69F4C]">
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-xs font-bold text-[#A67428]">
+                    Add ₹{remaining.toLocaleString('en-IN')} more for {state}
+                  </span>
+                  <span className="text-xs font-bold text-[#14532D]">Min: ₹{activeMinOrder.toLocaleString('en-IN')}</span>
                 </div>
+                <div className="w-full h-2 bg-[#FBECC0] rounded-full overflow-hidden border border-[#B69F4C]/40">
+                  <div
+                    className="h-full rounded-full bg-[#B69F4C] transition-all duration-500"
+                    style={{ width: `${Math.min(100, (subtotal / activeMinOrder) * 100)}%` }}
+                  />
+                </div>
+              </div>
+            )}
 
-                {/* Info */}
-                <div className="flex-1 min-w-0">
-                  <p className="text-[13px] font-bold text-text-primary leading-tight truncate">{product.name}</p>
-                  <p className="text-[11px] text-text-secondary mt-0.5">{product.unit}</p>
+            {isMinMet && (
+              <div className="px-5 py-2.5 bg-[#FEF9E1] border-b border-[#B69F4C] flex items-center gap-2">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#15803D" strokeWidth="2.5" strokeLinecap="round">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+                <span className="text-xs font-extrabold text-[#15803D]">Minimum order met for {state}! Ready to checkout</span>
+              </div>
+            )}
 
-                  <div className="flex items-center justify-between mt-2">
-                    {/* Qty controls */}
-                    <div className="flex items-center gap-1.5 bg-[#1f2937] rounded-xl px-1 py-0.5 border border-[#374151]">
-                      <button
-                        onClick={() => onQtyChange(product.id, false)}
-                        className="w-6 h-6 rounded-lg bg-[#111827] shadow-sm text-white font-bold text-sm flex items-center justify-center hover:bg-danger-red hover:text-white transition-colors"
-                      >
-                        −
-                      </button>
-                      <span className="text-[13px] font-bold text-white w-5 text-center">{qty}</span>
-                      <button
-                        onClick={() => onQtyChange(product.id, true)}
-                        className="w-6 h-6 rounded-lg bg-primary-blue text-white font-bold text-sm flex items-center justify-center hover:bg-primary-hover transition-colors"
-                      >
-                        +
-                      </button>
-                    </div>
-
-                    {/* Price — 3-mode pricing */}
-                    <div className="text-right">
-                      {product.hasDiscount && product.actualPrice > product.discountPrice ? (
-                        // Mode 1: product-level hasDiscount
-                        <>
-                          <p className="text-[14px] font-bold text-green-600">₹{(product.discountPrice * qty).toLocaleString('en-IN')}</p>
-                          <p className="text-[10px] text-gray-400 line-through">₹{(product.actualPrice * qty).toLocaleString('en-IN')}</p>
-                        </>
-                      ) : product.displayNetRate && product.netRate && product.netRate > 0 ? (
-                        // Mode 2: displayNetRate only — no strikethrough, amber color
-                        <p className="text-[14px] font-bold text-amber-600">₹{(product.discountPrice * qty).toLocaleString('en-IN')}</p>
-                      ) : product.appliedGlobalDiscount && product.actualPrice > product.discountPrice ? (
-                        // Mode 3: global discount applied
-                        <>
-                          <p className="text-[14px] font-bold text-orange-600">₹{(product.discountPrice * qty).toLocaleString('en-IN')}</p>
-                          <p className="text-[10px] text-gray-400 line-through">₹{(product.actualPrice * qty).toLocaleString('en-IN')}</p>
-                        </>
+            {/* Items List */}
+            <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
+              {cartItems.length === 0 ? (
+                <div className="flex flex-col items-center justify-center h-full gap-4 py-16">
+                  <div className="w-20 h-20 rounded-full bg-[#FEF9E1] border-2 border-[#B69F4C] flex items-center justify-center text-[#14532D]">
+                    <svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="currentColor" strokeWidth="1.5">
+                      <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/>
+                      <line x1="3" y1="6" x2="21" y2="6"/>
+                      <path d="M16 10a4 4 0 01-8 0"/>
+                    </svg>
+                  </div>
+                  <div className="text-center">
+                    <p className="font-bold text-[#15803D]">Your cart is empty</p>
+                    <p className="text-[#14532D] text-sm mt-1">Add crackers to get started</p>
+                  </div>
+                </div>
+              ) : (
+                cartItems.map(({ product, qty }) => (
+                  <div
+                    key={product.id}
+                    className="bg-[#FEF9E1] rounded-2xl p-3.5 shadow-sm border border-[#B69F4C] flex gap-3 items-start animate-fade-in"
+                  >
+                    <div className="w-12 h-12 rounded-xl bg-[#FDF5CB] border border-[#B69F4C] flex items-center justify-center flex-shrink-0 text-xl overflow-hidden">
+                      {product.imageUrl ? (
+                        <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover" />
                       ) : (
-                        // Default: no discount
-                        <p className="text-[14px] font-bold text-secondary-gold">₹{(product.discountPrice * qty).toLocaleString('en-IN')}</p>
+                        <span>🎆</span>
                       )}
                     </div>
+
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[13px] font-bold text-[#061001] leading-tight truncate">{product.name}</p>
+                      <p className="text-[11px] text-[#14532D] mt-0.5">{product.unit}</p>
+
+                      <div className="flex items-center justify-between mt-2">
+                        <div className="flex items-center gap-1.5 bg-[#FDF5CB] rounded-xl px-1.5 py-0.5 border border-[#B69F4C]">
+                          <button
+                            onClick={() => onQtyChange(product.id, false)}
+                            className="w-6 h-6 rounded-lg bg-[#15803D] text-[#FDF5CB] font-black text-sm flex items-center justify-center hover:bg-red-600 hover:text-white transition-colors"
+                          >
+                            −
+                          </button>
+                          <span className="text-[13px] font-extrabold text-[#061001] w-5 text-center">{qty}</span>
+                          <button
+                            onClick={() => onQtyChange(product.id, true)}
+                            className="w-6 h-6 rounded-lg bg-[#15803D] text-[#FDF5CB] font-black text-sm flex items-center justify-center hover:bg-[#B69F4C] hover:text-[#14532D] transition-colors"
+                          >
+                            +
+                          </button>
+                        </div>
+
+                        <div className="text-right">
+                          <p className="text-[14px] font-black text-[#A67428]">₹{(product.discountPrice * qty).toLocaleString('en-IN')}</p>
+                          {product.actualPrice > product.discountPrice && (
+                            <p className="text-[10px] text-slate-400 line-through">₹{(product.actualPrice * qty).toLocaleString('en-IN')}</p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    <button
+                      onClick={() => onRemove(product.id)}
+                      className="flex-shrink-0 w-7 h-7 rounded-full bg-[#FDF5CB] hover:bg-red-500 hover:text-white border border-[#B69F4C] flex items-center justify-center transition-colors mt-0.5 text-[#14532D]"
+                    >
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                        <polyline points="3 6 5 6 21 6"/>
+                        <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>
+                        <path d="M10 11v6M14 11v6"/>
+                      </svg>
+                    </button>
+                  </div>
+                ))
+              )}
+            </div>
+
+            {/* Footer Totals & Proceed Button */}
+            {cartItems.length > 0 && (
+              <div className="border-t-2 border-[#B69F4C] px-5 py-4 space-y-3 bg-[#FEF9E1]">
+                <div className="space-y-1.5">
+                  <div className="flex justify-between text-[13px] text-[#14532D]">
+                    <span>Subtotal ({totalItems} items)</span>
+                    <span className="font-bold text-[#061001]">₹{subtotal.toLocaleString('en-IN')}</span>
+                  </div>
+                  <div className="flex justify-between text-[13px] text-[#14532D]">
+                    <span>Packing charge (3%)</span>
+                    <span className="font-bold text-[#061001]">₹{packingCharge.toLocaleString('en-IN')}</span>
+                  </div>
+                  <div className="border-t border-dashed border-[#B69F4C] pt-2 flex justify-between font-extrabold text-[15px]">
+                    <span className="text-[#15803D]">Total</span>
+                    <span className="text-[#A67428]">₹{total.toLocaleString('en-IN')}</span>
                   </div>
                 </div>
 
-                {/* Remove */}
                 <button
-                  onClick={() => onRemove(product.id)}
-                  className="flex-shrink-0 w-7 h-7 rounded-full bg-[#1f2937] hover:bg-red-500 flex items-center justify-center transition-colors mt-0.5 text-gray-400 hover:text-white"
+                  onClick={() => {
+                    if (isMinMet) {
+                      setStep('checkout');
+                    }
+                  }}
+                  disabled={!isMinMet}
+                  className={`w-full h-12 rounded-2xl font-black text-[14px] font-poppins flex items-center justify-center gap-2 transition-all duration-300 ${
+                    isMinMet
+                      ? 'bg-[#B69F4C] hover:bg-[#A67428] text-[#14532D] hover:text-white shadow-md active:scale-95 cursor-pointer'
+                      : 'bg-gray-200 text-gray-400 cursor-not-allowed border border-gray-300'
+                  }`}
                 >
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2.5" strokeLinecap="round">
-                    <polyline points="3 6 5 6 21 6"/>
-                    <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>
-                    <path d="M10 11v6M14 11v6"/>
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+                    <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/>
                   </svg>
+                  {isMinMet ? 'Proceed to Checkout' : `Need ₹${remaining.toLocaleString('en-IN')} more`}
                 </button>
               </div>
-            ))
-          )}
-        </div>
+            )}
+          </>
+        )}
 
-        {/* Footer / Totals */}
-        {cartItems.length > 0 && (
-          <div className="border-t border-[#374151] px-5 py-4 space-y-3 bg-[#111827]">
-            {/* Breakdown */}
-            <div className="space-y-1.5">
-              <div className="flex justify-between text-[13px] text-text-secondary">
-                <span>Subtotal ({totalItems} items)</span>
-                <span className="font-medium text-text-primary">₹{subtotal.toLocaleString('en-IN')}</span>
+        {/* STEP 2: CHECKOUT / CUSTOMER DETAILS FORM */}
+        {step === 'checkout' && (
+          <form onSubmit={handlePlaceOrder} className="flex-1 flex flex-col justify-between overflow-y-auto">
+            <div className="p-4 space-y-4">
+              <div className="bg-[#FEF9E1] p-4 rounded-2xl border border-[#B69F4C] space-y-3">
+                <h3 className="text-xs font-extrabold text-[#14532D] uppercase tracking-wider">Shipping Details</h3>
+                
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-[10px] font-bold text-[#14532D] uppercase tracking-wider block mb-1">State *</label>
+                    <select
+                      value={state}
+                      onChange={(e) => handleStateChange(e.target.value)}
+                      className="w-full p-2.5 border border-[#B69F4C] rounded-xl text-xs bg-[#FDF5CB] font-semibold text-[#061001] outline-none focus:border-[#15803D]"
+                      required
+                    >
+                      {ALL_STATES.map((stateName) => (
+                        <option key={stateName} value={stateName}>
+                          {stateName}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] font-bold text-[#14532D] uppercase tracking-wider block mb-1">District / City *</label>
+                    <select
+                      value={city}
+                      onChange={(e) => setCity(e.target.value)}
+                      className="w-full p-2.5 border border-[#B69F4C] rounded-xl text-xs bg-[#FDF5CB] font-semibold text-[#061001] outline-none focus:border-[#15803D]"
+                      required
+                    >
+                      {(INDIAN_STATES_AND_DISTRICTS[state] || []).map((districtName) => (
+                        <option key={districtName} value={districtName}>
+                          {districtName}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-[10px] font-bold text-[#14532D] uppercase tracking-wider block mb-1">Full Name *</label>
+                  <input
+                    type="text"
+                    placeholder="Enter your full name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="w-full p-2.5 border border-[#B69F4C] rounded-xl text-xs bg-[#FDF5CB] font-semibold text-[#061001] outline-none focus:border-[#15803D]"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="text-[10px] font-bold text-[#14532D] uppercase tracking-wider block mb-1">Mobile No *</label>
+                  <input
+                    type="tel"
+                    placeholder="Enter 10-digit mobile number"
+                    value={mobile}
+                    onChange={(e) => setMobile(e.target.value)}
+                    className="w-full p-2.5 border border-[#B69F4C] rounded-xl text-xs bg-[#FDF5CB] font-semibold text-[#061001] outline-none focus:border-[#15803D]"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="text-[10px] font-bold text-[#14532D] uppercase tracking-wider block mb-1">Email (Optional)</label>
+                  <input
+                    type="email"
+                    placeholder="Enter email address"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="w-full p-2.5 border border-[#B69F4C] rounded-xl text-xs bg-[#FDF5CB] font-semibold text-[#061001] outline-none focus:border-[#15803D]"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-[10px] font-bold text-[#14532D] uppercase tracking-wider block mb-1">Complete Delivery Address *</label>
+                  <textarea
+                    placeholder="House/Door No, Street name, Area"
+                    value={address}
+                    onChange={(e) => setAddress(e.target.value)}
+                    className="w-full p-2.5 border border-[#B69F4C] rounded-xl text-xs bg-[#FDF5CB] font-semibold text-[#061001] outline-none focus:border-[#15803D] h-20 resize-none"
+                    required
+                  />
+                </div>
               </div>
-              <div className="flex justify-between text-[13px] text-text-secondary">
-                <span>Packing charge (3%)</span>
-                <span className="font-medium text-text-primary">₹{packingCharge.toLocaleString('en-IN')}</span>
-              </div>
-              <div className="border-t border-dashed border-[#374151] pt-2 flex justify-between font-bold text-[15px]">
-                <span className="text-text-primary">Total</span>
-                <span className="text-primary-blue">₹{total.toLocaleString('en-IN')}</span>
+
+              {/* State Min Order Info & Warning */}
+              {!isMinMet && (
+                <div className="p-3 bg-amber-50 rounded-2xl border border-amber-300 text-amber-800 text-xs space-y-1">
+                  <div className="font-bold flex items-center gap-1">
+                    <span>⚠️ Minimum Order Notice ({state}):</span>
+                  </div>
+                  <p className="text-[11px] leading-relaxed">
+                    Minimum order requirement for <strong>{state}</strong> is <strong>₹{activeMinOrder.toLocaleString('en-IN')}</strong>. Please add <strong>₹{remaining.toLocaleString('en-IN')}</strong> more items to complete checkout.
+                  </p>
+                </div>
+              )}
+
+              {/* Summary Box */}
+              <div className="bg-[#FEF9E1] p-3 rounded-2xl border border-[#B69F4C] space-y-1.5 text-xs text-[#14532D]">
+                <div className="flex justify-between">
+                  <span>State Delivery Zone:</span>
+                  <span className="font-bold">{state === 'Tamil Nadu' ? 'Tamil Nadu (Min ₹' + tnMinOrder.toLocaleString('en-IN') + ')' : 'Outside Tamil Nadu (Min ₹' + outsideTNMinOrder.toLocaleString('en-IN') + ')'}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Items Total:</span>
+                  <span className="font-bold">₹{subtotal.toLocaleString('en-IN')}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Packing Charge (3%):</span>
+                  <span className="font-bold">₹{packingCharge.toLocaleString('en-IN')}</span>
+                </div>
+                <div className="flex justify-between font-black text-sm text-[#15803D] border-t border-dashed border-[#B69F4C] pt-1.5">
+                  <span>Total Payable:</span>
+                  <span className="text-[#A67428]">₹{total.toLocaleString('en-IN')}</span>
+                </div>
               </div>
             </div>
 
-            {/* Checkout Button */}
+            {/* Bottom Actions */}
+            <div className="p-4 border-t-2 border-[#B69F4C] bg-[#FEF9E1] space-y-2">
+              <button
+                type="submit"
+                disabled={!isFormValid || isSubmitting}
+                className={`w-full h-12 rounded-2xl font-black text-[14px] font-poppins flex items-center justify-center gap-2 transition-all duration-300 ${
+                  isFormValid && !isSubmitting
+                    ? 'bg-[#B69F4C] hover:bg-[#A67428] text-[#14532D] hover:text-white shadow-md active:scale-95 cursor-pointer'
+                    : 'bg-gray-200 text-gray-400 cursor-not-allowed border border-gray-300'
+                }`}
+              >
+                {isSubmitting ? (
+                  <span>Processing Order...</span>
+                ) : (
+                  <span>Place Order / Enquiry (₹{total.toLocaleString('en-IN')})</span>
+                )}
+              </button>
+              <button
+                type="button"
+                onClick={() => setStep('cart')}
+                className="w-full text-center text-xs font-bold text-[#14532D] py-1.5 hover:underline"
+              >
+                Back to Cart
+              </button>
+            </div>
+          </form>
+        )}
+
+        {/* STEP 3: SUCCESS CONFIRMATION */}
+        {step === 'success' && (
+          <div className="flex-1 flex flex-col items-center justify-center p-6 text-center space-y-4">
+            <div className="w-16 h-16 rounded-full bg-emerald-100 border-2 border-emerald-500 flex items-center justify-center text-emerald-600 text-3xl shadow-inner">
+              ✓
+            </div>
+            <div>
+              <h3 className="text-xl font-extrabold text-slate-900 font-poppins">Order Placed Successfully!</h3>
+              {placedOrder?.orderNumber && (
+                <span className="inline-block mt-1 bg-emerald-100 text-emerald-800 text-xs font-bold px-3 py-1 rounded-full border border-emerald-300">
+                  Order #{placedOrder.orderNumber}
+                </span>
+              )}
+            </div>
+            <p className="text-xs text-slate-600 leading-relaxed max-w-xs">
+              Thank you, <strong>{name}</strong>! Your order/enquiry for delivery to <strong>{city}, {state}</strong> has been recorded. Our team will contact you at <strong>{mobile}</strong> shortly to confirm availability and dispatch details.
+            </p>
             <button
+              type="button"
               onClick={() => {
-                if (isMinMet) {
-                  onCheckout();
-                  onClose();
-                }
+                onClose();
+                setStep('cart');
               }}
-              disabled={!isMinMet}
-              className={`w-full h-12 rounded-2xl font-bold text-[14px] font-poppins flex items-center justify-center gap-2 transition-all duration-300 ${
-                isMinMet
-                  ? 'bg-primary-blue text-white hover:bg-primary-hover hover:shadow-[0_8px_20px_rgba(36,190,100,0.35)] hover:-translate-y-0.5'
-                  : 'bg-gray-100 text-gray-400 cursor-not-allowed'
-              }`}
+              className="mt-4 w-full h-12 bg-[#15803D] hover:bg-emerald-700 text-white rounded-2xl font-bold text-sm shadow-md transition-all active:scale-95 cursor-pointer"
             >
-              <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
-                <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/>
-              </svg>
-              {isMinMet ? 'Proceed to Checkout' : `Need ₹${remaining.toLocaleString('en-IN')} more`}
+              Continue Browsing
             </button>
           </div>
         )}
@@ -254,3 +523,4 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
     </>
   );
 };
+

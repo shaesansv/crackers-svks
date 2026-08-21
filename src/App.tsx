@@ -7,6 +7,7 @@ import { SafetyTips } from './pages/SafetyTips';
 import { ContactUs } from './pages/ContactUs';
 import { Footer } from './components/Footer';
 import { CartDrawer } from './components/CartDrawer';
+import { FloatingCartBar } from './components/FloatingCartBar';
 import './App.css';
 import type { Product, Category } from './types';
 
@@ -15,6 +16,7 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { SiteSettingsProvider } from './context/SiteSettingsContext';
 import { SettingsProvider } from './context/SettingsContext';
 import { Toaster } from 'sonner';
+import { loadCartData, saveCartData, saveActivePage, loadActivePage } from './utils/cookieSessionUtils';
 
 // Admin imports
 import AdminLogin from './pages/admin/AdminLogin';
@@ -38,7 +40,16 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
 };
 
 function AppContent() {
-  const [currentPage, setCurrentPage] = useState<string>('home');
+  const [currentPage, setCurrentPage] = useState<string>(() => {
+    const path = window.location.pathname;
+    const hash = window.location.hash;
+    if (hash === '#safety' || path === '/safety') return 'safety';
+    if (hash === '#contact' || path === '/contact') return 'contact';
+    if (hash === '#about' || path === '/about') return 'about';
+    if (hash === '#order' || path === '/order') return 'order';
+    const savedPage = loadActivePage();
+    return savedPage || 'home';
+  });
   const [categories, setCategories] = useState<Category[]>([]);
   const [dbProducts, setDbProducts] = useState<Product[]>([]);
   const [settings, setSettings] = useState<{
@@ -172,18 +183,22 @@ function AppContent() {
         return;
       }
       
-      if (hash === '#safety') {
+      if (hash === '#safety' || path === '/safety') {
         setCurrentPage('safety');
-      } else if (hash === '#contact') {
+      } else if (hash === '#contact' || path === '/contact') {
         setCurrentPage('contact');
+      } else if (hash === '#about' || path === '/about') {
+        setCurrentPage('about');
+      } else if (hash === '#order' || path === '/order') {
+        setCurrentPage('order');
       } else {
-        setCurrentPage('home');
+        const savedPage = loadActivePage();
+        setCurrentPage(savedPage || 'home');
       }
     };
 
     window.addEventListener('popstate', handleUrlChange);
     window.addEventListener('hashchange', handleUrlChange);
-    handleUrlChange();
 
     return () => {
       window.removeEventListener('popstate', handleUrlChange);
@@ -195,9 +210,18 @@ function AppContent() {
     if (window.location.pathname.startsWith('/admin')) {
       return;
     }
+    saveActivePage(currentPage);
     if (currentPage === 'home') {
-      if (window.location.pathname !== '/') {
+      if (window.location.pathname !== '/' && window.location.hash !== '') {
         window.history.pushState(null, '', '/');
+      }
+    } else if (currentPage === 'about') {
+      if (window.location.hash !== '#about') {
+        window.history.pushState(null, '', '/#about');
+      }
+    } else if (currentPage === 'order') {
+      if (window.location.hash !== '#order') {
+        window.history.pushState(null, '', '/#order');
       }
     } else if (currentPage === 'safety') {
       if (window.location.hash !== '#safety') {
@@ -210,10 +234,15 @@ function AppContent() {
     }
   }, [currentPage]);
 
-  const [quantities, setQuantities] = useState<Record<string, number>>({});
+  const [quantities, setQuantities] = useState<Record<string, number>>(() => loadCartData());
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [isCartOpen, setIsCartOpen] = useState(false);
+
+  // Sync product selection & cart quantities to Cookies and Session storage
+  React.useEffect(() => {
+    saveCartData(quantities);
+  }, [quantities]);
 
   const handleQtyChange = (productId: string, value: string) => {
     const qty = parseInt(value, 10);
@@ -283,6 +312,7 @@ function AppContent() {
   // Deduplicate totals (cartItems already computed above)
   totalItems = cartItems.reduce((s, { qty }) => s + qty, 0);
   totalDiscountedCost = cartItems.reduce((s, { product, qty }) => s + product.discountPrice * qty, 0);
+  const totalMktCost = cartItems.reduce((s, { product, qty }) => s + (product.actualPrice || product.price) * qty, 0);
 
   return (
     <Routes>
@@ -338,6 +368,7 @@ function AppContent() {
             categories={categories}
             cartCount={totalItems}
             cartTotal={totalDiscountedCost}
+            mktTotal={totalMktCost}
             onCartOpen={() => setIsCartOpen(true)}
           />
 
@@ -348,10 +379,7 @@ function AppContent() {
             onQtyChange={adjustQty}
             onRemove={removeFromCart}
             onCheckout={() => {
-              setCurrentPage('home');
-              setTimeout(() => {
-                document.getElementById('checkout-section')?.scrollIntoView({ behavior: 'smooth' });
-              }, 100);
+              setIsCartOpen(true);
             }}
             settings={settings}
           />
@@ -367,7 +395,9 @@ function AppContent() {
               setSelectedCategory={setSelectedCategory}
               cartCount={totalItems}
               cartTotal={totalDiscountedCost}
+              mktTotal={totalMktCost}
               categories={categories}
+              onCartOpen={() => setIsCartOpen(true)}
             />
           ) : currentPage === 'safety' ? (
             <SafetyTips />
@@ -383,6 +413,16 @@ function AppContent() {
             setCurrentPage={setCurrentPage}
             products={dbProducts}
             settings={settings}
+          />
+
+          <FloatingCartBar
+            cartCount={totalItems}
+            cartTotal={totalDiscountedCost}
+            mktTotal={totalMktCost}
+            onCartOpen={() => setIsCartOpen(true)}
+            onCheckout={() => {
+              setIsCartOpen(true);
+            }}
           />
         </div>
       } />

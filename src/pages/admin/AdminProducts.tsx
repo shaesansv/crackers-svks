@@ -58,8 +58,7 @@ const AdminProducts = () => {
       const result = await processAndResizeImage(
         file,
         PRODUCT_IMAGE_DIMENSIONS.width,
-        PRODUCT_IMAGE_DIMENSIONS.height,
-        'contain'
+        PRODUCT_IMAGE_DIMENSIONS.height
       );
       setImageFile(result.file);
       setImageMeta(result);
