@@ -345,11 +345,44 @@ export const Home: React.FC<HomeProps> = ({
                           <div className="flex items-center justify-between w-full md:contents mt-2 md:mt-0">
                             <div className="flex justify-center items-center w-1/2 md:w-auto pr-3 md:pr-0 border-r md:border-r-0 border-border-gray">
                               <span className="text-xs font-bold text-gray-500 mr-2 md:hidden">QTY:</span>
-                              <input
-                                type="number" min="1" value={qty} disabled={isOutOfStock}
-                                onChange={(e) => handleQtyChange(product.id, e.target.value)}
-                                className={`w-16 h-10 md:h-11 border rounded-xl text-center text-[15px] font-bold outline-none transition-colors ${isOutOfStock ? 'bg-bg-light border-border-gray text-gray-500 cursor-not-allowed' : 'bg-dark-section border-border-gray text-white focus:border-primary-blue focus:ring-1 focus:ring-primary-blue'}`}
-                              />
+                              <div className={`flex items-center border rounded-xl overflow-hidden h-10 md:h-11 ${isOutOfStock ? 'bg-bg-light border-border-gray' : 'bg-dark-section border-border-gray focus-within:border-primary-blue focus-within:ring-1 focus-within:ring-primary-blue'}`}>
+                                <button 
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    const current = Number(qty || 0);
+                                    if (current > 0) handleQtyChange(product.id, String(current - 1));
+                                  }}
+                                  disabled={isOutOfStock || !qty || Number(qty) <= 0}
+                                  className={`w-8 md:w-10 h-full flex items-center justify-center text-lg font-bold transition-colors ${isOutOfStock || !qty || Number(qty) <= 0 ? 'text-gray-600 cursor-not-allowed bg-black/20' : 'text-white hover:bg-primary-blue/20 hover:text-primary-blue active:bg-primary-blue/30'}`}
+                                >
+                                  -
+                                </button>
+                                <input
+                                  type="text" inputMode="numeric" pattern="[0-9]*"
+                                  value={qty || ''} disabled={isOutOfStock}
+                                  placeholder="1"
+                                  onChange={(e) => {
+                                    const val = e.target.value.replace(/[^0-9]/g, '');
+                                    handleQtyChange(product.id, val);
+                                  }}
+                                  className={`w-10 md:w-12 h-full text-center text-[15px] font-bold outline-none transition-colors p-0 ${isOutOfStock ? 'bg-transparent text-gray-500 cursor-not-allowed' : 'bg-transparent text-white'}`}
+                                />
+                                <button 
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    const current = Number(qty || 0);
+                                    handleQtyChange(product.id, String(current + 1));
+                                  }}
+                                  disabled={isOutOfStock}
+                                  className={`w-8 md:w-10 h-full flex items-center justify-center text-lg font-bold transition-colors ${isOutOfStock ? 'text-gray-600 cursor-not-allowed bg-black/20' : 'text-white hover:bg-primary-blue/20 hover:text-primary-blue active:bg-primary-blue/30'}`}
+                                >
+                                  +
+                                </button>
+                              </div>
                             </div>
                             <div className="flex justify-center items-center w-1/2 md:w-auto pl-3 md:pl-0">
                               {isOutOfStock ? (

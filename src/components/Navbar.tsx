@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import sarguruLogo from '../assets/sarguru.png';
 import { useSiteSettings } from '../context/SiteSettingsContext';
 
@@ -30,6 +30,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   const { settings } = useSiteSettings();
   const phone = settings.contact?.phone || '+91 78680 77818';
   const address = settings.contact?.address || 'Sivakasi, Tamil Nadu';
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   return (
     <header className="sticky top-0 z-50 bg-bg-light/80 backdrop-blur-xl border-b border-primary-blue/30 shadow-[var(--shadow-premium)] animate-fade-in">
       {/* Supreme Court Notice Marquee */}
@@ -43,15 +44,29 @@ export const Navbar: React.FC<NavbarProps> = ({
       </div>
 
       {/* 2. Main Navigation Bar */}
-      <div className="flex flex-col md:flex-row items-center justify-between py-4 px-6 md:px-12 bg-transparent">
+      <div className="flex items-center justify-between py-3 px-4 md:py-4 md:px-12 bg-transparent">
+        {/* Mobile Menu Button */}
+        <button 
+          className="md:hidden p-2 text-text-primary focus:outline-none"
+          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+        >
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            {isMobileMenuOpen ? (
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            ) : (
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            )}
+          </svg>
+        </button>
+
         {/* Logo */}
-        <div className="flex items-center justify-center cursor-pointer relative group" onClick={() => setCurrentPage('home')}>
+        <div className="flex items-center justify-center cursor-pointer relative group flex-1 md:flex-none" onClick={() => setCurrentPage('home')}>
           <div className="absolute inset-0 bg-primary-blue rounded-full blur-md opacity-30 group-hover:opacity-60 transition-opacity duration-300"></div>
-          <img src={sarguruLogo} alt="Sarguru Crackers Logo" className="h-20 w-20 md:h-24 md:w-24 rounded-full object-cover relative z-10 border-2 border-primary-blue/50 shadow-[0_0_15px_rgba(245,184,0,0.3)]" />
+          <img src={sarguruLogo} alt="Sarguru Crackers Logo" className="h-16 w-16 md:h-24 md:w-24 rounded-full object-cover relative z-10 border-2 border-primary-blue/50 shadow-[0_0_15px_rgba(245,184,0,0.3)] mx-auto md:mx-0" />
         </div>
         
-        {/* Links */}
-        <nav className="flex flex-wrap justify-center gap-6 md:gap-10 mt-4 md:mt-0 font-poppins text-sm">
+        {/* Desktop Links */}
+        <nav className="hidden md:flex flex-wrap justify-center gap-6 md:gap-10 mt-4 md:mt-0 font-poppins text-sm">
           {['home', 'about', 'order'].map((page) => (
             <button 
               key={page}
@@ -66,13 +81,13 @@ export const Navbar: React.FC<NavbarProps> = ({
               {page.replace('-', ' ')}
             </button>
           ))}
-          <a href="#safety" className="tracking-widest uppercase text-text-primary hover:text-primary-blue font-medium transition-all duration-300">Safety Tips</a>
-          <a href="#contact" className="tracking-widest uppercase text-text-primary hover:text-primary-blue font-medium transition-all duration-300">Contact Us</a>
+          <a href="#safety" onClick={() => setCurrentPage('safety')} className="tracking-widest uppercase text-text-primary hover:text-primary-blue font-medium transition-all duration-300">Safety Tips</a>
+          <a href="#contact" onClick={() => setCurrentPage('contact')} className="tracking-widest uppercase text-text-primary hover:text-primary-blue font-medium transition-all duration-300">Contact Us</a>
         </nav>
 
         {/* Search & Cart (Shown on storefront pages) */}
         {currentPage !== 'admin-login' && currentPage !== 'admin-dashboard' && (
-          <div className="flex items-center gap-4 mt-4 md:mt-0">
+          <div className="flex items-center gap-2 md:gap-4 mt-0 md:mt-0">
             <div className="relative group">
               <input
                 type="text"
@@ -101,13 +116,38 @@ export const Navbar: React.FC<NavbarProps> = ({
                   {cartCount > 99 ? '99+' : cartCount}
                 </span>
               )}
-              <span>
+              <span className="hidden md:inline">
                 {cartCount > 0 ? `₹${cartTotal.toLocaleString('en-IN')}` : 'Cart'}
               </span>
             </div>
           </div>
         )}
       </div>
+
+      {/* Mobile Links */}
+      {isMobileMenuOpen && (
+        <nav className="md:hidden flex flex-col items-center gap-4 py-4 bg-section-bg border-t border-border-gray font-poppins text-sm shadow-md">
+          {['home', 'about', 'order'].map((page) => (
+            <button 
+              key={page}
+              type="button"
+              onClick={() => {
+                setCurrentPage(page);
+                setIsMobileMenuOpen(false);
+              }}
+              className={`tracking-widest uppercase w-full text-center py-2 transition-all duration-300 ${
+                currentPage === page 
+                  ? 'text-primary-blue font-bold bg-dark-section' 
+                  : 'text-text-primary hover:text-primary-blue font-medium'
+              }`}
+            >
+              {page.replace('-', ' ')}
+            </button>
+          ))}
+          <a href="#safety" onClick={() => { setCurrentPage('safety'); setIsMobileMenuOpen(false); }} className="tracking-widest uppercase w-full text-center py-2 text-text-primary hover:text-primary-blue font-medium transition-all duration-300">Safety Tips</a>
+          <a href="#contact" onClick={() => { setCurrentPage('contact'); setIsMobileMenuOpen(false); }} className="tracking-widest uppercase w-full text-center py-2 text-text-primary hover:text-primary-blue font-medium transition-all duration-300">Contact Us</a>
+        </nav>
+      )}
 
       {/* 3. Category Filter Bar (Shown on storefront pages) */}
       {currentPage !== 'admin-login' && currentPage !== 'admin-dashboard' && (

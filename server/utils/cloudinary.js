@@ -24,6 +24,11 @@ if (process.env.CLOUDINARY_URL) {
 
 export const uploadToCloudinary = (buffer, originalname, folder = 'uploads') => {
   return new Promise((resolve, reject) => {
+    // Add a timeout to prevent hanging forever
+    const timeout = setTimeout(() => {
+      reject(new Error('Cloudinary upload timed out after 15 seconds'));
+    }, 15000);
+
     try {
       const timestamp = Date.now();
       const filename = `${folder}_${timestamp}_${originalname}`.replace(/[^a-zA-Z0-9.\-_\/]/g, '_');
@@ -36,6 +41,7 @@ export const uploadToCloudinary = (buffer, originalname, folder = 'uploads') => 
           resource_type: 'image'
         },
         (error, result) => {
+          clearTimeout(timeout);
           if (error) {
             console.error('Cloudinary upload error details:', error);
             return reject(error);
@@ -46,6 +52,7 @@ export const uploadToCloudinary = (buffer, originalname, folder = 'uploads') => 
 
       streamifier.createReadStream(buffer).pipe(uploadStream);
     } catch (err) {
+      clearTimeout(timeout);
       reject(err);
     }
   });
