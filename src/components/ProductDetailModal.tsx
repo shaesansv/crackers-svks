@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ShoppingCart, Package, Tag, Plus, Minus, AlertCircle } from "lucide-react";
 import type { Product } from "@/data/products";
+import { toast } from "sonner";
 
 export interface ProductDetailModalProps {
   product: Product | any | null;
@@ -48,6 +49,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
   const handleAdd = () => {
     if (onAddToCart && !isOutOfStock) {
       onAddToCart(product, quantity);
+      toast.success(`${quantity} ${product.name} added to cart`, { duration: 2000 });
       onClose();
     }
   };

@@ -117,7 +117,7 @@ const AdminProducts = () => {
     }
 
     const newHasDiscount = !newDisplayNetRate;
-    setUpdatingPricingId(p.id);
+    setUpdatingPricingId(p.id || null);
 
     // Optimistic update
     setProductList((prev) =>

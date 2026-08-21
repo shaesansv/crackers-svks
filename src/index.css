@@ -1,53 +1,44 @@
 @import "tailwindcss";
 
 @theme {
-  --color-primary-green: #15803D; /* Vibrant Light Green */
-  --color-dark-green: #14532D;
-  --color-brand-gold: #B69F4C;
-  --color-gold-hover: #A67428;
-  --color-light-gold: #FBECC0;
-  --color-brand-cream: #FDF5CB;
-  --color-card-cream: #FEF9E1;
-  --color-text-dark: #061001;
-
-  --color-primary-blue: #B69F4C;
-  --color-secondary-gold: #FBECC0;
-  --color-accent-orange: #A67428;
-  --color-success-green: #15803D;
+  --color-primary-blue: #F5B800; /* Primary Gold */
+  --color-secondary-gold: #FFD54A; /* Gold Hover */
+  --color-accent-orange: #FF8A00;
+  --color-success-green: #22C55E;
   --color-danger-red: #EF4444;
-  --color-bg-light: #FDF5CB;
-  --color-section-bg: #FEF9E1;
-  --color-dark-section: #15803D;
-  --color-border-gray: #B69F4C;
-  --color-text-primary: #061001;
-  --color-text-secondary: #14532D;
+  --color-bg-light: #070D1A; /* Main Background */
+  --color-section-bg: #0D1628; /* Section Background */
+  --color-dark-section: #111C30; /* Card Background */
+  --color-border-gray: #1E293B; /* Subtle dark border */
+  --color-text-primary: #F8FAFC; /* Off-white text */
+  --color-text-secondary: #94A3B8; /* Gray text */
   
   --color-royal-red: #E53935;
-  --color-luxury-gold: #B69F4C;
-  --color-off-white: #FDF5CB; 
+  --color-luxury-gold: #F5B800;
+  --color-off-white: #F8FAFC; 
 
   /* Sidebar Theme Variables for Admin Panel */
-  --color-sidebar: #15803D; 
-  --color-sidebar-foreground: #FDF5CB;
-  --color-sidebar-primary: #B69F4C; 
-  --color-sidebar-primary-foreground: #061001;
-  --color-sidebar-accent: #14532D; 
-  --color-sidebar-accent-foreground: #FDF5CB;
-  --color-sidebar-border: #B69F4C;
-  --color-sidebar-ring: #B69F4C;
+  --color-sidebar: #0D1628; 
+  --color-sidebar-foreground: #F8FAFC;
+  --color-sidebar-primary: #F5B800; 
+  --color-sidebar-primary-foreground: #070D1A;
+  --color-sidebar-accent: #111C30; 
+  --color-sidebar-accent-foreground: #F8FAFC;
+  --color-sidebar-border: #1E293B;
+  --color-sidebar-ring: #F5B800;
 
-  --color-border: #B69F4C;
-  --color-primary-hover: #A67428;
-  --color-primary-light: rgba(182, 159, 76, 0.1);
-  --color-secondary: #14532D;
+  --color-border: #1E293B;
+  --color-primary-hover: #FFD54A;
+  --color-primary-light: rgba(245, 184, 0, 0.1);
+  --color-secondary: #111C30;
 
   --font-sans: "Inter", "Poppins", sans-serif;
   --font-poppins: "Poppins", sans-serif;
 
   --radius-xl: 18px;
 
-  --shadow-premium: 0 10px 40px -10px rgba(6,64,3,0.15), 0 4px 10px -5px rgba(182,159,76,0.1);
-  --shadow-premium-hover: 0 20px 50px -10px rgba(182,159,76,0.25), 0 10px 20px -5px rgba(6,64,3,0.1);
+  --shadow-premium: 0 10px 40px -10px rgba(0,0,0,0.3), 0 4px 10px -5px rgba(0,0,0,0.2);
+  --shadow-premium-hover: 0 25px 60px -12px rgba(245,184,0,0.25), 0 15px 30px -8px rgba(245,184,0,0.15);
 
   --animate-fade-in: fade-in 0.8s ease-out forwards;
   --animate-slide-up: slide-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
@@ -64,9 +55,9 @@
 }
 
 body {
-  background-color: #FDF5CB;
+  background-color: var(--color-bg-light);
   font-family: var(--font-sans);
-  color: #061001;
+  color: var(--color-text-primary);
   -webkit-font-smoothing: antialiased;
 }
 
