@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import sarguruLogo from '../assets/sarguru.png';
-import { useSiteSettings } from '../context/SiteSettingsContext';
 
 interface NavbarProps {
   currentPage: string;
@@ -27,9 +26,6 @@ export const Navbar: React.FC<NavbarProps> = ({
   cartTotal,
   onCartOpen
 }) => {
-  const { settings } = useSiteSettings();
-  const phone = settings.contact?.phone || '+91 78680 77818';
-  const address = settings.contact?.address || 'Sivakasi, Tamil Nadu';
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   return (
     <header className="sticky top-0 z-50 bg-bg-light/80 backdrop-blur-xl border-b border-primary-blue/30 shadow-[var(--shadow-premium)] animate-fade-in">

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ProductImage } from '../components/ProductImage';
 import { Fireworks } from '@fireworks-js/react';
 import type { Category, Product } from '../types';
-import { useSiteSettings } from '../context/SiteSettingsContext';
+import { toast } from 'sonner';
 
 interface HomeProps {
   quantities: Record<string, number>;
@@ -27,8 +27,6 @@ export const Home: React.FC<HomeProps> = ({
   categories
 }) => {
   const [selectedBrand, setSelectedBrand] = useState('all');
-  const { settings } = useSiteSettings();
-  const marqueeText = settings.news || '';
 
   // Countdown state
   const [timeLeft, setTimeLeft] = useState({ days: 14, hours: 5, minutes: 30, seconds: 0 });
@@ -78,7 +76,6 @@ export const Home: React.FC<HomeProps> = ({
     .filter((category) => category.products.length > 0);
 
   const allProducts = filteredCategories.flatMap(c => c.products);
-  const totalProducts = allProducts.length;
 
   // Get special offers (items with largest discount or just top 4)
   const specialOffers = categories.flatMap(c => c.products).filter(p => p.hasDiscount && p.globalDiscountPct && p.globalDiscountPct > 50).slice(0, 4);
@@ -172,7 +169,12 @@ export const Home: React.FC<HomeProps> = ({
                       <span className="text-success-green font-extrabold text-lg">₹{product.discountPrice.toFixed(2)}</span>
                     </div>
                     <button 
-                      onClick={() => handleQtyChange(product.id, '1')}
+                      onClick={() => {
+                        if (!qty) {
+                          handleQtyChange(product.id, '1');
+                          toast.success(`${product.name} added to cart`, { duration: 2000 });
+                        }
+                      }}
                       className="w-full py-3 bg-dark-section border border-primary-blue text-primary-blue rounded-xl font-bold hover:bg-primary-blue hover:text-bg-light transition-all active:scale-95"
                     >
                       {qty ? '✓ ADDED' : 'ADD TO CART'}
@@ -376,6 +378,9 @@ export const Home: React.FC<HomeProps> = ({
                                     e.stopPropagation();
                                     const current = Number(qty || 0);
                                     handleQtyChange(product.id, String(current + 1));
+                                    if (current === 0) {
+                                      toast.success(`${product.name} added to cart`, { duration: 2000 });
+                                    }
                                   }}
                                   disabled={isOutOfStock}
                                   className={`w-8 md:w-10 h-full flex items-center justify-center text-lg font-bold transition-colors ${isOutOfStock ? 'text-gray-600 cursor-not-allowed bg-black/20' : 'text-white hover:bg-primary-blue/20 hover:text-primary-blue active:bg-primary-blue/30'}`}
@@ -391,7 +396,12 @@ export const Home: React.FC<HomeProps> = ({
                                 </div>
                               ) : (
                                 <button
-                                  onClick={() => { if (!qty) handleQtyChange(product.id, '1'); }}
+                                  onClick={() => { 
+                                    if (!qty) {
+                                      handleQtyChange(product.id, '1'); 
+                                      toast.success(`${product.name} added to cart`, { duration: 2000 });
+                                    }
+                                  }}
                                   className={`w-full md:w-[90px] h-10 md:h-11 flex items-center justify-center text-[13px] font-bold rounded-xl transition-all duration-300 shadow-sm ${qty ? 'bg-success-green text-white shadow-[0_0_15px_rgba(34,197,94,0.3)]' : 'bg-primary-blue text-bg-light hover:bg-primary-hover hover:shadow-[0_0_15px_rgba(245,184,0,0.3)] hover:-translate-y-0.5'}`}
                                 >
                                   {qty ? '✓ ADDED' : 'ADD'}
