@@ -283,6 +283,7 @@ function AppContent() {
   // Deduplicate totals (cartItems already computed above)
   totalItems = cartItems.reduce((s, { qty }) => s + qty, 0);
   totalDiscountedCost = cartItems.reduce((s, { product, qty }) => s + product.discountPrice * qty, 0);
+  const totalMktCost = cartItems.reduce((s, { product, qty }) => s + (product.actualPrice || product.price) * qty, 0);
 
   return (
     <Routes>
@@ -338,6 +339,7 @@ function AppContent() {
             categories={categories}
             cartCount={totalItems}
             cartTotal={totalDiscountedCost}
+            mktTotal={totalMktCost}
             onCartOpen={() => setIsCartOpen(true)}
           />
 
@@ -367,7 +369,9 @@ function AppContent() {
               setSelectedCategory={setSelectedCategory}
               cartCount={totalItems}
               cartTotal={totalDiscountedCost}
+              mktTotal={totalMktCost}
               categories={categories}
+              onCartOpen={() => setIsCartOpen(true)}
             />
           ) : currentPage === 'safety' ? (
             <SafetyTips />
