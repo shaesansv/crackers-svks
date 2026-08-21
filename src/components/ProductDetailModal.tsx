@@ -2,8 +2,9 @@ import React, { useState } from "react";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ShoppingCart, Package, Tag, Plus, Minus, AlertCircle } from "lucide-react";
+import { ShoppingCart, Package, Tag, Plus, Minus, AlertCircle, Maximize2, ZoomIn, ZoomOut, RotateCcw } from "lucide-react";
 import type { Product } from "@/data/products";
+import { getHighResImageUrl } from "./ProductImage";
 import { toast } from "sonner";
 
 export interface ProductDetailModalProps {
@@ -22,6 +23,8 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
   initialQuantity = 1,
 }) => {
   const [quantity, setQuantity] = useState<number>(initialQuantity);
+  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+  const [zoomLevel, setZoomLevel] = useState(1);
 
   if (!product) return null;
 
@@ -44,7 +47,9 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
   const isOutOfStock = (product.stock !== undefined ? product.stock : 1) <= 0;
   const categoryName = typeof product.category === "object" ? product.category?.name : product.category;
   const productCode = product.code || product.sku || "N/A";
-  const imageSrc = product.image || product.imageUrl || "https://images.unsplash.com/photo-1543621453-911e3b5e4070?auto=format&fit=crop&w=600&q=80";
+  const rawImageSrc = product.image || product.imageUrl || "https://images.unsplash.com/photo-1543621453-911e3b5e4070?auto=format&fit=crop&w=1600&q=95";
+  const modalImageSrc = getHighResImageUrl(rawImageSrc, 1600, 95);
+  const lightboxImageSrc = getHighResImageUrl(rawImageSrc, 2600, 100);
 
   const handleAdd = () => {
     if (onAddToCart && !isOutOfStock) {
@@ -54,79 +59,113 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
     }
   };
 
+  const handleZoomIn = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setZoomLevel((prev) => Math.min(prev + 0.3, 3));
+  };
+
+  const handleZoomOut = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setZoomLevel((prev) => Math.max(prev - 0.3, 0.7));
+  };
+
+  const handleResetZoom = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setZoomLevel(1);
+  };
+
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-3xl p-0 overflow-hidden bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 shadow-2xl rounded-2xl [&>button]:text-white [&>button]:hover:text-cyan-200 [&>button]:top-5 [&>button]:right-5">
-        {/* Banner Header */}
-        <div className="bg-gradient-to-r from-[#164B60] via-[#1F6E8C] to-[#0B2447] px-6 py-4 flex items-center justify-between text-white">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full bg-cyan-400/20 flex items-center justify-center text-cyan-300 font-bold">
-            </div>
-            <div>
-              <DialogTitle className="text-white text-lg font-bold flex items-center gap-2">
-                {product.name}
-              </DialogTitle>
-              <DialogDescription className="text-cyan-100 text-xs mt-0.5 font-mono">
-                Code: {productCode} {categoryName ? `• ${categoryName}` : ""}
-              </DialogDescription>
+    <>
+      <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+        <DialogContent className="max-w-3xl p-0 overflow-hidden bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 shadow-2xl rounded-2xl [&>button]:text-white [&>button]:hover:text-cyan-200 [&>button]:top-5 [&>button]:right-5 z-50">
+          {/* Banner Header */}
+          <div className="bg-gradient-to-r from-[#164B60] via-[#1F6E8C] to-[#0B2447] px-6 py-4 flex items-center justify-between text-white">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-full bg-cyan-400/20 flex items-center justify-center text-cyan-300 font-bold">
+                ✨
+              </div>
+              <div>
+                <DialogTitle className="text-white text-lg font-bold flex items-center gap-2">
+                  {product.name}
+                </DialogTitle>
+                <DialogDescription className="text-cyan-100 text-xs mt-0.5 font-mono">
+                  Code: {productCode} {categoryName ? `• ${categoryName}` : ""}
+                </DialogDescription>
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Content Body */}
-        <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6 bg-white dark:bg-zinc-900 text-gray-800 dark:text-gray-100 max-h-[80vh] overflow-y-auto">
-          {/* Left Column: Image & Badges */}
-          <div className="flex flex-col items-center gap-3">
-            <div className="relative w-full aspect-[3/4] max-h-[380px] rounded-xl overflow-hidden border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800 shadow-md group">
-              <img
-                src={imageSrc}
-                alt={product.name}
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-              />
+          {/* Content Body */}
+          <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6 bg-white dark:bg-zinc-900 text-gray-800 dark:text-gray-100 max-h-[80vh] overflow-y-auto">
+            {/* Left Column: Image & Badges */}
+            <div className="flex flex-col items-center gap-3">
+              <div 
+                onClick={() => {
+                  setZoomLevel(1);
+                  setIsLightboxOpen(true);
+                }}
+                className="relative w-full aspect-[3/4] max-h-[380px] rounded-xl overflow-hidden border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800 shadow-md group cursor-zoom-in"
+                title="Click to view full enlarged image"
+              >
+                <img
+                  src={modalImageSrc}
+                  alt={product.name}
+                  decoding="async"
+                  style={{ imageRendering: '-webkit-optimize-contrast', transform: 'translateZ(0)' }}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                />
 
-              {/* Status Badges Overlay */}
-              <div className="absolute top-3 left-3 flex flex-col gap-1.5">
-                {isOutOfStock ? (
-                  <span className="px-3 py-1 rounded-full bg-red-600 text-white text-xs font-bold shadow-md flex items-center gap-1">
-                    <AlertCircle className="w-3.5 h-3.5" /> Out of Stock
-                  </span>
-                ) : isDisplayNetRate ? (
-                  <span className="px-3 py-1 rounded-full bg-amber-500 text-white text-xs font-bold shadow-md">
-                    ⚡ Net Rate
-                  </span>
-                ) : hasDiscount && discountPct > 0 ? (
-                  <span className="px-3 py-1 rounded-full bg-red-500 text-white text-xs font-bold shadow-md">
-                    🔥 {discountPct}% OFF
-                  </span>
-                ) : (
-                  <span className="px-3 py-1 rounded-full bg-emerald-600 text-white text-xs font-bold shadow-md">
-                    ✓ In Stock
-                  </span>
+                {/* Hover overlay hint */}
+                <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
+                  <div className="bg-black/75 text-white text-xs font-semibold px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-lg backdrop-blur-sm">
+                    <Maximize2 className="w-3.5 h-3.5 text-cyan-300" />
+                    <span>Click to Enlarge</span>
+                  </div>
+                </div>
+
+                {/* Status Badges Overlay */}
+                <div className="absolute top-3 left-3 flex flex-col gap-1.5 pointer-events-none">
+                  {isOutOfStock ? (
+                    <span className="px-3 py-1 rounded-full bg-red-600 text-white text-xs font-bold shadow-md flex items-center gap-1">
+                      <AlertCircle className="w-3.5 h-3.5" /> Out of Stock
+                    </span>
+                  ) : isDisplayNetRate ? (
+                    <span className="px-3 py-1 rounded-full bg-amber-500 text-white text-xs font-bold shadow-md">
+                      ⚡ Net Rate
+                    </span>
+                  ) : hasDiscount && discountPct > 0 ? (
+                    <span className="px-3 py-1 rounded-full bg-red-500 text-white text-xs font-bold shadow-md">
+                      🔥 {discountPct}% OFF
+                    </span>
+                  ) : (
+                    <span className="px-3 py-1 rounded-full bg-emerald-600 text-white text-xs font-bold shadow-md">
+                      ✓ In Stock
+                    </span>
+                  )}
+                </div>
+
+                <div className="absolute bottom-3 right-3 bg-black/60 backdrop-blur-md text-white text-[11px] font-mono px-2.5 py-1 rounded-md flex items-center gap-1">
+                  <Maximize2 className="w-3 h-3 text-cyan-300" /> Full View
+                </div>
+              </div>
+
+              {/* Quick Specs Pill Badges */}
+              <div className="flex flex-wrap gap-2 w-full justify-center">
+                <Badge variant="outline" className="text-xs bg-gray-50 dark:bg-zinc-800 font-mono">
+                  Code: {productCode}
+                </Badge>
+                {categoryName && (
+                  <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200">
+                    📁 {categoryName}
+                  </Badge>
+                )}
+                {product.brand && (
+                  <Badge variant="outline" className="text-xs bg-purple-50 text-purple-700 border-purple-200">
+                    🏷️ {product.brand}
+                  </Badge>
                 )}
               </div>
-
-              <div className="absolute bottom-3 right-3 bg-black/60 backdrop-blur-md text-white text-[11px] font-mono px-2.5 py-1 rounded-md">
-                1200 × 1600 px
-              </div>
             </div>
-
-            {/* Quick Specs Pill Badges */}
-            <div className="flex flex-wrap gap-2 w-full justify-center">
-              <Badge variant="outline" className="text-xs bg-gray-50 dark:bg-zinc-800 font-mono">
-                Code: {productCode}
-              </Badge>
-              {categoryName && (
-                <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200">
-                  📁 {categoryName}
-                </Badge>
-              )}
-              {product.brand && (
-                <Badge variant="outline" className="text-xs bg-purple-50 text-purple-700 border-purple-200">
-                  🏷️ {product.brand}
-                </Badge>
-              )}
-            </div>
-          </div>
 
           {/* Right Column: Detailed Product Info */}
           <div className="flex flex-col justify-between space-y-4">
@@ -244,6 +283,83 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
         </div>
       </DialogContent>
     </Dialog>
+
+    {/* Full Screen Image Lightbox Modal */}
+    <Dialog open={isLightboxOpen} onOpenChange={(open) => !open && setIsLightboxOpen(false)}>
+      <DialogContent className="max-w-5xl w-[95vw] h-[90vh] p-0 bg-black/95 border border-zinc-800 shadow-2xl rounded-2xl flex flex-col overflow-hidden text-white z-[60] [&>button]:text-white [&>button]:hover:text-cyan-300 [&>button]:bg-black/60 [&>button]:p-2 [&>button]:rounded-full [&>button]:top-4 [&>button]:right-4">
+        {/* Lightbox Header Bar */}
+        <div className="flex items-center justify-between px-6 py-3.5 bg-black/60 backdrop-blur-md border-b border-zinc-800/80 z-20">
+          <div className="flex items-center gap-3">
+            <h3 className="font-bold text-base md:text-lg text-white truncate max-w-[280px] md:max-w-md">
+              {product.name}
+            </h3>
+            <span className="text-xs font-mono text-cyan-300 bg-cyan-950/80 border border-cyan-800 px-2 py-0.5 rounded">
+              Code: {productCode}
+            </span>
+          </div>
+
+          {/* Zoom Controls */}
+          <div className="flex items-center gap-2 mr-10">
+            <button
+              onClick={handleZoomOut}
+              className="p-1.5 rounded-lg bg-zinc-800/80 hover:bg-zinc-700 text-gray-200 transition-colors"
+              title="Zoom Out"
+            >
+              <ZoomOut className="w-4 h-4" />
+            </button>
+            <span className="text-xs font-mono text-gray-300 min-w-[45px] text-center">
+              {Math.round(zoomLevel * 100)}%
+            </span>
+            <button
+              onClick={handleZoomIn}
+              className="p-1.5 rounded-lg bg-zinc-800/80 hover:bg-zinc-700 text-gray-200 transition-colors"
+              title="Zoom In"
+            >
+              <ZoomIn className="w-4 h-4" />
+            </button>
+            <button
+              onClick={handleResetZoom}
+              className="p-1.5 rounded-lg bg-zinc-800/80 hover:bg-zinc-700 text-gray-200 transition-colors ml-1"
+              title="Reset Zoom"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </div>
+
+        {/* Lightbox Image Stage */}
+        <div 
+          className="flex-1 overflow-auto flex items-center justify-center p-4 relative cursor-grab active:cursor-grabbing select-none"
+          onClick={() => {
+            // Click image to toggle zoom
+            setZoomLevel((prev) => (prev > 1.2 ? 1 : 1.8));
+          }}
+        >
+          <img
+            src={lightboxImageSrc}
+            alt={product.name}
+            decoding="async"
+            style={{ 
+              transform: `scale(${zoomLevel}) translateZ(0)`,
+              imageRendering: '-webkit-optimize-contrast',
+              backfaceVisibility: 'hidden'
+            }}
+            className="max-h-full max-w-full object-contain transition-transform duration-200 ease-out shadow-2xl rounded-lg select-none pointer-events-none"
+          />
+        </div>
+
+        {/* Lightbox Footer Bar */}
+        <div className="px-6 py-2.5 bg-black/60 backdrop-blur-md border-t border-zinc-800/80 text-xs text-gray-400 flex items-center justify-between">
+          <span className="text-[11px] text-gray-400 hidden sm:inline">
+            Tip: Click anywhere on image to zoom in/out • Drag/Scroll to pan
+          </span>
+          <span className="text-cyan-400 font-bold text-sm ml-auto">
+            ₹{finalPrice.toFixed(2)}
+          </span>
+        </div>
+      </DialogContent>
+    </Dialog>
+    </>
   );
 };
 

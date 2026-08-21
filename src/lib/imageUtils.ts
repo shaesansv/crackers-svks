@@ -110,7 +110,7 @@ export async function processAndResizeImage(
           });
         },
         outputMime,
-        0.92
+        0.96
       );
     };
 

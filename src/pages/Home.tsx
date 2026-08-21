@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { ProductImage } from '../components/ProductImage';
+import { ProductImage, getHighResImageUrl } from '../components/ProductImage';
+import { ProductDetailModal } from '../components/ProductDetailModal';
 import { Fireworks } from '@fireworks-js/react';
 import type { Category, Product } from '../types';
 import { toast } from 'sonner';
@@ -27,6 +28,7 @@ export const Home: React.FC<HomeProps> = ({
   categories
 }) => {
   const [selectedBrand, setSelectedBrand] = useState('all');
+  const [selectedProductForModal, setSelectedProductForModal] = useState<Product | null>(null);
 
   // Countdown state
   const [timeLeft, setTimeLeft] = useState({ days: 14, hours: 5, minutes: 30, seconds: 0 });
@@ -74,8 +76,6 @@ export const Home: React.FC<HomeProps> = ({
       };
     })
     .filter((category) => category.products.length > 0);
-
-  const allProducts = filteredCategories.flatMap(c => c.products);
 
   // Get special offers (items with largest discount or just top 4)
   const specialOffers = categories.flatMap(c => c.products).filter(p => p.hasDiscount && p.globalDiscountPct && p.globalDiscountPct > 50).slice(0, 4);
@@ -152,21 +152,45 @@ export const Home: React.FC<HomeProps> = ({
               {specialOffers.map(product => {
                 const qty = quantities[product.id] || '';
                 return (
-                  <div key={'offer-'+product.id} className="bg-section-bg rounded-[20px] p-5 border border-border-gray hover:border-primary-blue/50 transition-all duration-300 group hover:-translate-y-2 hover:shadow-[var(--shadow-premium-hover)]">
-                    <div className="relative w-full aspect-square bg-dark-section rounded-xl overflow-hidden mb-4 border border-border-gray/50">
-                      {product.image || product.imageUrl ? (
-                        <img src={product.image || product.imageUrl} alt={product.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center transform group-hover:scale-110 transition-transform duration-500"><ProductImage type={product.imageType} /></div>
-                      )}
-                      <div className="absolute top-2 right-2 bg-danger-red text-white text-xs font-bold px-2 py-1 rounded-full shadow-lg">
-                        {product.globalDiscountPct}% OFF
+                  <div key={'offer-'+product.id} className="bg-section-bg rounded-[20px] p-5 border border-border-gray hover:border-primary-blue/50 transition-all duration-300 group hover:-translate-y-2 hover:shadow-[var(--shadow-premium-hover)] flex flex-col justify-between">
+                    <div>
+                      <div 
+                        onClick={() => setSelectedProductForModal(product)}
+                        className="relative w-full aspect-square bg-dark-section rounded-xl overflow-hidden mb-4 border border-border-gray/50 cursor-pointer group/img"
+                        title="Click to view enlarged image & product details"
+                      >
+                        {product.image || product.imageUrl ? (
+                          <img 
+                            src={getHighResImageUrl(product.image || product.imageUrl, 800, 90)} 
+                            alt={product.name} 
+                            loading="lazy"
+                            decoding="async"
+                            style={{ imageRendering: '-webkit-optimize-contrast' }}
+                            className="w-full h-full object-cover group-hover/img:scale-110 transition-transform duration-500" 
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center transform group-hover/img:scale-110 transition-transform duration-500"><ProductImage type={product.imageType} /></div>
+                        )}
+                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
+                          <div className="bg-black/80 text-primary-blue text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-1 shadow-lg border border-primary-blue/30 backdrop-blur-sm">
+                            <span>🔍 Enlarge</span>
+                          </div>
+                        </div>
+                        <div className="absolute top-2 right-2 bg-danger-red text-white text-xs font-bold px-2 py-1 rounded-full shadow-lg">
+                          {product.globalDiscountPct}% OFF
+                        </div>
                       </div>
-                    </div>
-                    <h3 className="font-bold text-lg mb-1 truncate text-white">{product.name}</h3>
-                    <div className="flex items-center gap-2 mb-4">
-                      <span className="text-gray-400 line-through text-sm">₹{product.price.toFixed(2)}</span>
-                      <span className="text-success-green font-extrabold text-lg">₹{product.discountPrice.toFixed(2)}</span>
+                      <h3 
+                        onClick={() => setSelectedProductForModal(product)}
+                        className="font-bold text-lg mb-1 truncate text-white hover:text-primary-blue transition-colors cursor-pointer"
+                        title="Click to view product details"
+                      >
+                        {product.name}
+                      </h3>
+                      <div className="flex items-center gap-2 mb-4">
+                        <span className="text-gray-400 line-through text-sm">₹{product.price.toFixed(2)}</span>
+                        <span className="text-success-green font-extrabold text-lg">₹{product.discountPrice.toFixed(2)}</span>
+                      </div>
                     </div>
                     <button 
                       onClick={() => {
@@ -279,12 +303,29 @@ export const Home: React.FC<HomeProps> = ({
                         <div key={product.id} className={`flex flex-col md:grid md:grid-cols-[3fr_1fr_1fr_1fr_1fr_1fr] items-center px-4 md:px-6 py-5 border-b border-border-gray transition-all duration-300 gap-4 md:gap-0 ${isOutOfStock ? 'bg-bg-light opacity-60 cursor-not-allowed' : 'hover:bg-dark-section hover:shadow-lg'}`}>
                           {/* Details */}
                           <div className="flex items-center gap-5 w-full md:w-auto">
-                            <div className="relative w-16 h-16 md:w-20 md:h-20 flex-shrink-0 flex items-center justify-center bg-bg-light border border-border-gray rounded-2xl overflow-hidden shadow-sm group-hover:border-primary-blue transition-colors">
+                            <div 
+                              onClick={() => setSelectedProductForModal(product)}
+                              className="relative w-16 h-16 md:w-20 md:h-20 flex-shrink-0 flex items-center justify-center bg-bg-light border border-border-gray rounded-2xl overflow-hidden shadow-sm hover:border-primary-blue hover:shadow-[0_0_15px_rgba(245,184,0,0.2)] transition-all cursor-pointer group/thumb"
+                              title="Click to view enlarged image & product details"
+                            >
                               {product.image || product.imageUrl ? (
-                                <img src={product.image || product.imageUrl} alt={product.name} className="w-full h-full object-cover" />
+                                <img 
+                                  src={getHighResImageUrl(product.image || product.imageUrl, 400, 90)} 
+                                  alt={product.name} 
+                                  loading="lazy"
+                                  decoding="async"
+                                  style={{ imageRendering: '-webkit-optimize-contrast' }}
+                                  className="w-full h-full object-cover group-hover/thumb:scale-110 transition-transform duration-300" 
+                                />
                               ) : (
                                 <ProductImage type={product.imageType} />
                               )}
+
+                              {/* Hover Zoom icon */}
+                              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/thumb:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
+                                <span className="text-white text-xs bg-black/70 px-1.5 py-0.5 rounded-full">🔍</span>
+                              </div>
+
                               {isOutOfStock && (
                                 <div className="absolute inset-0 bg-black/70 flex items-center justify-center backdrop-blur-[1px]">
                                   <span className="text-white text-[9px] font-extrabold text-center leading-tight px-1 uppercase tracking-wider">Sold Out</span>
@@ -292,7 +333,13 @@ export const Home: React.FC<HomeProps> = ({
                               )}
                             </div>
                             <div className="flex flex-col">
-                              <span className={`text-[16px] font-bold mb-1 ${isOutOfStock ? 'text-gray-500' : 'text-white'}`}>{product.name}</span>
+                              <span 
+                                onClick={() => setSelectedProductForModal(product)}
+                                className={`text-[16px] font-bold mb-1 cursor-pointer transition-colors ${isOutOfStock ? 'text-gray-500' : 'text-white hover:text-primary-blue'}`}
+                                title="Click to view product details"
+                              >
+                                {product.name}
+                              </span>
                               {isOutOfStock ? (
                                 <span className="text-[11px] font-bold bg-danger-red/20 text-danger-red px-2 py-0.5 rounded-md w-max border border-danger-red/30">🚫 Out of Stock</span>
                               ) : product.displayNetRate ? (
@@ -546,6 +593,17 @@ export const Home: React.FC<HomeProps> = ({
           </button>
         </div>
       </section>
+
+      {/* Product Detail & Image Lightbox Modal */}
+      <ProductDetailModal
+        product={selectedProductForModal}
+        isOpen={!!selectedProductForModal}
+        onClose={() => setSelectedProductForModal(null)}
+        onAddToCart={(product, qty) => {
+          handleQtyChange(product.id, String(qty));
+        }}
+        initialQuantity={selectedProductForModal ? quantities[selectedProductForModal.id] || 1 : 1}
+      />
 
     </div>
   );
