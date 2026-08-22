@@ -17,17 +17,49 @@ export const formatImageUrl = (url?: string) => {
   return `${API_BASE_URL}${cleanPath}`;
 };
 
+/**
+ * Returns a high-definition, crystal clear image URL (especially for Unsplash & Cloudinary)
+ */
+export const getHighResImageUrl = (url?: string, width = 1600, quality = 95) => {
+  if (!url) return '';
+  const formatted = formatImageUrl(url);
+
+  // If Unsplash, upgrade resolution parameters to avoid blurriness
+  if (formatted.includes('images.unsplash.com')) {
+    try {
+      const urlObj = new URL(formatted);
+      urlObj.searchParams.set('w', String(width));
+      urlObj.searchParams.set('q', String(quality));
+      urlObj.searchParams.set('auto', 'format');
+      urlObj.searchParams.set('fit', 'crop');
+      return urlObj.toString();
+    } catch {
+      return formatted.replace(/w=\d+/, `w=${width}`).replace(/q=\d+/, `q=${quality}`);
+    }
+  }
+
+  // If Cloudinary, ensure optimal quality delivery without restrictive downscaling
+  if (formatted.includes('res.cloudinary.com')) {
+    return formatted.replace(/\/upload\/(c_fill|w_\d+|h_\d+|q_\d+|f_auto,?)*\//, `/upload/q_auto:best,f_auto,w_${width},c_limit/`);
+  }
+
+  return formatted;
+};
+
 export const ProductImage: React.FC<ProductImageProps> = ({ type = 'sparkler', src, alt = 'Product Image', className }) => {
   const [imageError, setImageError] = useState(false);
-  const formattedSrc = formatImageUrl(src);
+  const formattedSrc = getHighResImageUrl(src, 800, 90);
 
   if (formattedSrc && !imageError) {
     return (
       <img
         src={formattedSrc}
         alt={alt}
+        loading="lazy"
+        decoding="async"
         onError={() => setImageError(true)}
-        className={className || "w-full h-full object-cover rounded-[14px] shadow-sm"}
+        className={className || "w-full h-full object-cover rounded-[14px] shadow-sm image-render-crisp"}
+        style={{ imageRendering: '-webkit-optimize-contrast' }}
       />
     );
   }

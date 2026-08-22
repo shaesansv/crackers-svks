@@ -137,8 +137,7 @@ const AdminCategories = () => {
       const result = await processAndResizeImage(
         file,
         CATEGORY_IMAGE_DIMENSIONS.width,
-        CATEGORY_IMAGE_DIMENSIONS.height,
-        'contain'
+        CATEGORY_IMAGE_DIMENSIONS.height
       );
       setImageFile(result.file);
       setImageMeta(result);

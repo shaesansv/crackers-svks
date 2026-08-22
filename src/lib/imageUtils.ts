@@ -8,28 +8,27 @@ export interface ProcessedImageResult {
 }
 
 export const PRODUCT_IMAGE_DIMENSIONS = {
-  width: 1200,
+  width: 1600,
   height: 1600,
-  label: "1200 × 1600 px",
-  aspectRatio: "3:4 (Portrait)",
+  label: "Max 1600px (High Res)",
+  aspectRatio: "Natural / Crisp",
 };
 
 export const CATEGORY_IMAGE_DIMENSIONS = {
-  width: 1200,
+  width: 1600,
   height: 1600,
-  label: "1200 × 1600 px",
-  aspectRatio: "3:4 (Portrait)",
+  label: "Max 1600px (High Res)",
+  aspectRatio: "Natural / Crisp",
 };
 
 /**
- * Resizes an uploaded image file to the proper specified dimensions (targetWidth x targetHeight)
- * using HTML5 Canvas. Returns the optimized File, exact dimensions, and preview URL.
+ * Optimizes an uploaded image without adding artificial padding or letterboxing.
+ * Preserves the natural aspect ratio while ensuring ultra-crisp high resolution (up to maxDimension).
  */
 export async function processAndResizeImage(
   file: File,
-  targetWidth: number,
-  targetHeight: number,
-  fitMode: 'contain' | 'cover' | 'stretch' = 'contain'
+  maxWidth = 1600,
+  maxHeight = 1600
 ): Promise<ProcessedImageResult> {
   return new Promise((resolve, reject) => {
     const img = new Image();
@@ -39,9 +38,19 @@ export async function processAndResizeImage(
       const origW = img.naturalWidth || img.width;
       const origH = img.naturalHeight || img.height;
 
+      // If image is within bounds, keep exact original aspect ratio and resolution
+      let targetW = origW;
+      let targetH = origH;
+
+      if (origW > maxWidth || origH > maxHeight) {
+        const ratio = Math.min(maxWidth / origW, maxHeight / origH);
+        targetW = Math.round(origW * ratio);
+        targetH = Math.round(origH * ratio);
+      }
+
       const canvas = document.createElement('canvas');
-      canvas.width = targetWidth;
-      canvas.height = targetHeight;
+      canvas.width = targetW;
+      canvas.height = targetH;
 
       const ctx = canvas.getContext('2d');
       if (!ctx) {
@@ -50,38 +59,19 @@ export async function processAndResizeImage(
         return;
       }
 
-      // High-quality image smoothing
+      // Ultra high-quality image smoothing
       ctx.imageSmoothingEnabled = true;
       ctx.imageSmoothingQuality = 'high';
 
-      // Background canvas fill for transparency preservation or white background
+      // Transparent for PNG/WEBP, clean white only for JPG
       if (file.type === 'image/jpeg' || file.type === 'image/jpg') {
         ctx.fillStyle = '#FFFFFF';
-        ctx.fillRect(0, 0, targetWidth, targetHeight);
+        ctx.fillRect(0, 0, targetW, targetH);
       } else {
-        ctx.clearRect(0, 0, targetWidth, targetHeight);
+        ctx.clearRect(0, 0, targetW, targetH);
       }
 
-      let drawW = targetWidth;
-      let drawH = targetHeight;
-      let drawX = 0;
-      let drawY = 0;
-
-      if (fitMode === 'contain') {
-        const scale = Math.min(targetWidth / origW, targetHeight / origH);
-        drawW = Math.round(origW * scale);
-        drawH = Math.round(origH * scale);
-        drawX = Math.round((targetWidth - drawW) / 2);
-        drawY = Math.round((targetHeight - drawH) / 2);
-      } else if (fitMode === 'cover') {
-        const scale = Math.max(targetWidth / origW, targetHeight / origH);
-        drawW = Math.round(origW * scale);
-        drawH = Math.round(origH * scale);
-        drawX = Math.round((targetWidth - drawW) / 2);
-        drawY = Math.round((targetHeight - drawH) / 2);
-      }
-
-      ctx.drawImage(img, drawX, drawY, drawW, drawH);
+      ctx.drawImage(img, 0, 0, targetW, targetH);
 
       const outputMime = file.type === 'image/png' ? 'image/png' : 'image/jpeg';
       
@@ -102,15 +92,15 @@ export async function processAndResizeImage(
 
           resolve({
             file: resizedFile,
-            width: targetWidth,
-            height: targetHeight,
+            width: targetW,
+            height: targetH,
             originalWidth: origW,
             originalHeight: origH,
             previewUrl,
           });
         },
         outputMime,
-        0.92
+        0.98 // Near-lossless high fidelity
       );
     };
 

@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { ProductImage } from '../components/ProductImage';
+import { ProductImage, getHighResImageUrl } from '../components/ProductImage';
+import { ProductDetailModal } from '../components/ProductDetailModal';
 import { Fireworks } from '@fireworks-js/react';
 import type { Category, Product } from '../types';
 import { toast } from 'sonner';
 import sarguruBanner from '../assets/sarguru-banner.png';
-import { ProductDetailModal } from '../components/ProductDetailModal';
 
 const TESTIMONIALS = [
   { name: 'Rajesh K.', location: 'Chennai', review: 'Absolutely stunning quality! The colors of the fancy items were incredibly vibrant. Delivered safely to Chennai.', rating: 5 },
@@ -109,7 +109,6 @@ const TestimonialSlider: React.FC = () => {
     </section>
   );
 };
-
 
 interface HomeProps {
   quantities: Record<string, number>;
@@ -336,7 +335,14 @@ export const Home: React.FC<HomeProps> = ({
                               {/* 1. Thumbnail Image */}
                               <div className="relative w-11 h-11 flex-shrink-0 flex items-center justify-center bg-slate-50 border border-slate-200 rounded-xl overflow-hidden shadow-2xs group-hover:border-primary-blue transition-colors">
                                 {product.image || product.imageUrl ? (
-                                  <img src={product.image || product.imageUrl} alt={product.name} className="w-full h-full object-cover" />
+                                  <img 
+                                    src={getHighResImageUrl(product.image || product.imageUrl, 300, 90)} 
+                                    alt={product.name} 
+                                    loading="lazy"
+                                    decoding="async"
+                                    style={{ imageRendering: '-webkit-optimize-contrast' }}
+                                    className="w-full h-full object-contain p-0.5" 
+                                  />
                                 ) : (
                                   <ProductImage type={product.imageType} />
                                 )}
@@ -426,9 +432,16 @@ export const Home: React.FC<HomeProps> = ({
                               onClick={() => setSelectedProductForModal(product)}
                               className="flex items-center gap-5 w-full md:w-auto cursor-pointer group"
                             >
-                              <div className="relative w-16 h-16 md:w-20 md:h-20 flex-shrink-0 flex items-center justify-center bg-bg-light border border-border-gray rounded-2xl overflow-hidden shadow-sm group-hover:border-primary-blue transition-colors">
+                              <div className="relative w-16 h-16 md:w-20 md:h-20 flex-shrink-0 flex items-center justify-center bg-bg-light border border-border-gray rounded-2xl overflow-hidden shadow-sm group-hover:border-primary-blue transition-colors p-1">
                                 {product.image || product.imageUrl ? (
-                                  <img src={product.image || product.imageUrl} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                                  <img 
+                                    src={getHighResImageUrl(product.image || product.imageUrl, 400, 90)} 
+                                    alt={product.name} 
+                                    loading="lazy"
+                                    decoding="async"
+                                    style={{ imageRendering: '-webkit-optimize-contrast' }}
+                                    className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300" 
+                                  />
                                 ) : (
                                   <ProductImage type={product.imageType} />
                                 )}
@@ -517,23 +530,24 @@ export const Home: React.FC<HomeProps> = ({
                                 </div>
                               </div>
                               <div className="flex justify-center items-center w-1/2 md:w-auto pl-3 md:pl-0">
-                                {isOutOfStock ? (
-                                  <div className="w-full md:w-[90px] h-10 md:h-11 flex items-center justify-center text-[12px] font-bold text-gray-400 bg-slate-100 border border-border-gray rounded-xl cursor-not-allowed select-none">
-                                    N/A
-                                  </div>
-                                ) : (
-                                  <button
-                                    onClick={() => { 
-                                      if (!qty) {
-                                        handleQtyChange(product.id, '1'); 
-                                        toast.success(`${product.name} added to cart`, { duration: 2000 });
-                                      }
-                                    }}
-                                    className={`w-full md:w-[90px] h-10 md:h-11 flex items-center justify-center text-[13px] font-bold rounded-xl transition-all duration-300 shadow-sm ${qty ? 'bg-success-green text-white shadow-md' : 'bg-primary-blue text-white hover:bg-primary-hover hover:-translate-y-0.5'}`}
-                                  >
-                                    {qty ? '✓ ADDED' : 'ADD'}
-                                  </button>
-                                )}
+                                <button
+                                  onClick={() => { 
+                                    if (!qty) {
+                                      handleQtyChange(product.id, '1'); 
+                                      toast.success(`${product.name} added to cart`, { duration: 2000 });
+                                    }
+                                  }}
+                                  disabled={isOutOfStock}
+                                  className={`w-full md:w-[90px] h-10 md:h-11 flex items-center justify-center text-[13px] font-bold rounded-xl transition-all duration-300 shadow-sm ${
+                                    isOutOfStock 
+                                      ? 'bg-slate-100 text-gray-400 border border-border-gray cursor-not-allowed'
+                                      : qty 
+                                        ? 'bg-success-green text-white shadow-md' 
+                                        : 'bg-primary-blue text-white hover:bg-primary-hover hover:-translate-y-0.5'
+                                  }`}
+                                >
+                                  {isOutOfStock ? 'Sold Out' : qty ? '✓ ADDED' : 'ADD'}
+                                </button>
                               </div>
                             </div>
                           </div>
@@ -627,7 +641,7 @@ export const Home: React.FC<HomeProps> = ({
         </div>
       </section>
 
-      {/* Product Detail Modal */}
+      {/* Product Detail & Full-Screen Image Lightbox Modal */}
       <ProductDetailModal
         product={selectedProductForModal}
         isOpen={!!selectedProductForModal}
@@ -636,7 +650,7 @@ export const Home: React.FC<HomeProps> = ({
           const currentQty = Number(quantities[prod.id] || 0);
           handleQtyChange(prod.id, String(currentQty + qtyToAdd));
         }}
-        initialQuantity={1}
+        initialQuantity={selectedProductForModal ? quantities[selectedProductForModal.id] || 1 : 1}
       />
 
     </div>
