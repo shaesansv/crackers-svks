@@ -5,7 +5,6 @@ import { getOrders, approveOrder, updatePackingStatus } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Link } from "react-router-dom";
-import { ImageSlider } from "@/components/ImageSlider";
 import { ProductDetailModal } from "@/components/ProductDetailModal";
 import {
   Dialog,
@@ -14,7 +13,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { generateOrderReceiptPDF } from "@/lib/pdf-generator";
+import { downloadOrderReceiptPDF, prepareOrderDataForPDF } from "@/lib/pdf-generator";
 import { useSiteSettings } from "@/context/SiteSettingsContext";
 
 /** Returns true when today is BEFORE the hold window expires */
@@ -53,33 +52,8 @@ const AdminOrders = () => {
   const { settings } = useSiteSettings();
 
   const downloadPDF = (order: any) => {
-    const orderData = {
-      orderNumber: order.orderNumber || order._id,
-      customerName: order.customerName,
-      customerEmail: order.customerEmail,
-      customerPhone: order.customerPhone,
-      deliveryAddress: order.deliveryAddress?.fullAddress || order.shippingAddress?.fullAddress || '',
-      state: order.deliveryAddress?.state || '',
-      district: order.deliveryAddress?.district || '',
-      items: order.items.map((i: any) => ({
-        ...i,
-        productName: i.product?.name || i.productName || 'Product',
-        originalPrice: i.originalPrice !== undefined ? i.originalPrice : (i.product?.price || i.price),
-        hasDiscount: i.hasDiscount !== undefined ? i.hasDiscount : (i.product?.hasDiscount !== undefined ? i.product.hasDiscount : true),
-        netRate: i.netRate !== undefined ? i.netRate : i.product?.netRate,
-        displayNetRate: i.displayNetRate !== undefined ? i.displayNetRate : i.product?.displayNetRate
-      })),
-      subtotal: order.subtotal,
-      packingCharge: order.packingCharge || Math.round(order.subtotal * 0.03),
-      total: order.total || (order.subtotal + (order.packingCharge || Math.round(order.subtotal * 0.03))),
-      date: new Date(order.createdAt || Date.now()).toLocaleDateString('en-IN'),
-      discountPercent: settings.discountPercent,
-      siteName: settings.siteName,
-      siteAddress: settings.contact?.address || '',
-      sitePhone: settings.contact?.phone || '',
-      siteEmail: settings.contact?.email || '',
-    };
-    generateOrderReceiptPDF(orderData);
+    const orderData = prepareOrderDataForPDF(order, settings);
+    downloadOrderReceiptPDF(orderData);
     toast.success("Downloading PDF...");
   };
   const [phoneFilter, setPhoneFilter] = useState("");
@@ -188,13 +162,9 @@ const AdminOrders = () => {
       <div className="flex min-h-screen">
       <AdminSidebar />
       <main className="flex-1 p-6 lg:p-8 overflow-auto">
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between mb-6">
           <h1 className="font-display text-2xl font-bold">Orders</h1>
           <Link to="/" className="text-sm text-primary hover:underline lg:hidden">← Store</Link>
-        </div>
-
-        <div className="mb-6">
-          <ImageSlider heightClass="h-[140px] sm:h-[200px] md:h-[240px]" />
         </div>
 
         {/* Filter tabs */}

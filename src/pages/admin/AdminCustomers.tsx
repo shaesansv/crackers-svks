@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
+import { downloadOrderReceiptPDF, prepareOrderDataForPDF } from "@/lib/pdf-generator";
 
 interface Customer {
   name: string;
@@ -63,33 +64,8 @@ const buildCustomers = (ordersData: any[]): Customer[] => {
   return Array.from(map.values());
 };
 
-const generateInvoiceHTML = (order: any) => {
-  return `
-    <html><head><title>Invoice ${order.orderNumber || order._id}</title>
-    <style>body{font-family:Arial,sans-serif;padding:40px;color:#333}
-    h1{color:#FFD700;margin-bottom:4px}table{width:100%;border-collapse:collapse;margin-top:20px}th,td{border:1px solid #ddd;padding:8px;text-align:left;font-size:12px}th{background:#f5f5f5}
-    .total{font-size:18px;font-weight:bold;margin-top:20px}.header{display:flex;justify-content:space-between}
-    </style></head><body>
-    <h1>🎆 Narendiraa Enterprises</h1><p>Tax Invoice</p>
-    <hr/>
-    <div class="header"><div><strong>Invoice:</strong> ${order.orderNumber || order._id?.slice(-8)}<br/><strong>Date:</strong> ${order.createdAt ? new Date(order.createdAt).toLocaleDateString() : "N/A"}</div>
-    <div><strong>Customer:</strong> ${order.customerName}<br/><strong>Email:</strong> ${order.customerEmail}</div></div>
-    <table><tr><th>Items</th><th>Status</th><th>Total</th></tr>
-    <tr><td>${order.items?.length || 0} item(s)</td><td>${order.status}</td><td>₹${(Number(order.subtotal) + (Number(order.packingCharge) || 0)).toLocaleString()}</td></tr></table>
-    <p class="total">Grand Total: ₹${(Number(order.subtotal) + (Number(order.packingCharge) || 0)).toLocaleString()}</p>
-    <p style="margin-top:40px;font-size:12px;color:#999">This is a computer-generated invoice.</p>
-    </body></html>`;
-};
-
 const downloadInvoicePDF = (order: any) => {
-  const html = generateInvoiceHTML(order);
-  const printWindow = window.open("", "_blank");
-  if (printWindow) {
-    printWindow.document.write(html);
-    printWindow.document.close();
-    printWindow.focus();
-    setTimeout(() => printWindow.print(), 300);
-  }
+  downloadOrderReceiptPDF(prepareOrderDataForPDF(order));
 };
 
 const AdminCustomers = () => {

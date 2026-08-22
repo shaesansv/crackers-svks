@@ -1,11 +1,9 @@
 /**
- * Generate and download order receipt / proforma estimate as PDF
- * Uses HTML canvas to create a print-ready PDF document for Sarguru Crackers
+ * Generate and download order receipt as PDF
+ * Uses HTML canvas to create a PDF-like document
  */
 
-import sarguruLogo from "../assets/sarguru.png";
-import { jsPDF } from "jspdf";
-import html2canvas from "html2canvas";
+import saiyogiLogo from "@/assets/saiyogi-logo-1.png";
 
 export interface OrderItem {
   productName: string;
@@ -15,13 +13,12 @@ export interface OrderItem {
   hasDiscount?: boolean;
   netRate?: number;
   displayNetRate?: boolean;
-  unit?: string;
 }
 
 export interface OrderData {
   orderNumber: string;
   customerName: string;
-  customerEmail?: string;
+  customerEmail: string;
   customerPhone: string;
   deliveryAddress: string;
   state?: string;
@@ -41,123 +38,7 @@ export interface OrderData {
   gstNumber?: string;
 }
 
-/**
- * Helper function to normalize any raw order object (from admin or storefront)
- * into a standardized OrderData object ready for PDF generation.
- */
-export function prepareOrderDataForPDF(rawOrder: any, siteSettings?: any): OrderData {
-  if (!rawOrder) {
-    throw new Error("Invalid order data provided for PDF generation");
-  }
-
-  const orderNum = rawOrder.orderNumber || rawOrder._id || rawOrder.id || `ORD-${Date.now()}`;
-
-  // Format customer details
-  const custName = rawOrder.customerName || rawOrder.name || 'Valued Customer';
-  const custEmail = rawOrder.customerEmail || rawOrder.email || '';
-  const custPhone = rawOrder.customerPhone || rawOrder.phone || rawOrder.mobile || '';
-
-  // Extract address details
-  let delAddress = '';
-  let delState = rawOrder.state || '';
-  let delDistrict = rawOrder.district || '';
-
-  if (typeof rawOrder.deliveryAddress === 'object' && rawOrder.deliveryAddress !== null) {
-    delAddress = rawOrder.deliveryAddress.fullAddress || rawOrder.deliveryAddress.address || '';
-    delState = rawOrder.deliveryAddress.state || delState;
-    delDistrict = rawOrder.deliveryAddress.district || delDistrict;
-  } else if (typeof rawOrder.shippingAddress === 'object' && rawOrder.shippingAddress !== null) {
-    delAddress = rawOrder.shippingAddress.fullAddress || rawOrder.shippingAddress.address || '';
-    delState = rawOrder.shippingAddress.state || delState;
-    delDistrict = rawOrder.shippingAddress.district || delDistrict;
-  } else if (typeof rawOrder.deliveryAddress === 'string') {
-    delAddress = rawOrder.deliveryAddress;
-  } else if (typeof rawOrder.address === 'string') {
-    delAddress = rawOrder.address;
-  }
-
-  // Format items
-  const rawItems = Array.isArray(rawOrder.items) ? rawOrder.items : [];
-  const formattedItems: OrderItem[] = rawItems.map((item: any) => {
-    const prodName = item.productName || item.product?.name || item.name || 'Firecracker Item';
-    const qty = Number(item.quantity || item.qty || 1);
-    const price = Number(item.price || item.discountPrice || 0);
-    const origPrice = item.originalPrice !== undefined ? Number(item.originalPrice) : (item.product?.price ? Number(item.product.price) : price);
-    const netRateVal = item.netRate !== undefined ? Number(item.netRate) : (item.product?.netRate ? Number(item.product.netRate) : undefined);
-    const displayNetRateVal = item.displayNetRate !== undefined ? Boolean(item.displayNetRate) : (item.product?.displayNetRate ? Boolean(item.product.displayNetRate) : false);
-    const hasDisc = item.hasDiscount !== undefined ? Boolean(item.hasDiscount) : true;
-    const unitVal = item.unit || item.product?.unit || 'Box';
-
-    return {
-      productName: prodName,
-      quantity: qty,
-      price,
-      originalPrice: origPrice,
-      hasDiscount: hasDisc,
-      netRate: netRateVal,
-      displayNetRate: displayNetRateVal,
-      unit: unitVal
-    };
-  });
-
-  const subtotal = Number(rawOrder.subtotal || rawOrder.totalAmount || 0);
-  const packingCharge = rawOrder.packingCharge !== undefined ? Number(rawOrder.packingCharge) : Math.round(subtotal * 0.03);
-  const total = Number(rawOrder.total || (subtotal + packingCharge));
-  const discountPct = Number(rawOrder.discountPercent || siteSettings?.discountPercent || 80);
-
-  // System date as bill date
-  const systemDate = new Date().toLocaleDateString('en-IN', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric'
-  });
-
-  // Resolve site settings from argument or cached localStorage
-  let settings = siteSettings;
-  if (!settings) {
-    try {
-      const cached = localStorage.getItem('site_settings') || localStorage.getItem('siteSettings');
-      if (cached) {
-        settings = JSON.parse(cached);
-      }
-    } catch (e) {
-      // Ignore JSON parse errors
-    }
-  }
-
-  const compName = settings?.billing?.companyName || settings?.siteName || rawOrder.companyName || rawOrder.siteName || 'Sarguru Crackers';
-  const compAddress = settings?.contact?.address || rawOrder.siteAddress || '3/1321 Paraipatti, Sivakasi, Tamil Nadu, India';
-  const compPhone = settings?.billing?.phone || settings?.contact?.phone || rawOrder.sitePhone || '+91 78680 77818';
-  const compEmail = settings?.billing?.email || settings?.contact?.email || rawOrder.siteEmail || 'info@sargurucrackers.com';
-  const compWebsite = rawOrder.siteWebsite || 'www.sargurucrackers.com';
-  const compGst = settings?.billing?.gstNumber || settings?.gstNumber || rawOrder.gstNumber || '';
-
-  return {
-    orderNumber: String(orderNum),
-    customerName: String(custName),
-    customerEmail: String(custEmail),
-    customerPhone: String(custPhone),
-    deliveryAddress: String(delAddress),
-    state: String(delState),
-    district: String(delDistrict),
-    items: formattedItems,
-    subtotal,
-    discountPercent: discountPct,
-    packingCharge,
-    total,
-    date: systemDate,
-    siteName: settings?.siteName || rawOrder.siteName || 'Sarguru Crackers',
-    companyName: compName,
-    siteAddress: compAddress,
-    sitePhone: compPhone,
-    siteEmail: compEmail,
-    siteWebsite: compWebsite,
-    gstNumber: compGst
-  };
-}
-
-export function downloadOrderReceiptPDF(rawOrder: any, copies: number = 1) {
-  const orderData = prepareOrderDataForPDF(rawOrder);
+export function downloadOrderReceiptPDF(orderData: OrderData, copies: number = 1) {
   const html = generateReceiptHTML(orderData, copies);
 
   const tempDiv = document.createElement("div");
@@ -174,59 +55,67 @@ export function downloadOrderReceiptPDF(rawOrder: any, copies: number = 1) {
   };
 
   try {
-    html2canvas(tempDiv, {
-      allowTaint: true,
-      useCORS: true,
-      scale: 2,
-      backgroundColor: "#ffffff",
-    })
-      .then((canvas) => {
-        const pdf = new jsPDF({
-          orientation: "portrait",
-          unit: "mm",
-          format: "a4",
-          compress: true,
+    import("html2canvas").then((html2canvas) => {
+      html2canvas
+        .default(tempDiv, {
+          allowTaint: true,
+          useCORS: true,
+          scale: 1.5,
+          backgroundColor: "#ffffff",
+        })
+        .then((canvas) => {
+          import("jspdf").then((jsPDF) => {
+            const pdf = new jsPDF.jsPDF({
+              orientation: "portrait",
+              unit: "mm",
+              format: "a4",
+              compress: true,
+            });
+
+            const imgData = canvas.toDataURL("image/jpeg", 0.8);
+            const pdfWidth = pdf.internal.pageSize.getWidth();
+            const pdfHeight = pdf.internal.pageSize.getHeight();
+            
+            // The HTML already has 10mm padding in .page, so no extra jsPDF margin needed.
+            const imgWidth = pdfWidth;
+            const imgHeight = (canvas.height * imgWidth) / canvas.width;
+            const pageHeight = pdfHeight;
+
+            let heightLeft = imgHeight;
+            let position = 0;
+
+            pdf.addImage(imgData, "JPEG", 0, position, imgWidth, imgHeight, undefined, 'MEDIUM');
+            heightLeft -= pageHeight;
+
+            while (heightLeft > 0.5) { // 0.5 buffer to prevent tiny floating pixel page
+              position -= pageHeight;
+              pdf.addPage();
+              pdf.addImage(imgData, "JPEG", 0, position, imgWidth, imgHeight, undefined, 'MEDIUM');
+              heightLeft -= pageHeight;
+            }
+
+            const currentYear = new Date().getFullYear();
+            pdf.save(`Estimate_${orderData.orderNumber || currentYear}.pdf`);
+            cleanup();
+          }).catch(() => {
+            printOrderReceipt(orderData);
+            cleanup();
+          });
+        }).catch(() => {
+          printOrderReceipt(orderData);
+          cleanup();
         });
-
-        const imgData = canvas.toDataURL("image/jpeg", 0.95);
-        const pdfWidth = pdf.internal.pageSize.getWidth();
-        const pdfHeight = pdf.internal.pageSize.getHeight();
-
-        const imgWidth = pdfWidth;
-        const imgHeight = (canvas.height * imgWidth) / canvas.width;
-        const pageHeight = pdfHeight;
-
-        let heightLeft = imgHeight;
-        let position = 0;
-
-        pdf.addImage(imgData, "JPEG", 0, position, imgWidth, imgHeight, undefined, 'MEDIUM');
-        heightLeft -= pageHeight;
-
-        while (heightLeft > 0.5) {
-          position -= pageHeight;
-          pdf.addPage();
-          pdf.addImage(imgData, "JPEG", 0, position, imgWidth, imgHeight, undefined, 'MEDIUM');
-          heightLeft -= pageHeight;
-        }
-
-        const currentYear = new Date().getFullYear();
-        pdf.save(`Estimate_${orderData.orderNumber || currentYear}.pdf`);
-        cleanup();
-      })
-      .catch((err) => {
-        console.warn("PDF generation error, falling back to print window:", err);
-        printOrderReceipt(orderData, copies);
-        cleanup();
-      });
-  } catch (err) {
-    console.warn("PDF download failed, initiating fallback print:", err);
-    printOrderReceipt(orderData, copies);
+    }).catch(() => {
+      printOrderReceipt(orderData);
+      cleanup();
+    });
+  } catch {
+    printOrderReceipt(orderData);
     cleanup();
   }
 }
 
-export function printOrderReceipt(rawOrder: any, copies: number = 1) {
-  const orderData = prepareOrderDataForPDF(rawOrder);
+export function printOrderReceipt(orderData: OrderData, copies: number = 1) {
   const html = generateReceiptHTML(orderData, copies);
   const iframe = document.createElement('iframe');
   iframe.style.position = 'fixed';
@@ -242,7 +131,7 @@ export function printOrderReceipt(rawOrder: any, copies: number = 1) {
     iframeDoc.open();
     iframeDoc.write(html);
     iframeDoc.close();
-
+    
     setTimeout(() => {
       iframe.contentWindow?.focus();
       iframe.contentWindow?.print();
@@ -255,26 +144,19 @@ export function printOrderReceipt(rawOrder: any, copies: number = 1) {
   }
 }
 
-export function promptAndPrintOrderReceipt(orderData: any) {
+export function promptAndPrintOrderReceipt(orderData: OrderData) {
   printOrderReceipt(orderData, 1);
 }
 
-export function promptAndDownloadOrderReceiptPDF(orderData: any) {
+export function promptAndDownloadOrderReceiptPDF(orderData: OrderData) {
   downloadOrderReceiptPDF(orderData, 1);
 }
-
-// Alias for backwards compatibility across existing components
-export const generateOrderReceiptPDF = (orderData: any) => {
-  downloadOrderReceiptPDF(orderData, 1);
-};
 
 function numberToWords(n: number): string {
   const ones = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine',
     'Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'];
   const tens = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
-
   if (n === 0) return 'Zero';
-
   const convert = (num: number): string => {
     if (num < 20) return ones[num];
     if (num < 100) return tens[Math.floor(num / 10)] + (num % 10 ? ' ' + ones[num % 10] : '');
@@ -283,7 +165,6 @@ function numberToWords(n: number): string {
     if (num < 10000000) return convert(Math.floor(num / 100000)) + ' Lakh' + (num % 100000 ? ' ' + convert(num % 100000) : '');
     return convert(Math.floor(num / 10000000)) + ' Crore' + (num % 10000000 ? ' ' + convert(num % 10000000) : '');
   };
-
   const rupees = Math.floor(n);
   const paise = Math.round((n - rupees) * 100);
   let result = convert(rupees) + ' Rupees';
@@ -292,7 +173,7 @@ function numberToWords(n: number): string {
 }
 
 function generateReceiptHTML(order: OrderData, copies: number = 1): string {
-  const allItems = order.items || [];
+  const allItems = order.items;
   const discountPct = order.discountPercent || 0;
 
   const formatAmt = (num: number) => Number(num).toLocaleString('en-IN', {
@@ -339,26 +220,25 @@ function generateReceiptHTML(order: OrderData, copies: number = 1): string {
 
       const qty = item.quantity;
       const mrpTotal = originalPrice * qty;
-
+      
       const lineTotal = discountedPrice * qty;
       const lessAmt = mrpTotal - lineTotal;
-
+      
+      // Calculate effective discount percentage to show
       let effectiveDiscPct = '0';
       if (mrpTotal > 0 && lessAmt > 0) {
-        effectiveDiscPct = String(Math.round((lessAmt / mrpTotal) * 100));
+          effectiveDiscPct = String(Math.round((lessAmt / mrpTotal) * 100));
       } else if (discountPct > 0 && item.hasDiscount !== false) {
-        effectiveDiscPct = String(discountPct);
+          effectiveDiscPct = String(discountPct);
       }
-
-      const unitText = item.unit ? (item.unit.toLowerCase().includes('box') || item.unit.toLowerCase().includes('pkt') ? item.unit : `${item.unit}`) : 'Box';
 
       allRows.push({
         type: 'item',
         content: `
         <tr style="background:transparent;">
           <td style="padding:7px 4px; border-left:1px solid #000; border-right:1px solid #000; border-bottom:1px solid #e2e8f0; text-align:center;">${sNo++}</td>
-          <td style="padding:7px 4px; border-left:1px solid #000; border-right:1px solid #000; border-bottom:1px solid #e2e8f0; text-align:left; font-weight: 500; padding-left: 8px;">${item.productName.toUpperCase()}</td>
-          <td style="padding:7px 4px; border-left:1px solid #000; border-right:1px solid #000; border-bottom:1px solid #e2e8f0; text-align:center; font-weight:bold;">${qty} ${unitText}</td>
+          <td style="padding:7px 4px; border-left:1px solid #000; border-right:1px solid #000; border-bottom:1px solid #e2e8f0; text-align:center; font-weight: 500;">${item.productName.toUpperCase()}</td>
+          <td style="padding:7px 4px; border-left:1px solid #000; border-right:1px solid #000; border-bottom:1px solid #e2e8f0; text-align:center; font-weight:bold;">${qty} Box</td>
           <td style="padding:7px 4px; border-left:1px solid #000; border-right:1px solid #000; border-bottom:1px solid #e2e8f0; text-align:center;">${formatAmt(originalPrice)}</td>
           <td style="padding:7px 4px; border-left:1px solid #000; border-right:1px solid #000; border-bottom:1px solid #e2e8f0; text-align:center;">${formatAmt(mrpTotal)}</td>
           <td style="padding:7px 4px; border-left:1px solid #000; border-right:1px solid #000; border-bottom:1px solid #e2e8f0; text-align:center;">${effectiveDiscPct}%</td>
@@ -384,15 +264,14 @@ function generateReceiptHTML(order: OrderData, copies: number = 1): string {
       const netPrice = item.netRate || item.price;
       const mrpTotal = netPrice * qty;
       const lineTotal = netPrice * qty;
-      const unitText = item.unit ? (item.unit.toLowerCase().includes('box') || item.unit.toLowerCase().includes('pkt') ? item.unit : `${item.unit}`) : 'Box';
 
       allRows.push({
         type: 'item',
         content: `
         <tr style="background:transparent;">
           <td style="padding:7px 4px; border-left:1px solid #000; border-right:1px solid #000; border-bottom:1px solid #e2e8f0; text-align:center;">${sNo++}</td>
-          <td style="padding:7px 4px; border-left:1px solid #000; border-right:1px solid #000; border-bottom:1px solid #e2e8f0; text-align:left; font-weight: 500; padding-left: 8px;">${item.productName.toUpperCase()}</td>
-          <td style="padding:7px 4px; border-left:1px solid #000; border-right:1px solid #000; border-bottom:1px solid #e2e8f0; text-align:center; font-weight:bold;">${qty} ${unitText}</td>
+          <td style="padding:7px 4px; border-left:1px solid #000; border-right:1px solid #000; border-bottom:1px solid #e2e8f0; text-align:center; font-weight: 500;">${item.productName.toUpperCase()}</td>
+          <td style="padding:7px 4px; border-left:1px solid #000; border-right:1px solid #000; border-bottom:1px solid #e2e8f0; text-align:center; font-weight:bold;">${qty} Box</td>
           <td style="padding:7px 4px; border-left:1px solid #000; border-right:1px solid #000; border-bottom:1px solid #e2e8f0; text-align:center;">${formatAmt(netPrice)}</td>
           <td style="padding:7px 4px; border-left:1px solid #000; border-right:1px solid #000; border-bottom:1px solid #e2e8f0; text-align:center;">${formatAmt(mrpTotal)}</td>
           <td style="padding:7px 4px; border-left:1px solid #000; border-right:1px solid #000; border-bottom:1px solid #e2e8f0; text-align:center; color:#94a3b8;">-</td>
@@ -404,10 +283,10 @@ function generateReceiptHTML(order: OrderData, copies: number = 1): string {
     });
   }
 
-  const MAX_ROWS_FIRST_AND_LAST = 14;
-  const MAX_ROWS_FIRST_PAGE = 21;
-  const MAX_ROWS_OTHER_PAGE = 21;
-  const MAX_ROWS_LAST_PAGE = 20;
+  const MAX_ROWS_FIRST_AND_LAST = 14;  // Page 1 AND Last Page (Must be small to fit both header and footer)
+  const MAX_ROWS_FIRST_PAGE = 22;     // Page 1, NOT Last Page
+  const MAX_ROWS_OTHER_PAGE = 22;     // Middle pages (no header, no footer)
+  const MAX_ROWS_LAST_PAGE = 22;      // Last Page, NOT Page 1 (no header, yes footer)
 
   const pages: { rows: any[], isLastPage: boolean, isFirstPage: boolean }[] = [];
   let currentRowIndex = 0;
@@ -415,7 +294,7 @@ function generateReceiptHTML(order: OrderData, copies: number = 1): string {
 
   while (currentRowIndex < allRows.length) {
     const rowsRemaining = allRows.length - currentRowIndex;
-
+    
     if (isFirstPage) {
       if (rowsRemaining <= MAX_ROWS_FIRST_AND_LAST) {
         pages.push({
@@ -453,7 +332,7 @@ function generateReceiptHTML(order: OrderData, copies: number = 1): string {
     }
     isFirstPage = false;
   }
-
+  
   if (pages.length === 0) {
     pages.push({ rows: [], isLastPage: true, isFirstPage: true });
   } else if (!pages[pages.length - 1].isLastPage) {
@@ -467,7 +346,7 @@ function generateReceiptHTML(order: OrderData, copies: number = 1): string {
   allItems.forEach(item => {
     const isNetRate = (item.displayNetRate === true || String(item.displayNetRate) === 'true') && item.netRate !== undefined && item.netRate > 0;
     const qty = item.quantity;
-
+    
     if (!isNetRate) {
       let origPrice = item.originalPrice !== undefined ? item.originalPrice : (item.price || 0);
       let discountedPrice = item.price || 0;
@@ -478,7 +357,7 @@ function generateReceiptHTML(order: OrderData, copies: number = 1): string {
 
       const itemMrpTotal = origPrice * qty;
       const lineTotal = discountedPrice * qty;
-
+      
       grossRetailValue += itemMrpTotal;
       totalDiscountAmount += (itemMrpTotal - lineTotal);
     } else {
@@ -494,31 +373,28 @@ function generateReceiptHTML(order: OrderData, copies: number = 1): string {
   const grandTotal = Math.round(exactTotal);
   const roundOffAmount = grandTotal - exactTotal;
   const inWords = numberToWords(grandTotal);
-
-  let cachedSettings: any = null;
-  try {
-    const rawSettings = localStorage.getItem('site_settings') || localStorage.getItem('siteSettings');
-    if (rawSettings) {
-      cachedSettings = JSON.parse(rawSettings);
-    }
-  } catch (e) {
-    // Ignore
+  
+  if (pages.length === 0) {
+    pages.push({ rows: [], isLastPage: true, isFirstPage: true });
   }
 
-  const shopName = (cachedSettings?.billing?.companyName || cachedSettings?.siteName || order.companyName || order.siteName || 'SARGURU CRACKERS').toString().trim();
-  const shopPhone = (cachedSettings?.billing?.phone || cachedSettings?.contact?.phone || order.sitePhone || '+91 78680 77818').toString().trim();
-  const shopAddress = (cachedSettings?.contact?.address || order.siteAddress || '3/1321 Paraipatti, Sivakasi, Tamil Nadu, India').toString().trim();
-  const shopEmail = (cachedSettings?.billing?.email || cachedSettings?.contact?.email || order.siteEmail || 'info@sargurucrackers.com').toString().trim();
-  const shopWebsite = (order.siteWebsite || 'www.sargurucrackers.com').toString().trim();
-  const shopGst = (cachedSettings?.billing?.gstNumber || cachedSettings?.gstNumber || order.gstNumber || '').toString().trim();
+  const shopName = (order.companyName?.trim() || order.siteName?.trim()) ? (order.companyName || order.siteName) : 'NARENDIRAA ENTERPRISES';
+  const shopPhone = (order.sitePhone && order.sitePhone.trim()) ? order.sitePhone : '+91 95859 75756';
+  const shopAddress = (order.siteAddress && order.siteAddress.trim()) ? order.siteAddress : 'Sattur, Virudhunagar District, Tamil Nadu';
+  const shopEmail = (order.siteEmail && order.siteEmail.trim()) ? order.siteEmail : 'contact@narendiraa-enterprises.com';
+  const shopWebsite = (order.siteWebsite && order.siteWebsite.trim()) ? order.siteWebsite : 'www.narendiraa-enterprises.com';
+  const shopGst = order.gstNumber || '';
 
-  const finalHTML = pages.map((page) => {
-    const footerHTML = page.isLastPage ? `
+  const finalHTML = pages.map((page, index) => {
+      const pageNum = index + 1;
+      const totalPages = pages.length;
+
+      const footerHTML = page.isLastPage ? `
         <div class="footer-section">
           <div style="flex: 1; border-right: 1px solid #000; display: flex; flex-direction: column; background: #ffffff;">
             <div style="padding: 10px; border-bottom: 1px solid #e2e8f0; min-height: 50px;">
               <span style="font-size: 11px; font-weight:bold; color:#900000; text-transform:uppercase;">Delivery Address:</span>
-              <div style="font-size: 11px; margin-top: 5px; padding-left: 10px; color: #334155;">${order.deliveryAddress || 'N/A'}</div>
+              <div style="font-size: 11px; margin-top: 5px; padding-left: 10px; color: #334155;">${order.deliveryAddress}</div>
             </div>
             <div style="padding: 10px; border-bottom: 1px solid #e2e8f0; font-size: 11px; font-style: italic; color:#475569;">
               <strong>Amount in Words:</strong> ${inWords}
@@ -581,7 +457,7 @@ function generateReceiptHTML(order: OrderData, copies: number = 1): string {
         </div>
       ` : '';
 
-    const headerHTML = page.isFirstPage ? `
+      const headerHTML = page.isFirstPage ? `
             <div class="header">
               <table width="100%" border="0" cellpadding="0" cellspacing="0">
                 <tr>
@@ -590,7 +466,7 @@ function generateReceiptHTML(order: OrderData, copies: number = 1): string {
                     <div style="font-size: 11px; font-weight: bold; color: #64748b; margin-top: 6px; text-transform: uppercase; letter-spacing: 0.5px;">Proforma Estimate</div>
                   </td>
                   <td valign="top" align="right">
-                    <img src="${sarguruLogo}" style="height: 120px; width: auto; max-width: 280px; object-fit: contain;" />
+                    <img src="${saiyogiLogo}" style="height: 160px; width: auto; max-width: 350px; object-fit: contain;" />
                   </td>
                 </tr>
               </table>
@@ -604,9 +480,9 @@ function generateReceiptHTML(order: OrderData, copies: number = 1): string {
                     <tr><td width="100"><strong>Customer Name</strong></td><td><strong>:</strong> <span style="font-size:12px;font-weight:bold;color:#0f172a;">${order.customerName}</span></td></tr>
                     <tr><td><strong>Estimate No.</strong></td><td><strong>:</strong> ${order.orderNumber}</td></tr>
                     <tr><td><strong>Date</strong></td><td><strong>:</strong> ${order.date}</td></tr>
-                    <tr><td><strong>Phone</strong></td><td><strong>:</strong> ${order.customerPhone || 'N/A'}</td></tr>
-                    <tr><td><strong>Email</strong></td><td><strong>:</strong> ${order.customerEmail || 'N/A'}</td></tr>
-                    <tr><td valign="top"><strong>Address</strong></td><td><strong>:</strong> ${order.deliveryAddress || 'N/A'}</td></tr>
+                    <tr><td><strong>Phone</strong></td><td><strong>:</strong> ${order.customerPhone}</td></tr>
+                    <tr><td><strong>Email</strong></td><td><strong>:</strong> ${order.customerEmail}</td></tr>
+                    <tr><td valign="top"><strong>Address</strong></td><td><strong>:</strong> ${order.deliveryAddress}</td></tr>
                     <tr><td><strong>Location</strong></td><td><strong>:</strong> ${order.district ? order.district + ', ' : ''}${order.state || ''}</td></tr>
                   </table>
                 </div>
@@ -625,13 +501,16 @@ function generateReceiptHTML(order: OrderData, copies: number = 1): string {
             </div>
       ` : ``;
 
-    return `
+      return `
         <div class="page" style="position: relative;">
+          <div class="watermark">
+            <img src="${saiyogiLogo}" />
+          </div>
           <div class="page-content">
             ${headerHTML}
 
             <div style="position: relative;">
-              <table class="main-table" style="border-bottom: 1px solid #000;">
+              <table class="main-table">
                 <thead>
                   <tr>
                     <th style="width: 4%;">S No.</th>
@@ -654,11 +533,11 @@ function generateReceiptHTML(order: OrderData, copies: number = 1): string {
           </div>
         </div>
       `;
-  }).join('');
+    }).join('');
 
   let finalMultiCopyHTML = '';
-
-  for (let c = 0; c < copies; c++) {
+  
+  for(let c=0; c<copies; c++) {
     finalMultiCopyHTML += finalHTML;
   }
 
@@ -711,12 +590,12 @@ body {
   top: 50%;
   left: 50%;
   transform: translate(-50%, calc(-50% + 60px));
-  opacity: 0.12;
+  opacity: 0.15;
   z-index: 0;
   pointer-events: none;
 }
 .watermark img {
-  width: 400px;
+  width: 450px;
   height: auto;
   object-fit: contain;
 }
@@ -762,7 +641,7 @@ table.main-table {
   font-size: 11px;
 }
 .brand-title {
-  font-size: 20px;
+  font-size: 22px;
   font-weight: 900;
   color: #900000;
   margin-bottom: 2px;

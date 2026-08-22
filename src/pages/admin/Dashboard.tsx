@@ -1,4 +1,4 @@
-import { ShoppingBag, DollarSign, AlertTriangle, TrendingUp } from "lucide-react";
+import { ShoppingBag, IndianRupee, AlertTriangle, TrendingUp } from "lucide-react";
 import AdminSidebar from "@/components/layout/AdminSidebar";
 import AdminNavbar from "@/components/layout/AdminNavbar";
 import { useEffect, useState } from "react";
@@ -114,7 +114,7 @@ const Dashboard = () => {
           <div className="bg-card border border-border rounded-lg p-4 glow-card">
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm text-muted-foreground">Total Revenue</span>
-              <DollarSign className="h-5 w-5 text-primary" />
+              <IndianRupee className="h-5 w-5 text-primary" />
             </div>
             <p className="text-2xl font-bold">₹{fmt(totalRevenue)}</p>
             <span className="text-xs text-green-500">Calculated from orders</span>

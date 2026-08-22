@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import type { Product } from '../types';
 import { INDIAN_STATES_AND_DISTRICTS } from '../data/indianStatesAndDistricts';
 import { loadCustomerDetails, saveCustomerDetails } from '../utils/cookieSessionUtils';
+import { downloadOrderReceiptPDF, printOrderReceipt } from '../lib/pdf-generator';
+import { ProductImage } from './ProductImage';
 
 interface CartItem {
   product: Product;
@@ -117,7 +119,30 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
 
       if (response.ok) {
         const data = await response.json();
-        setPlacedOrder(data);
+        const fullOrder = {
+          ...data,
+          orderNumber: data?.orderNumber || data?._id || `ORD-${Date.now()}`,
+          customerName: name,
+          customerEmail: email,
+          customerPhone: mobile,
+          deliveryAddress: `${address}, ${city}, ${state}`,
+          state,
+          district: city,
+          items: cartItems.map(({ product, qty }) => ({
+            productName: product.name,
+            quantity: qty,
+            price: product.discountPrice,
+            originalPrice: product.actualPrice || product.price,
+            hasDiscount: product.hasDiscount,
+            netRate: product.netRate,
+            displayNetRate: product.displayNetRate,
+            unit: product.unit || 'Box'
+          })),
+          subtotal,
+          packingCharge,
+          total
+        };
+        setPlacedOrder(fullOrder);
         setStep('success');
         // Clear items from cart
         cartItems.forEach(({ product }) => onRemove(product.id));
@@ -218,25 +243,19 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
 
             {isMinMet && (
               <div className="px-5 py-2.5 bg-[#FEF9E1] border-b border-[#B69F4C] flex items-center gap-2">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#15803D" strokeWidth="2.5" strokeLinecap="round">
-                  <polyline points="20 6 9 17 4 12"/>
-                </svg>
-                <span className="text-xs font-extrabold text-[#15803D]">Minimum order met for {state}! Ready to checkout</span>
+                <span className="text-emerald-700 text-sm">✓</span>
+                <span className="text-xs font-bold text-[#14532D]">Minimum order value requirement met!</span>
               </div>
             )}
 
-            {/* Items List */}
-            <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
+            {/* Item list */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-3">
               {cartItems.length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-full gap-4 py-16">
-                  <div className="w-20 h-20 rounded-full bg-[#FEF9E1] border-2 border-[#B69F4C] flex items-center justify-center text-[#14532D]">
-                    <svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="currentColor" strokeWidth="1.5">
-                      <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/>
-                      <line x1="3" y1="6" x2="21" y2="6"/>
-                      <path d="M16 10a4 4 0 01-8 0"/>
-                    </svg>
+                <div className="h-full flex flex-col items-center justify-center text-center p-8">
+                  <div className="w-20 h-20 rounded-full bg-[#FEF9E1] border border-[#B69F4C] flex items-center justify-center text-3xl mb-3">
+                    🛒
                   </div>
-                  <div className="text-center">
+                  <div>
                     <p className="font-bold text-[#15803D]">Your cart is empty</p>
                     <p className="text-[#14532D] text-sm mt-1">Add crackers to get started</p>
                   </div>
@@ -247,12 +266,13 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                     key={product.id}
                     className="bg-[#FEF9E1] rounded-2xl p-3.5 shadow-sm border border-[#B69F4C] flex gap-3 items-start animate-fade-in"
                   >
-                    <div className="w-12 h-12 rounded-xl bg-[#FDF5CB] border border-[#B69F4C] flex items-center justify-center flex-shrink-0 text-xl overflow-hidden">
-                      {product.imageUrl ? (
-                        <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover" />
-                      ) : (
-                        <span>🎆</span>
-                      )}
+                    <div className="w-16 h-16 rounded-xl bg-white border border-[#B69F4C] p-1 flex items-center justify-center flex-shrink-0 overflow-hidden shadow-inner">
+                      <ProductImage 
+                        src={product.imageUrl || product.image} 
+                        type={product.imageType} 
+                        alt={product.name} 
+                        className="w-full h-full object-cover rounded-lg"
+                      />
                     </div>
 
                     <div className="flex-1 min-w-0">
@@ -507,13 +527,34 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
             <p className="text-xs text-slate-600 leading-relaxed max-w-xs">
               Thank you, <strong>{name}</strong>! Your order/enquiry for delivery to <strong>{city}, {state}</strong> has been recorded. Our team will contact you at <strong>{mobile}</strong> shortly to confirm availability and dispatch details.
             </p>
+
+            {/* PDF Bill Action Buttons */}
+            {placedOrder && (
+              <div className="w-full space-y-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => downloadOrderReceiptPDF(placedOrder)}
+                  className="w-full h-11 bg-[#900000] hover:bg-red-800 text-white rounded-xl font-bold text-xs shadow-sm flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer"
+                >
+                  📄 Download PDF Estimate / Bill
+                </button>
+                <button
+                  type="button"
+                  onClick={() => printOrderReceipt(placedOrder)}
+                  className="w-full h-10 bg-white hover:bg-slate-100 border border-slate-300 text-slate-800 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer"
+                >
+                  🖨️ Print Receipt
+                </button>
+              </div>
+            )}
+
             <button
               type="button"
               onClick={() => {
                 onClose();
                 setStep('cart');
               }}
-              className="mt-4 w-full h-12 bg-[#15803D] hover:bg-emerald-700 text-white rounded-2xl font-bold text-sm shadow-md transition-all active:scale-95 cursor-pointer"
+              className="mt-2 w-full h-11 bg-[#15803D] hover:bg-emerald-700 text-white rounded-xl font-bold text-sm shadow-md transition-all active:scale-95 cursor-pointer"
             >
               Continue Browsing
             </button>
@@ -523,4 +564,3 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
     </>
   );
 };
-

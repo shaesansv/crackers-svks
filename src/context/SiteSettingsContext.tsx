@@ -113,12 +113,22 @@ const SiteSettingsContext = createContext<SiteSettingsContextType | undefined>(u
 export const SiteSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [settings, setSettings] = useState<SiteSettings>(defaultSettings);
 
+  useEffect(() => {
+    try {
+      localStorage.setItem('site_settings', JSON.stringify(settings));
+    } catch {}
+  }, [settings]);
+
   const fetchSettings = async () => {
     try {
       const response = await fetch('http://localhost:5000/api/settings/public/info');
       if (response.ok) {
         const data = await response.json();
-        setSettings(prev => ({ ...prev, ...data }));
+        setSettings(prev => {
+          const updated = { ...prev, ...data };
+          try { localStorage.setItem('site_settings', JSON.stringify(updated)); } catch {}
+          return updated;
+        });
       }
     } catch (err) {
       console.log('Failed to fetch site settings', err);
@@ -135,7 +145,11 @@ export const SiteSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ 
         });
         if (response.ok) {
           const data = await response.json();
-          setSettings(prev => ({ ...prev, ...data }));
+          setSettings(prev => {
+            const updated = { ...prev, ...data };
+            try { localStorage.setItem('site_settings', JSON.stringify(updated)); } catch {}
+            return updated;
+          });
         }
       } catch (err: any) {
         // AbortError is expected on unmount — not a real error
@@ -154,6 +168,7 @@ export const SiteSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
   const updateSettings = async (newSettings: SiteSettings) => {
     setSettings(newSettings);
+    try { localStorage.setItem('site_settings', JSON.stringify(newSettings)); } catch {}
   };
 
   return (

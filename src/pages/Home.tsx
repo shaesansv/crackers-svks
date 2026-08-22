@@ -157,29 +157,25 @@ export const Home: React.FC<HomeProps> = ({
 
       {/* 1. HERO SECTION */}
       <section className="relative w-full overflow-hidden bg-bg-light">
-        {/* Animated Background */}
-        <div className="absolute inset-0 z-0 opacity-50"
-             style={{
-               backgroundImage: `radial-gradient(circle at center, rgba(243,199,64,0.15) 0%, rgba(5,26,14,1) 70%)`
-             }}></div>
-        <div className="absolute inset-0 z-10 pointer-events-none">
+        {/* Neat & Clean Sky Shot Fireworks Layer (Front of Screen) */}
+        <div className="absolute inset-0 z-30 pointer-events-none">
           <Fireworks
             options={{
-              rocketsPoint: { min: 0, max: 100 },
-              hue: { min: 10, max: 50 },
-              delay: { min: 40, max: 80 },
+              rocketsPoint: { min: 15, max: 85 },
+              hue: { min: 0, max: 360 },
+              delay: { min: 30, max: 60 },
               acceleration: 1.05,
               friction: 0.96,
-              gravity: 1.2,
-              particles: 120,
+              gravity: 1.1,
+              particles: 90,
               traceLength: 4,
               traceSpeed: 5,
               explosion: 6,
-              intensity: 15,
-              flickering: 40,
+              intensity: 8,
+              flickering: 30,
               lineStyle: 'round',
-              brightness: { min: 60, max: 90 },
-              decay: { min: 0.01, max: 0.02 },
+              brightness: { min: 80, max: 100 },
+              decay: { min: 0.012, max: 0.025 },
               mouse: { click: false, move: false, max: 1 }
             }}
             style={{ width: '100%', height: '100%' }}
@@ -197,16 +193,16 @@ export const Home: React.FC<HomeProps> = ({
           </div>
 
           {/* Quick CTA Action buttons below banner */}
-          <div className="py-4 sm:py-8 px-4 flex flex-wrap justify-center gap-2 sm:gap-4 animate-slide-up">
+          <div className="py-4 sm:py-8 px-4 flex flex-wrap justify-center gap-2 sm:gap-4">
             <button 
               onClick={() => document.getElementById('shop')?.scrollIntoView({behavior: 'smooth'})} 
-              className="btn-premium bg-primary-blue text-white px-5 py-2.5 sm:px-10 sm:py-4 rounded-full font-extrabold text-xs sm:text-lg shadow-md hover:shadow-lg transition-all transform hover:-translate-y-1 uppercase tracking-wider"
+              className="bg-primary-blue text-white px-5 py-2.5 sm:px-10 sm:py-4 rounded-full font-extrabold text-xs sm:text-lg shadow-md hover:bg-primary-hover transition-colors uppercase tracking-wider cursor-pointer"
             >
               SHOP NOW
             </button>
             <button 
               onClick={() => document.getElementById('categories')?.scrollIntoView({behavior: 'smooth'})} 
-              className="bg-white border-2 border-primary-blue text-text-primary px-5 py-2.5 sm:px-10 sm:py-4 rounded-full font-bold text-xs sm:text-lg hover:bg-primary-blue hover:text-white transition-all transform hover:-translate-y-1 uppercase tracking-wider shadow-sm"
+              className="bg-white border-2 border-primary-blue text-text-primary px-5 py-2.5 sm:px-10 sm:py-4 rounded-full font-bold text-xs sm:text-lg hover:bg-primary-blue hover:text-white transition-colors uppercase tracking-wider shadow-sm cursor-pointer"
             >
               EXPLORE COLLECTION
             </button>
@@ -238,9 +234,9 @@ export const Home: React.FC<HomeProps> = ({
                       document.getElementById('shop')?.scrollIntoView({ behavior: 'smooth' });
                     }
                   }}
-                  className="bg-white border border-border-gray rounded-xl sm:rounded-2xl p-2.5 sm:p-4 cursor-pointer group hover:border-primary-blue transition-all duration-300 hover:shadow-md hover:-translate-y-1 relative overflow-hidden flex flex-col items-center"
+                  className="bg-white border border-border-gray rounded-lg sm:rounded-2xl p-2 sm:p-4 cursor-pointer group hover:border-primary-blue transition-all duration-300 hover:shadow-md hover:-translate-y-1 relative overflow-hidden flex flex-col items-center"
                 >
-                  <div className="w-full aspect-video bg-section-bg rounded-lg sm:rounded-xl mb-2 sm:mb-4 overflow-hidden relative border border-border-gray/30 flex items-center justify-center">
+                  <div className="w-full aspect-video bg-section-bg rounded-md sm:rounded-xl mb-1.5 sm:mb-4 overflow-hidden relative border border-border-gray/30 flex items-center justify-center">
                     <ProductImage 
                       src={catImage} 
                       type={imageType} 
@@ -248,7 +244,7 @@ export const Home: React.FC<HomeProps> = ({
                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                     />
                   </div>
-                  <h3 className="font-bold text-center text-xs sm:text-base text-text-primary group-hover:text-primary-blue transition-colors relative z-20">
+                  <h3 className="font-bold text-center text-[11px] sm:text-base text-text-primary group-hover:text-primary-blue transition-colors relative z-20 leading-tight">
                     {cat.name.replace(' (80% DISCOUNT)', '')}
                   </h3>
                 </div>
@@ -313,11 +309,11 @@ export const Home: React.FC<HomeProps> = ({
           <div className="flex flex-col">
             {filteredCategories.length > 0 ? (
               filteredCategories.map((category) => (
-                <div key={category.id} id={`category-${category.id}`} className="mb-6 md:mb-10 scroll-mt-20">
-                  <div className="bg-[#9E0B0F] md:bg-section-bg text-white md:text-text-primary px-4 py-2.5 md:py-3.5 rounded-xl md:rounded-t-[20px] shadow-sm relative overflow-hidden flex items-center mb-2 md:mb-0">
+                <div key={category.id} id={`category-${category.id}`} className="mb-6 md:mb-10 scroll-mt-36">
+                  <div className="sticky top-[104px] md:top-[88px] z-30 bg-[#9E0B0F] md:bg-section-bg text-white md:text-text-primary px-3 py-1.5 md:px-4 md:py-3 rounded-lg md:rounded-t-[20px] shadow-md relative overflow-hidden flex items-center mb-1.5 md:mb-0 border-b border-red-800/40 md:border-transparent">
                     <div className="hidden md:block absolute left-0 top-0 bottom-0 w-1 bg-primary-blue"></div>
-                    <span className="md:hidden text-white font-bold text-lg mr-2 leading-none">•</span>
-                    <h2 className="text-sm md:text-sm font-extrabold uppercase tracking-wider text-white md:text-white md:bg-primary-blue md:px-3.5 md:py-1.5 md:rounded-lg md:shadow-sm">
+                    <span className="md:hidden text-white font-bold text-xs mr-1.5 leading-none">•</span>
+                    <h2 className="text-xs md:text-sm font-extrabold uppercase tracking-wider text-white md:text-white md:bg-primary-blue md:px-3.5 md:py-1.5 md:rounded-lg md:shadow-sm">
                       {category.name.replace(' (80% DISCOUNT)', '')}
                     </h2>
                   </div>
@@ -622,7 +618,10 @@ export const Home: React.FC<HomeProps> = ({
         <div className="relative z-10 max-w-3xl mx-auto">
           <h2 className="text-2xl sm:text-4xl md:text-5xl font-extrabold text-text-primary mb-3 uppercase tracking-tight">Ready to light up your celebration?</h2>
           <p className="text-xs sm:text-base text-text-secondary mb-6">Discover premium crackers from Sivakasi and make your celebration unforgettable.</p>
-          <button onClick={() => document.getElementById('shop')?.scrollIntoView({behavior: 'smooth'})} className="btn-premium bg-primary-blue text-white px-6 py-3 sm:px-10 sm:py-4 rounded-full font-extrabold text-sm sm:text-lg shadow-md hover:shadow-lg transition-all transform hover:-translate-y-1 uppercase tracking-wider">
+          <button 
+            onClick={() => document.getElementById('shop')?.scrollIntoView({behavior: 'smooth'})} 
+            className="bg-primary-blue text-white px-6 py-3 sm:px-10 sm:py-4 rounded-full font-extrabold text-sm sm:text-lg shadow-md hover:bg-primary-hover transition-colors uppercase tracking-wider cursor-pointer"
+          >
             SHOP NOW
           </button>
         </div>

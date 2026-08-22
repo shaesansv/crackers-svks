@@ -1,4 +1,4 @@
-import { DollarSign, TrendingUp, PackageSearch, Activity, FileText } from "lucide-react";
+import { IndianRupee, TrendingUp, PackageSearch, Activity, FileText } from "lucide-react";
 import AdminSidebar from "@/components/layout/AdminSidebar";
 import AdminNavbar from "@/components/layout/AdminNavbar";
 import { useEffect, useState, useMemo } from "react";
@@ -122,7 +122,7 @@ const AdminReports = () => {
                   <div className="flex items-center justify-between mb-3">
                     <span className="font-semibold text-muted-foreground">Total Revenue</span>
                     <div className="p-2 bg-green-500/20 rounded-lg text-green-500">
-                      <DollarSign className="h-5 w-5" />
+                      <IndianRupee className="h-5 w-5" />
                     </div>
                   </div>
                   <p className="text-2xl font-bold">{fmtCurrency(totalRevenue)}</p>
