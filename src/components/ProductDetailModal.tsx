@@ -77,7 +77,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
   return (
     <>
       <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-        <DialogContent className="max-w-3xl p-0 overflow-hidden bg-white text-slate-900 border border-slate-200 shadow-2xl rounded-2xl [&>button]:text-slate-500 [&>button]:hover:text-slate-900 [&>button]:bg-slate-100/90 [&>button]:hover:bg-slate-200 [&>button]:p-2 [&>button]:rounded-full [&>button]:top-4 [&>button]:right-4 z-50">
+        <DialogContent className="max-w-3xl p-0 overflow-hidden bg-white text-slate-900 border border-slate-200 shadow-2xl rounded-2xl [&>button]:text-slate-500 [&>button]:hover:text-slate-900 [&>button]:bg-slate-100/90 [&>button]:hover:bg-slate-200 [&>button]:p-2 [&>button]:rounded-full [&>button]:top-4 [&>button]:right-4 z-[110] opacity-100">
           {/* Header Banner */}
           <div className="bg-slate-50 px-5 sm:px-6 py-4 flex items-center justify-between border-b border-slate-200">
             <div className="flex items-center gap-3 pr-8">
@@ -97,7 +97,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
           </div>
 
           {/* Content Body */}
-          <div className="p-4 sm:p-6 grid grid-cols-1 md:grid-cols-2 gap-6 bg-white text-slate-900 max-h-[82vh] overflow-y-auto">
+          <div className="p-4 sm:p-6 grid grid-cols-1 md:grid-cols-2 gap-6 bg-white text-slate-900 max-h-[80vh] overflow-y-auto overscroll-contain touch-pan-y relative z-[111]">
             {/* Left Column: Image Preview with Click-To-Enlarge */}
             <div className="flex flex-col items-center gap-3">
               <div 
@@ -315,7 +315,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
 
       {/* Full-Screen Ultra-HD Image Lightbox */}
       <Dialog open={isLightboxOpen} onOpenChange={(open) => !open && setIsLightboxOpen(false)}>
-        <DialogContent className="max-w-5xl w-[95vw] h-[90vh] p-0 bg-black/95 border border-zinc-800 shadow-2xl rounded-2xl flex flex-col overflow-hidden text-white z-[70] [&>button]:text-white [&>button]:hover:text-primary-blue [&>button]:bg-black/70 [&>button]:p-2 [&>button]:rounded-full [&>button]:top-4 [&>button]:right-4">
+        <DialogContent className="max-w-5xl w-[95vw] h-[90vh] p-0 bg-black/95 border border-zinc-800 shadow-2xl rounded-2xl flex flex-col overflow-hidden text-white z-[250] [&>button]:text-white [&>button]:hover:text-primary-blue [&>button]:bg-black/70 [&>button]:p-2 [&>button]:rounded-full [&>button]:top-4 [&>button]:right-4">
           {/* Lightbox Header Bar */}
           <div className="flex items-center justify-between px-6 py-3.5 bg-black/80 backdrop-blur-md border-b border-zinc-800 z-20">
             <div className="flex items-center gap-3">
