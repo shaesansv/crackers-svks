@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { API_BASE_URL } from '../lib/api';
 
 interface Settings {
   minOrderValue?: number;
@@ -19,7 +20,7 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   const refreshSettings = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/settings/public/info');
+      const response = await fetch(`${API_BASE_URL}/api/settings/public/info`);
       if (response.ok) {
         const data = await response.json();
         setSettings({
@@ -39,7 +40,7 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
     const fetchWithAbort = async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/settings/public/info', {
+        const response = await fetch(`${API_BASE_URL}/api/settings/public/info`, {
           signal: controller.signal,
         });
         if (response.ok) {

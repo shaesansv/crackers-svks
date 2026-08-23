@@ -4,6 +4,7 @@ import { INDIAN_STATES_AND_DISTRICTS } from '../data/indianStatesAndDistricts';
 import { loadCustomerDetails, saveCustomerDetails } from '../utils/cookieSessionUtils';
 import { downloadOrderReceiptPDF, printOrderReceipt } from '../lib/pdf-generator';
 import { ProductImage } from './ProductImage';
+import { API_BASE_URL } from '../lib/api';
 
 interface CartItem {
   product: Product;
@@ -100,7 +101,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
         price: product.discountPrice
       }));
 
-      const response = await fetch('http://localhost:5000/api/orders', {
+      const response = await fetch(`${API_BASE_URL}/api/orders`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

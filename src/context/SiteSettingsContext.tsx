@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { API_BASE_URL } from '../lib/api';
 
 export interface SiteSettings {
   siteName: string;
@@ -121,7 +122,7 @@ export const SiteSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
   const fetchSettings = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/settings/public/info');
+      const response = await fetch(`${API_BASE_URL}/api/settings/public/info`);
       if (response.ok) {
         const data = await response.json();
         setSettings(prev => {
@@ -140,7 +141,7 @@ export const SiteSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
     const fetchWithAbort = async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/settings/public/info', {
+        const response = await fetch(`${API_BASE_URL}/api/settings/public/info`, {
           signal: controller.signal,
         });
         if (response.ok) {

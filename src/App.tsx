@@ -17,6 +17,7 @@ import { SiteSettingsProvider } from './context/SiteSettingsContext';
 import { SettingsProvider } from './context/SettingsContext';
 import { Toaster } from 'sonner';
 import { loadCartData, saveCartData, saveActivePage, loadActivePage } from './utils/cookieSessionUtils';
+import { API_BASE_URL } from './lib/api';
 
 // Admin imports
 import AdminLogin from './pages/admin/AdminLogin';
@@ -59,7 +60,7 @@ function AppContent() {
   } | null>(null);
   const fetchSettings = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/settings/public/info');
+      const response = await fetch(`${API_BASE_URL}/api/settings/public/info`);
       if (response.ok) {
         const settingsData = await response.json();
         setSettings({
@@ -80,7 +81,7 @@ function AppContent() {
       // Fetch settings FIRST so we have global discount % before mapping products
       const discPct = await fetchSettings();
 
-      const catResponse = await fetch('http://localhost:5000/api/categories?limit=1000');
+      const catResponse = await fetch(`${API_BASE_URL}/api/categories?limit=1000`);
       let categoriesData: Category[] = [];
       if (catResponse.ok) {
         const catsJson = await catResponse.json();
@@ -91,7 +92,7 @@ function AppContent() {
         }));
       }
 
-      const prodResponse = await fetch('http://localhost:5000/api/products?limit=1000');
+      const prodResponse = await fetch(`${API_BASE_URL}/api/products?limit=1000`);
       let productsData: Product[] = [];
       if (prodResponse.ok) {
         const resJson = await prodResponse.json();
