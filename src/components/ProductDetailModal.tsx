@@ -77,26 +77,27 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
   return (
     <>
       <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-        <DialogContent className="max-w-3xl p-0 overflow-hidden bg-white dark:bg-[#0D1628] border border-border-gray shadow-2xl rounded-2xl [&>button]:text-white [&>button]:hover:text-primary-blue [&>button]:top-5 [&>button]:right-5 z-50">
+        <DialogContent className="max-w-3xl p-0 overflow-hidden bg-slate-950 text-slate-50 border border-slate-800 shadow-2xl rounded-2xl [&>button]:text-slate-300 [&>button]:hover:text-white [&>button]:bg-slate-800/80 [&>button]:p-2 [&>button]:rounded-full [&>button]:top-4 [&>button]:right-4 z-50">
           {/* Header Banner */}
-          <div className="bg-gradient-to-r from-[#070D1A] via-[#111C30] to-[#0D1628] px-6 py-4 flex items-center justify-between text-white border-b border-border-gray">
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-full bg-primary-blue/15 flex items-center justify-center text-primary-blue font-bold text-lg">
+          <div className="bg-gradient-to-r from-slate-900 via-slate-850 to-slate-900 px-5 sm:px-6 py-4 flex items-center justify-between border-b border-slate-800">
+            <div className="flex items-center gap-3 pr-8">
+              <div className="w-10 h-10 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 font-bold text-xl shrink-0">
                 ✨
               </div>
               <div>
-                <DialogTitle className="text-white text-lg font-bold flex items-center gap-2">
+                <DialogTitle className="text-slate-50 text-lg sm:text-xl font-extrabold tracking-tight">
                   {product.name}
                 </DialogTitle>
-                <DialogDescription className="text-gray-400 text-xs mt-0.5 font-mono">
-                  Code: {productCode} {categoryName ? `• ${categoryName}` : ""}
+                <DialogDescription className="text-slate-400 text-xs mt-0.5 font-mono flex items-center gap-2">
+                  <span>Code: {productCode}</span>
+                  {categoryName && <span>• Category: {categoryName}</span>}
                 </DialogDescription>
               </div>
             </div>
           </div>
 
           {/* Content Body */}
-          <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6 bg-[#070D1A] text-white max-h-[80vh] overflow-y-auto">
+          <div className="p-4 sm:p-6 grid grid-cols-1 md:grid-cols-2 gap-6 bg-slate-950 text-slate-100 max-h-[82vh] overflow-y-auto">
             {/* Left Column: Image Preview with Click-To-Enlarge */}
             <div className="flex flex-col items-center gap-3">
               <div 
@@ -104,7 +105,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                   setZoomLevel(1.5);
                   setIsLightboxOpen(true);
                 }}
-                className="relative w-full h-[320px] md:h-[380px] rounded-2xl overflow-hidden border border-border-gray bg-gradient-to-b from-[#111C30] to-[#0D1628] shadow-xl group cursor-zoom-in flex items-center justify-center p-4 transition-all duration-300 hover:border-primary-blue/60"
+                className="relative w-full h-[280px] sm:h-[340px] md:h-[380px] rounded-2xl overflow-hidden border border-slate-800 bg-gradient-to-b from-slate-900 to-slate-950 shadow-xl group cursor-zoom-in flex items-center justify-center p-4 transition-all duration-300 hover:border-amber-500/40"
                 title="Click to view full ultra-HD enlarged image"
               >
                 <img
@@ -117,7 +118,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
 
                 {/* Hover overlay hint */}
                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
-                  <div className="bg-black/85 text-primary-blue text-xs font-bold px-4 py-2 rounded-full flex items-center gap-2 shadow-2xl border border-primary-blue/40 backdrop-blur-md">
+                  <div className="bg-slate-900/90 text-amber-400 text-xs font-bold px-4 py-2 rounded-full flex items-center gap-2 shadow-2xl border border-amber-500/40 backdrop-blur-md">
                     <Maximize2 className="w-4 h-4" />
                     <span>Click for Ultra HD Zoom</span>
                   </div>
@@ -126,141 +127,169 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                 {/* Status Badges Overlay */}
                 <div className="absolute top-3 left-3 flex flex-col gap-1.5 pointer-events-none">
                   {isOutOfStock ? (
-                    <span className="px-3 py-1 rounded-full bg-danger-red text-white text-xs font-bold shadow-md flex items-center gap-1">
+                    <span className="px-3 py-1 rounded-full bg-red-600 text-white text-xs font-extrabold shadow-md flex items-center gap-1">
                       <AlertCircle className="w-3.5 h-3.5" /> Out of Stock
                     </span>
                   ) : isDisplayNetRate ? (
-                    <span className="px-3 py-1 rounded-full bg-primary-blue text-[#070D1A] text-xs font-extrabold shadow-md">
-                      ⚡ Net Rate
+                    <span className="px-3 py-1 rounded-full bg-cyan-500 text-slate-950 text-xs font-extrabold shadow-md">
+                      ⚡ Net Rate Product
                     </span>
                   ) : hasDiscount && discountPct > 0 ? (
-                    <span className="px-3 py-1 rounded-full bg-danger-red text-white text-xs font-bold shadow-md">
+                    <span className="px-3 py-1 rounded-full bg-rose-600 text-white text-xs font-extrabold shadow-md">
                       🔥 {discountPct}% OFF
                     </span>
                   ) : (
-                    <span className="px-3 py-1 rounded-full bg-success-green text-white text-xs font-bold shadow-md">
+                    <span className="px-3 py-1 rounded-full bg-emerald-600 text-white text-xs font-extrabold shadow-md">
                       ✓ In Stock
                     </span>
                   )}
                 </div>
 
-                <div className="absolute bottom-3 right-3 bg-black/75 backdrop-blur-md text-gray-300 text-[11px] font-mono px-2.5 py-1 rounded-lg border border-white/10 flex items-center gap-1">
-                  <Maximize2 className="w-3 h-3 text-primary-blue" /> Full Screen
+                <div className="absolute bottom-3 right-3 bg-black/80 backdrop-blur-md text-slate-300 text-[11px] font-mono px-2.5 py-1 rounded-lg border border-white/10 flex items-center gap-1">
+                  <Maximize2 className="w-3 h-3 text-amber-400" /> Full Screen
                 </div>
               </div>
 
               {/* Quick Specs Badges */}
               <div className="flex flex-wrap gap-2 w-full justify-center">
-                <Badge variant="outline" className="text-xs bg-[#111C30] border-border-gray text-gray-300 font-mono">
+                <Badge variant="outline" className="text-xs bg-slate-900 border-slate-800 text-slate-300 font-mono">
                   Code: {productCode}
                 </Badge>
                 {categoryName && (
-                  <Badge variant="outline" className="text-xs bg-[#111C30] text-primary-blue border-primary-blue/30">
+                  <Badge variant="outline" className="text-xs bg-slate-900 text-cyan-400 border-cyan-500/30 font-medium">
                     📁 {categoryName}
                   </Badge>
                 )}
                 {product.brand && (
-                  <Badge variant="outline" className="text-xs bg-[#111C30] text-purple-400 border-purple-500/30">
+                  <Badge variant="outline" className="text-xs bg-slate-900 text-purple-400 border-purple-500/30 font-medium">
                     🏷️ {product.brand}
                   </Badge>
                 )}
               </div>
             </div>
 
-            {/* Right Column: Detailed Product Info */}
+            {/* Right Column: Detailed Product Info & Description */}
             <div className="flex flex-col justify-between space-y-4">
-              <div className="space-y-3">
+              <div className="space-y-4">
                 <div>
-                  <h2 className="text-2xl font-extrabold text-white leading-tight font-sans">
+                  <h2 className="text-2xl sm:text-3xl font-black text-white leading-tight font-sans tracking-tight">
                     {product.name}
                   </h2>
                   {product.unit && (
-                    <p className="text-xs text-gray-400 mt-1">
-                      Packaging / Unit: <span className="font-semibold text-gray-200">{product.unit}</span>
+                    <p className="text-xs text-slate-400 mt-1">
+                      Packaging / Unit: <span className="font-semibold text-slate-200">{product.unit}</span>
                     </p>
                   )}
                 </div>
 
                 {/* Price Card */}
-                <div className="bg-[#111C30] p-4 rounded-2xl border border-border-gray space-y-1">
-                  <div className="text-xs font-bold uppercase tracking-wider text-gray-400">
-                    Price Details
+                <div className="bg-slate-900 p-4 rounded-xl border border-slate-800 space-y-1.5 shadow-sm">
+                  <div className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400">
+                    Wholesale Price
                   </div>
-                  <div className="flex items-baseline gap-3">
-                    <span className="text-3xl font-extrabold text-primary-blue">
+                  <div className="flex items-baseline flex-wrap gap-3">
+                    <span className="text-3xl font-black text-amber-400 tracking-tight">
                       ₹{finalPrice.toFixed(2)}
                     </span>
                     {(hasDiscount || isDisplayNetRate) && rawPrice > finalPrice && (
-                      <span className="text-base line-through text-gray-500 font-medium">
+                      <span className="text-base line-through text-slate-500 font-semibold">
                         ₹{rawPrice.toFixed(2)}
                       </span>
                     )}
                     {hasDiscount && rawPrice > finalPrice && (
-                      <span className="text-xs font-bold text-success-green bg-success-green/10 border border-success-green/30 px-2.5 py-1 rounded-full">
+                      <span className="text-xs font-bold text-emerald-400 bg-emerald-500/15 border border-emerald-500/30 px-2.5 py-1 rounded-full">
                         Save ₹{(rawPrice - finalPrice).toFixed(2)}
                       </span>
                     )}
                   </div>
                   {isDisplayNetRate && (
-                    <p className="text-xs text-primary-blue font-medium pt-0.5">
-                      * Fixed Net Rate product (Direct Wholesale Price)
+                    <p className="text-xs text-cyan-400 font-semibold pt-0.5">
+                      ⚡ Fixed Net Rate Product (Direct Wholesale Price)
                     </p>
                   )}
                 </div>
 
-                {/* Description */}
-                <div className="space-y-1">
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-gray-400">
-                    Description
-                  </h4>
-                  <p className="text-sm text-gray-300 leading-relaxed bg-[#111C30]/50 p-3.5 rounded-xl border border-border-gray min-h-[60px]">
-                    {product.description || "High-quality premium cracker product from Sivakasi. Tested for safety and vibrant fireworks performance."}
-                  </p>
+                {/* Product Description Section - Prominent & Crystal Clear */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-xs font-extrabold uppercase tracking-wider text-amber-400 flex items-center gap-1.5">
+                      <span>📜</span> Product Description
+                    </h3>
+                    <span className="text-[11px] text-slate-400 font-medium">Customer Overview</span>
+                  </div>
+                  
+                  <div className="bg-slate-900/90 p-4 rounded-xl border border-slate-800 text-slate-100 text-sm leading-relaxed whitespace-pre-line shadow-inner min-h-[90px]">
+                    {product.description && product.description.trim() ? (
+                      product.description
+                    ) : (
+                      <div className="space-y-2 text-slate-200">
+                        <p className="font-medium text-slate-100">
+                          High-quality premium cracker product from Sivakasi. Tested for safety and vibrant fireworks performance.
+                        </p>
+                        <p className="text-xs text-slate-400 leading-normal">
+                          Crafted using high-grade pyrotechnic formulations to ensure brilliant visual effects, loud crisp sound output, and minimal residue. Perfect for festivals, weddings, and grand family celebrations.
+                        </p>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
-                {/* Stock Details */}
+                {/* Quality & Safety Highlights */}
                 <div className="grid grid-cols-2 gap-2 text-xs">
-                  <div className="bg-[#111C30] p-2.5 rounded-xl border border-border-gray flex items-center gap-2">
-                    <Package className="w-4 h-4 text-primary-blue" />
+                  <div className="bg-slate-900 p-3 rounded-xl border border-slate-800 flex items-center gap-2.5">
+                    <Package className="w-4 h-4 text-cyan-400 shrink-0" />
                     <div>
-                      <span className="text-gray-400 block text-[10px]">Shop Stock</span>
-                      <span className="font-bold text-white">
-                        {product.storeStockPieces !== undefined ? product.storeStockPieces : (product.stock || 0)} Pcs
+                      <span className="text-slate-400 block text-[10px] uppercase font-bold tracking-wider">Store Stock</span>
+                      <span className="font-extrabold text-white text-xs">
+                        {product.storeStockPieces !== undefined ? product.storeStockPieces : (product.stock || 0)} Pcs Available
                       </span>
                     </div>
                   </div>
-                  <div className="bg-[#111C30] p-2.5 rounded-xl border border-border-gray flex items-center gap-2">
-                    <Tag className="w-4 h-4 text-accent-orange" />
+                  <div className="bg-slate-900 p-3 rounded-xl border border-slate-800 flex items-center gap-2.5">
+                    <Tag className="w-4 h-4 text-amber-400 shrink-0" />
                     <div>
-                      <span className="text-gray-400 block text-[10px]">Case Packaging</span>
-                      <span className="font-bold text-white">
-                        {product.piecesPerCase || 1} Pcs/Case
+                      <span className="text-slate-400 block text-[10px] uppercase font-bold tracking-wider">Case Packaging</span>
+                      <span className="font-extrabold text-white text-xs">
+                        {product.piecesPerCase || 1} Pcs / Box
                       </span>
                     </div>
                   </div>
+                </div>
+
+                {/* Feature Badges Bar */}
+                <div className="bg-slate-900/60 p-3 rounded-xl border border-slate-800/80 flex flex-wrap items-center justify-around gap-2 text-[11px] font-medium">
+                  <span className="flex items-center gap-1 text-emerald-400">
+                    ✓ Authentic Sivakasi Made
+                  </span>
+                  <span className="flex items-center gap-1 text-cyan-400">
+                    ✓ Safety Standard Verified
+                  </span>
+                  <span className="flex items-center gap-1 text-amber-400">
+                    ✓ Direct Factory Wholesale
+                  </span>
                 </div>
               </div>
 
               {/* Action Buttons */}
               {onAddToCart && (
-                <div className="pt-2 border-t border-border-gray space-y-3">
+                <div className="pt-2 border-t border-slate-800 space-y-3">
                   {!isOutOfStock && (
-                    <div className="flex items-center justify-between bg-[#111C30] p-2.5 rounded-xl border border-border-gray">
-                      <span className="text-xs font-bold text-gray-300 pl-2">Select Quantity:</span>
+                    <div className="flex items-center justify-between bg-slate-900 p-2.5 rounded-xl border border-slate-800">
+                      <span className="text-xs font-bold text-slate-300 pl-2">Select Quantity:</span>
                       <div className="flex items-center gap-2">
                         <Button
                           size="icon"
                           variant="outline"
-                          className="h-8 w-8 rounded-lg bg-[#070D1A] border-border-gray text-white hover:bg-primary-blue/20"
+                          className="h-8 w-8 rounded-lg bg-slate-950 border-slate-800 text-white hover:bg-amber-500/20"
                           onClick={() => setQuantity((q) => Math.max(1, q - 1))}
                         >
                           <Minus className="h-3.5 w-3.5" />
                         </Button>
-                        <span className="w-8 text-center font-bold text-sm text-white">{quantity}</span>
+                        <span className="w-8 text-center font-extrabold text-sm text-white">{quantity}</span>
                         <Button
                           size="icon"
                           variant="outline"
-                          className="h-8 w-8 rounded-lg bg-[#070D1A] border-border-gray text-white hover:bg-primary-blue/20"
+                          className="h-8 w-8 rounded-lg bg-slate-950 border-slate-800 text-white hover:bg-amber-500/20"
                           onClick={() => setQuantity((q) => q + 1)}
                         >
                           <Plus className="h-3.5 w-3.5" />
@@ -272,7 +301,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                   <Button
                     onClick={handleAdd}
                     disabled={isOutOfStock}
-                    className="w-full bg-primary-blue hover:bg-primary-hover text-[#070D1A] font-extrabold py-6 text-base shadow-lg hover:shadow-xl transition-all rounded-xl flex items-center justify-center gap-2 cursor-pointer"
+                    className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-black py-6 text-base shadow-xl hover:shadow-2xl transition-all rounded-xl flex items-center justify-center gap-2 cursor-pointer"
                   >
                     <ShoppingCart className="w-5 h-5" />
                     {isOutOfStock ? "Out of Stock" : `Add to Cart • ₹${(finalPrice * quantity).toFixed(2)}`}
