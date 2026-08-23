@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import path from 'path';
+import fs from 'fs';
 import { fileURLToPath } from 'url';
 import productsRouter from './routes/products.js';
 import categoriesRouter from './routes/categories.js';
@@ -82,7 +83,11 @@ app.get('/api/health', (req, res) => {
 });
 
 app.use('/uploads', express.static(path.join(__dirname, 'public', 'uploads')));
-app.use(express.static(path.join(__dirname, '../dist')));
+
+const distPath = path.join(__dirname, '../dist');
+if (fs.existsSync(distPath)) {
+  app.use(express.static(distPath));
+}
 
 // Routes
 app.use('/api/auth', authRouter);
@@ -101,9 +106,22 @@ app.use('/api', (req, res) => {
   res.status(404).json({ error: 'API route not found' });
 });
 
-// For any other route, serve the frontend index.html (SPA routing)
+// Root route handler
+app.get('/', (req, res) => {
+  const indexPath = path.join(__dirname, '../dist', 'index.html');
+  if (fs.existsSync(indexPath)) {
+    return res.sendFile(indexPath);
+  }
+  res.json({ status: 'ok', message: 'Cracker Hub Backend API is running' });
+});
+
+// For any other route, serve the frontend index.html if present, else 404
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../dist', 'index.html'));
+  const indexPath = path.join(__dirname, '../dist', 'index.html');
+  if (fs.existsSync(indexPath)) {
+    return res.sendFile(indexPath);
+  }
+  res.status(404).json({ error: 'Route not found' });
 });
 
 // Error Handler (must be last)
