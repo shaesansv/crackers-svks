@@ -3,6 +3,7 @@ import AdminSidebar from "@/components/layout/AdminSidebar";
 import AdminNavbar from "@/components/layout/AdminNavbar";
 import { useEffect, useState } from "react";
 import { getProducts, getOrders } from "@/lib/api";
+import { formatImageUrl } from "@/components/ProductImage";
 import type { Product } from "@/data/products";
 import { Link } from "react-router-dom";
 
@@ -163,7 +164,7 @@ const Dashboard = () => {
               {topSelling.map((p, i) => (
                 <div key={p._id || p.id || i} className="flex items-center gap-3 py-2 border-b border-border last:border-0">
                   <span className="text-lg font-bold text-muted-foreground w-6">{i + 1}</span>
-                  <img src={p.image} alt={p.name} className="w-10 h-10 rounded object-cover" />
+                  <img src={formatImageUrl(p.image)} alt={p.name} className="w-10 h-10 rounded object-cover" />
                   <div className="flex-1 min-w-0">
                     <p className="font-semibold text-sm truncate">{p.name}</p>
                     <p className="text-xs text-muted-foreground">{p.soldCount} sold</p>
@@ -182,7 +183,7 @@ const Dashboard = () => {
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {lowStock.map((p, i) => (
                 <div key={p._id || p.id || i} className="flex items-center gap-3 p-3 rounded-lg bg-secondary/50 border border-border">
-                  <img src={p.image} alt={p.name} className="w-10 h-10 rounded object-cover" />
+                  <img src={formatImageUrl(p.image)} alt={p.name} className="w-10 h-10 rounded object-cover" />
                   <div className="flex-1 min-w-0">
                     <p className="font-semibold text-sm truncate">{p.name}</p>
                     <p className="text-xs text-accent font-bold">{p.storeStockPieces || 0} left in stock</p>

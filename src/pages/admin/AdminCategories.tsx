@@ -3,6 +3,7 @@ import { Plus, Pencil, Trash2, FolderTree, Loader2 } from "lucide-react";
 import AdminSidebar from "@/components/layout/AdminSidebar"; 
 import AdminNavbar from "@/components/layout/AdminNavbar"; 
 import { getCategories, getProducts, API_BASE_URL } from "@/lib/api";
+import { formatImageUrl } from "@/components/ProductImage";
 import type { Category } from "@/data/products";
 import { processAndResizeImage, CATEGORY_IMAGE_DIMENSIONS, type ProcessedImageResult } from "@/lib/imageUtils";
 import { useAuth } from "@/context/AuthContext";
@@ -322,7 +323,7 @@ const AdminCategories = () => {
                     <TableCell className="font-semibold">{cat.name}</TableCell>
                     <TableCell>{cat.productCount}</TableCell>
                     <TableCell>
-                      <img src={cat.image} alt={cat.name} className="w-16 h-10 rounded object-cover" />
+                      <img src={formatImageUrl(cat.image)} alt={cat.name} className="w-16 h-10 rounded object-cover" />
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">

@@ -3,6 +3,7 @@ import AdminSidebar from "@/components/layout/AdminSidebar";
 import AdminNavbar from "@/components/layout/AdminNavbar";
 import { useEffect, useState, useMemo } from "react";
 import { getProducts, getOrders } from "@/lib/api";
+import { formatImageUrl } from "@/components/ProductImage";
 import type { Product } from "@/data/products";
 
 const AdminReports = () => {
@@ -188,7 +189,7 @@ const AdminReports = () => {
                         <tr key={product._id || product.id} className="hover:bg-muted/20 transition-colors">
                           <td className="px-6 py-4">
                             <div className="flex items-center gap-3">
-                              <img src={product.image} alt={product.name} className="w-10 h-10 rounded-md object-cover border border-border" />
+                              <img src={formatImageUrl(product.image)} alt={product.name} className="w-10 h-10 rounded-md object-cover border border-border" />
                               <div>
                                 <p className="font-medium text-sm">{product.name}</p>
                                 <p className="text-xs text-muted-foreground">₹{product.price}</p>

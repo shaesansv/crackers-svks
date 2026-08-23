@@ -3,6 +3,7 @@ import { Plus, Pencil, Trash2, Search, Loader2 } from "lucide-react";
 import AdminSidebar from "@/components/layout/AdminSidebar";
 import AdminNavbar from "@/components/layout/AdminNavbar";
 import { getProducts, getCategories, API_BASE_URL } from "@/lib/api";
+import { formatImageUrl } from "@/components/ProductImage";
 import type { Product, Category } from "@/data/products";
 import { processAndResizeImage, PRODUCT_IMAGE_DIMENSIONS, type ProcessedImageResult } from "@/lib/imageUtils";
 import { ProductDetailModal } from "@/components/ProductDetailModal";
@@ -559,7 +560,7 @@ const AdminProducts = () => {
                           onClick={() => setViewingProduct(p)}
                           title="Click to view product expanded details"
                         >
-                          <img src={p.image} alt={p.name} className="w-10 h-10 rounded object-cover border border-gray-200" />
+                          <img src={formatImageUrl(p.image)} alt={p.name} className="w-10 h-10 rounded object-cover border border-gray-200" />
                           <div>
                             <p className="font-semibold group-hover:text-primary transition-colors flex items-center gap-1">
                               <span>{p.name}</span>

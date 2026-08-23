@@ -10,6 +10,12 @@ interface ProductImageProps {
 
 export const formatImageUrl = (url?: string) => {
   if (!url) return '';
+  
+  // Replace legacy or seeded localhost server URLs with the active API_BASE_URL
+  if (url.includes('localhost:5000') || url.includes('localhost:')) {
+    url = url.replace(/^https?:\/\/localhost:\d+/, API_BASE_URL);
+  }
+
   if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:')) {
     return url;
   }
