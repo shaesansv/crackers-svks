@@ -100,18 +100,6 @@ export function prepareOrderDataForPDF(rawOrder: any, siteSettings?: any): Order
     };
   });
 
-  const subtotal = Number(rawOrder.subtotal || rawOrder.totalAmount || 0);
-  const packingCharge = rawOrder.packingCharge !== undefined ? Number(rawOrder.packingCharge) : Math.round(subtotal * 0.03);
-  const total = Number(rawOrder.total || (subtotal + packingCharge));
-  const discountPct = Number(rawOrder.discountPercent || siteSettings?.discountPercent || 80);
-
-  // System date as bill date
-  const systemDate = new Date().toLocaleDateString('en-IN', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric'
-  });
-
   // Resolve site settings from argument or cached localStorage
   let settings = siteSettings;
   if (!settings) {
@@ -124,6 +112,19 @@ export function prepareOrderDataForPDF(rawOrder: any, siteSettings?: any): Order
       // Ignore JSON parse errors
     }
   }
+
+  const enablePackingCharge = settings?.enablePackingCharge !== undefined ? Boolean(settings.enablePackingCharge) : true;
+
+  const subtotal = Number(rawOrder.subtotal || rawOrder.totalAmount || 0);
+  const packingCharge = rawOrder.packingCharge !== undefined ? Number(rawOrder.packingCharge) : (enablePackingCharge ? Math.round(subtotal * 0.03) : 0);
+  const total = Number(rawOrder.total || rawOrder.overallTotal || (subtotal + packingCharge));
+  const discountPct = Number(rawOrder.discountPercent || settings?.discountPercent || 80);
+
+  const systemDate = new Date().toLocaleDateString('en-IN', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric'
+  });
 
   const compName = settings?.billing?.companyName || settings?.siteName || rawOrder.companyName || rawOrder.siteName || 'Sarguru Crackers';
   const compAddress = settings?.contact?.address || rawOrder.siteAddress || '3/1321 Paraipatti, Sivakasi, Tamil Nadu, India';
@@ -486,15 +487,6 @@ function generateReceiptHTML(order: OrderData, copies: number = 1): string {
     }
   });
 
-  const netAmount1 = grossRetailValue - totalDiscountAmount;
-  const netAmount2 = netAmount1 + totalNetRateAmount;
-  const packingCharge = order.packingCharge ?? (netAmount2 <= 3999 ? 120 : Math.round(netAmount2 * 0.03));
-  const packingPct = netAmount2 > 0 ? (netAmount2 <= 3999 ? "Flat" : Math.round((packingCharge / netAmount2) * 100).toString()) : "3";
-  const exactTotal = netAmount2 + packingCharge;
-  const grandTotal = Math.round(exactTotal);
-  const roundOffAmount = grandTotal - exactTotal;
-  const inWords = numberToWords(grandTotal);
-
   let cachedSettings: any = null;
   try {
     const rawSettings = localStorage.getItem('site_settings') || localStorage.getItem('siteSettings');
@@ -504,6 +496,19 @@ function generateReceiptHTML(order: OrderData, copies: number = 1): string {
   } catch (e) {
     // Ignore
   }
+
+  const enablePackingCharge = cachedSettings?.enablePackingCharge !== undefined ? Boolean(cachedSettings.enablePackingCharge) : true;
+
+  const netAmount1 = grossRetailValue - totalDiscountAmount;
+  const netAmount2 = netAmount1 + totalNetRateAmount;
+  const packingCharge = order.packingCharge !== undefined
+    ? Number(order.packingCharge)
+    : (enablePackingCharge ? (netAmount2 <= 3999 ? 120 : Math.round(netAmount2 * 0.03)) : 0);
+  const packingPct = netAmount2 > 0 ? (netAmount2 <= 3999 ? "Flat" : Math.round((packingCharge / netAmount2) * 100).toString()) : "3";
+  const exactTotal = netAmount2 + packingCharge;
+  const grandTotal = Math.round(exactTotal);
+  const roundOffAmount = grandTotal - exactTotal;
+  const inWords = numberToWords(grandTotal);
 
   const shopName = (cachedSettings?.billing?.companyName || cachedSettings?.siteName || order.companyName || order.siteName || 'SARGURU CRACKERS').toString().trim();
   const shopPhone = (cachedSettings?.billing?.phone || cachedSettings?.contact?.phone || order.sitePhone || '+91 78680 77818').toString().trim();
@@ -560,11 +565,13 @@ function generateReceiptHTML(order: OrderData, copies: number = 1): string {
               <span style="width: 5%; text-align: center;">:</span>
               <span style="width: 45%; text-align: right;">${formatAmt(netAmount2)}</span>
             </div>
+            ${enablePackingCharge && packingCharge > 0 ? `
             <div class="totals-row">
               <span style="width: 50%; color:#475569;">Packing <span style="display:inline-block; float:right; background:#f1f5f9; padding:0 4px; border-radius:3px;">${packingPct === "Flat" ? "Flat" : packingPct + "%"}</span></span>
               <span style="width: 5%; text-align: center;">:</span>
               <span style="width: 45%; text-align: right; font-weight:500;">${formatAmt(packingCharge)}</span>
             </div>
+            ` : ''}
             ${roundOffAmount !== 0 ? `
             <div class="totals-row">
               <span style="width: 50%; color:#475569;">Round Off</span>

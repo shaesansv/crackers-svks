@@ -1,7 +1,7 @@
 import AdminSidebar from "@/components/layout/AdminSidebar";
 import AdminNavbar from "@/components/layout/AdminNavbar";
 import { useEffect, useState } from "react";
-import { getOrders, approveOrder, updatePackingStatus } from "@/lib/api";
+import { getOrders, approveOrder, updatePackingStatus, updatePaymentStatus } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Link } from "react-router-dom";
@@ -42,6 +42,10 @@ const isHoldReady = (order: any): boolean => {
   return today >= holdUntil;
 };
 
+const isOrderPaid = (order: any): boolean => {
+  return order?.paymentStatus === 'paid' || order?.paymentStatus === 'completed';
+};
+
 const AdminOrders = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const ITEMS_PER_PAGE = 20;
@@ -49,6 +53,8 @@ const AdminOrders = () => {
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
   const [viewingProduct, setViewingProduct] = useState<any>(null);
   const [isApproving, setIsApproving] = useState(false);
+  const [isUpdatingPayment, setIsUpdatingPayment] = useState(false);
+  const [isUpdatingPacking, setIsUpdatingPacking] = useState(false);
   const { settings } = useSiteSettings();
 
   const downloadPDF = (order: any) => {
@@ -57,12 +63,8 @@ const AdminOrders = () => {
     toast.success("Downloading PDF...");
   };
   const [phoneFilter, setPhoneFilter] = useState("");
-  type StatusFilter = 'all' | 'approved' | 'packing' | 'hold';
+  type StatusFilter = 'all' | 'approved' | 'paid' | 'unpaid' | 'packing';
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
-  const [isUpdatingPacking, setIsUpdatingPacking] = useState(false);
-  useEffect(() => {
-  }, [selectedOrder]);
-
 
   useEffect(() => {
     getOrders().then(setOrderList).catch(() => setOrderList([]));
@@ -92,6 +94,31 @@ const AdminOrders = () => {
     }
   };
 
+  const handleTogglePaymentStatus = async () => {
+    if (!selectedOrder) return;
+
+    try {
+      setIsUpdatingPayment(true);
+      const isPaidCurrently = isOrderPaid(selectedOrder);
+      const newStatus = isPaidCurrently ? 'unpaid' : 'paid';
+      await updatePaymentStatus(selectedOrder._id, newStatus);
+
+      setOrderList((prev) =>
+        prev.map((o) =>
+          o._id === selectedOrder._id ? { ...o, paymentStatus: newStatus } : o
+        )
+      );
+
+      setSelectedOrder((prev: any) => ({ ...prev, paymentStatus: newStatus }));
+      toast.success(`Payment status marked as ${newStatus === 'paid' ? 'Paid' : 'Not Paid'}!`);
+    } catch (error) {
+      console.error("Error updating payment status:", error);
+      toast.error(error instanceof Error ? error.message : "Failed to update payment status");
+    } finally {
+      setIsUpdatingPayment(false);
+    }
+  };
+
   const handleTogglePackingStatus = async () => {
     if (!selectedOrder) return;
     
@@ -108,7 +135,7 @@ const AdminOrders = () => {
       );
       
       setSelectedOrder((prev: any) => ({ ...prev, packingStatus: newStatus }));
-      toast.success(`Order marked as ${newStatus}!`);
+      toast.success(`Order marked as ${newStatus === 'packed' ? 'Shipped' : 'Not Shipped'}!`);
     } catch (error) {
       console.error("Error updating packing status:", error);
       toast.error(error instanceof Error ? error.message : "Failed to update packing status");
@@ -124,30 +151,20 @@ const AdminOrders = () => {
   const tabCounts = {
     all: phoneFiltered.length,
     approved: phoneFiltered.filter((o) => o.approved).length,
+    paid: phoneFiltered.filter((o) => isOrderPaid(o)).length,
+    unpaid: phoneFiltered.filter((o) => !isOrderPaid(o)).length,
     packing: phoneFiltered.filter((o) => o.packingStatus === 'packed').length,
-    // Count any order where admin set hold days (> 0)
-    hold: phoneFiltered.filter((o) => o.holdDays && Number(o.holdDays) > 0).length,
   };
 
   const filteredOrders = phoneFiltered
     .filter((o) => {
       if (statusFilter === 'approved') return o.approved;
+      if (statusFilter === 'paid') return isOrderPaid(o);
+      if (statusFilter === 'unpaid') return !isOrderPaid(o);
       if (statusFilter === 'packing') return o.packingStatus === 'packed';
-      // Show any order where admin set hold days (> 0), active or expired
-      if (statusFilter === 'hold') return o.holdDays && Number(o.holdDays) > 0;
       return true;
     })
     .sort((a, b) => {
-      // Ready (expired) hold orders float to the absolute top
-      const aReady = isHoldReady(a) ? 1 : 0;
-      const bReady = isHoldReady(b) ? 1 : 0;
-      if (bReady !== aReady) return bReady - aReady;
-
-      // Active hold orders float to the top
-      const aOnHold = isOrderOnHold(a) ? 1 : 0;
-      const bOnHold = isOrderOnHold(b) ? 1 : 0;
-      if (bOnHold !== aOnHold) return bOnHold - aOnHold;
-      // Within the same group, newest first
       const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
       const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
       return dateB - dateA;
@@ -172,8 +189,9 @@ const AdminOrders = () => {
           {([
             { key: 'all',      label: 'All Orders',  icon: '📋', activeClass: 'bg-primary text-primary-foreground border-primary' },
             { key: 'approved', label: 'Approved',     icon: '✅', activeClass: 'bg-green-600 text-white border-green-600' },
+            { key: 'paid',     label: 'Paid',         icon: '💳', activeClass: 'bg-blue-600 text-white border-blue-600' },
+            { key: 'unpaid',   label: 'Not Paid',     icon: '⏳', activeClass: 'bg-rose-600 text-white border-rose-600' },
             { key: 'packing',  label: 'Shipped',      icon: '🚚', activeClass: 'bg-teal-600 text-white border-teal-600' },
-            { key: 'hold',     label: 'On Hold',      icon: '🔒', activeClass: 'bg-amber-500 text-white border-amber-500' },
           ] as { key: StatusFilter; label: string; icon: string; activeClass: string }[]).map(({ key, label, icon, activeClass }) => (
             <button
               key={key}
@@ -225,8 +243,9 @@ const AdminOrders = () => {
                   <th className="text-left p-3">Phone</th>
                   <th className="text-right p-3 hidden sm:table-cell">Items</th>
                   <th className="text-right p-3">Total</th>
-                  <th className="text-center p-3">Shipping</th>
                   <th className="text-center p-3">Approved</th>
+                  <th className="text-center p-3">Payment</th>
+                  <th className="text-center p-3">Shipping</th>
                   <th className="text-right p-3 hidden md:table-cell">Date</th>
                   <th className="text-right p-3">Actions</th>
                 </tr>
@@ -235,6 +254,7 @@ const AdminOrders = () => {
                 {paginatedData.map((o) => {
                   const onHold = isOrderOnHold(o);
                   const isReady = isHoldReady(o);
+                  const paid = isOrderPaid(o);
                   return (
                   <tr
                     key={o._id}
@@ -255,17 +275,6 @@ const AdminOrders = () => {
                     <td className="p-3 text-right hidden sm:table-cell">{o.items?.length || 0}</td>
                     <td className="p-3 text-right font-bold text-primary">₹{Number(o.subtotal) + (Number(o.packingCharge) || 0)}</td>
                     <td className="p-3 text-center">
-                      {o.packingStatus === 'packed' ? (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-teal-500 text-white shadow-sm">
-                          🚚 Shipped
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-gray-200 text-gray-600">
-                          ⏳ Not Shipped
-                        </span>
-                      )}
-                    </td>
-                    <td className="p-3 text-center">
                       {o.approved ? (
                         <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-green-500 text-white shadow-sm">
                           ✓ Approved
@@ -273,6 +282,28 @@ const AdminOrders = () => {
                       ) : (
                         <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-700 border border-amber-300">
                           ⏸ Pending
+                        </span>
+                      )}
+                    </td>
+                    <td className="p-3 text-center">
+                      {paid ? (
+                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-600 text-white shadow-sm">
+                          💳 Paid
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-rose-100 text-rose-700 border border-rose-300">
+                          ⏳ Not Paid
+                        </span>
+                      )}
+                    </td>
+                    <td className="p-3 text-center">
+                      {o.packingStatus === 'packed' ? (
+                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-teal-500 text-white shadow-sm">
+                          🚚 Shipped
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-gray-200 text-gray-600">
+                          📦 Not Shipped
                         </span>
                       )}
                     </td>
@@ -338,11 +369,12 @@ const AdminOrders = () => {
                     <h3 className="font-semibold text-sm mb-2">Order Summary</h3>
                     <div className="space-y-1 text-sm">
                       <p><strong>Subtotal:</strong> ₹{selectedOrder.subtotal}</p>
-                      <p><strong>Packing Charges (3%):</strong> ₹{selectedOrder.packingCharge || Math.round(Number(selectedOrder.subtotal) * 0.03)}</p>
+                      <p><strong>Packing Charges:</strong> ₹{selectedOrder.packingCharge ?? 0}</p>
                       <p className="text-green-600 text-xs italic"><strong>Delivery Charges:</strong> Excluded</p>
-                      <p className="font-bold"><strong>Total:</strong> ₹{Number(selectedOrder.subtotal) + (Number(selectedOrder.packingCharge) || Math.round(Number(selectedOrder.subtotal) * 0.03))}</p>
-                      <p><strong>Status:</strong> {selectedOrder.status}</p>
-                      <p><strong>Packing Status:</strong> {selectedOrder.packingStatus ? (selectedOrder.packingStatus === 'packed' ? '📦 Packed' : '🔹 Unpacked') : 'Not set'}</p>
+                      <p className="font-bold"><strong>Total:</strong> ₹{Number(selectedOrder.overallTotal || selectedOrder.total || (Number(selectedOrder.subtotal) + Number(selectedOrder.packingCharge || 0)))}</p>
+                      <p><strong>Approval Status:</strong> {selectedOrder.approved ? '✓ Approved' : '⏸ Pending'}</p>
+                      <p><strong>Payment Status:</strong> {isOrderPaid(selectedOrder) ? '💳 Paid' : '⏳ Not Paid'}</p>
+                      <p><strong>Shipping Status:</strong> {selectedOrder.packingStatus ? (selectedOrder.packingStatus === 'packed' ? '🚚 Shipped' : '📦 Not Shipped') : '📦 Not Shipped'}</p>
                     </div>
                   </div>
                 </div>
@@ -409,7 +441,7 @@ const AdminOrders = () => {
                   </div>
                 </div>
 
-                <div className="flex gap-2 pt-4">
+                <div className="flex flex-wrap gap-2 pt-4">
                   <Button
                     variant="outline"
                     onClick={() => setSelectedOrder(null)}
@@ -423,29 +455,39 @@ const AdminOrders = () => {
                   >
                     📄 Download PDF
                   </Button>
-                  {!selectedOrder.approved && (
+
+                  {/* 1. Approval Step */}
+                  {!selectedOrder.approved ? (
                     <Button
                       onClick={handleApproveOrder}
                       disabled={isApproving}
                       className="flex-1 bg-green-600 hover:bg-green-700 text-white"
                     >
-                      {isApproving ? "Approving..." : "Approve & Update Customer"}
+                      {isApproving ? "Approving..." : "1. Approve & Update Customer"}
+                    </Button>
+                  ) : (
+                    <Button variant="outline" disabled className="flex-1 bg-green-50 text-green-700 border-green-300">
+                      ✓ 1. Approved
                     </Button>
                   )}
-                  {selectedOrder.approved && (
-                    <Button variant="default" disabled className="flex-1">
-                      ✓ Already Approved
-                    </Button>
-                  )}
-                  {selectedOrder.approved && (
-                    <Button
-                      onClick={handleTogglePackingStatus}
-                      disabled={isUpdatingPacking}
-                      className={`flex-1 ${selectedOrder.packingStatus === 'packed' ? 'bg-gray-500 hover:bg-gray-600' : 'bg-teal-600 hover:bg-teal-700'} text-white`}
-                    >
-                      {isUpdatingPacking ? "Updating..." : selectedOrder.packingStatus === 'packed' ? '⏳ Mark Not Shipped' : '🚚 Mark Shipped'}
-                    </Button>
-                  )}
+
+                  {/* 2. Payment Step */}
+                  <Button
+                    onClick={handleTogglePaymentStatus}
+                    disabled={isUpdatingPayment}
+                    className={`flex-1 ${isOrderPaid(selectedOrder) ? 'bg-amber-600 hover:bg-amber-700' : 'bg-indigo-600 hover:bg-indigo-700'} text-white`}
+                  >
+                    {isUpdatingPayment ? "Updating..." : isOrderPaid(selectedOrder) ? '💳 2. Mark Not Paid' : '💳 2. Mark Paid'}
+                  </Button>
+
+                  {/* 3. Shipping Step */}
+                  <Button
+                    onClick={handleTogglePackingStatus}
+                    disabled={isUpdatingPacking}
+                    className={`flex-1 ${selectedOrder.packingStatus === 'packed' ? 'bg-gray-600 hover:bg-gray-700' : 'bg-teal-600 hover:bg-teal-700'} text-white`}
+                  >
+                    {isUpdatingPacking ? "Updating..." : selectedOrder.packingStatus === 'packed' ? '📦 3. Mark Not Shipped' : '🚚 3. Mark Shipped'}
+                  </Button>
                 </div>
               </div>
             )}

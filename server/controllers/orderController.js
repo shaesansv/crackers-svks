@@ -49,11 +49,6 @@ export const createOrder = async (req, res, next) => {
         throw new AppError(`Product ${item.product} not found`, 404);
       }
 
-      // Quick sanity check before hitting reduceStock (which does atomic check)
-      if (product.storeStockPieces < item.quantity) {
-        throw new AppError(`Insufficient stock for ${product.name}. Available: ${product.storeStockPieces}`, 400);
-      }
-
       const itemPrice = item.price || product.price || 0;
       subtotal += itemPrice * item.quantity;
 
@@ -80,18 +75,24 @@ export const createOrder = async (req, res, next) => {
     const orderNumber = (count + 1).toString().padStart(5, '0');
 
     // Attempt to link to an existing customer or create a new one
-    let existingCustomer = await Customer.findOne({ 
-      $or: [
-        { email: customerEmail },
-        { phone: customerPhone }
-      ]
-    }).session(session);
+    const searchConditions = [];
+    if (customerEmail && customerEmail.trim()) {
+      searchConditions.push({ email: customerEmail.trim() });
+    }
+    if (customerPhone && customerPhone.trim()) {
+      searchConditions.push({ phone: customerPhone.trim() });
+    }
+
+    let existingCustomer = null;
+    if (searchConditions.length > 0) {
+      existingCustomer = await Customer.findOne({ $or: searchConditions }).session(session);
+    }
 
     if (!existingCustomer) {
       existingCustomer = new Customer({
         name: customerName,
-        email: customerEmail,
-        phone: customerPhone,
+        email: customerEmail || '',
+        phone: customerPhone || '',
         customerType: 'WEBSITE',
         deliveryAddress: {
           fullAddress: deliveryAddress,
@@ -137,7 +138,7 @@ export const createOrder = async (req, res, next) => {
         item.quantity,
         INVENTORY_SOURCES.WEBSITE_ORDER,
         savedOrder._id,
-        req.userId,
+        req.userId || null,
         `Order placed: ${orderNumber}`,
         session,
         orderNumber
@@ -160,9 +161,11 @@ export const createOrder = async (req, res, next) => {
 
 export const updateOrderStatus = async (req, res, next) => {
   try {
-    const { status, trackingNumber, notes } = req.body;
+    const { status, trackingNumber, notes, paymentStatus } = req.body;
 
-    const updateData = { status };
+    const updateData = {};
+    if (status) updateData.status = status;
+    if (paymentStatus) updateData.paymentStatus = paymentStatus;
     if (trackingNumber) updateData.trackingNumber = trackingNumber;
     if (notes) updateData.notes = notes;
 
@@ -344,3 +347,27 @@ export const updateHoldDays = async (req, res, next) => {
     next(error);
   }
 };
+
+export const updatePaymentStatus = async (req, res, next) => {
+  try {
+    const { orderId } = req.params;
+    const { paymentStatus } = req.body;
+
+    if (!['paid', 'unpaid', 'pending', 'completed', 'failed'].includes(paymentStatus)) {
+      return next(new AppError('Invalid payment status', 400));
+    }
+
+    const order = await Order.findByIdAndUpdate(orderId, { paymentStatus }, { returnDocument: 'after' });
+    if (!order) {
+      return next(new AppError('Order not found', 404));
+    }
+
+    res.json({
+      message: 'Payment status updated successfully',
+      order
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+

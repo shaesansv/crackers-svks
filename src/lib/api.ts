@@ -66,6 +66,28 @@ export const updatePackingStatus = async (orderId: string, status: string) => {
   return data;
 };
 
+export const updatePaymentStatus = async (orderId: string, status: string) => {
+  let response = await fetch(`${API_BASE_URL}/api/orders/${orderId}/payment-status`, {
+    method: 'PUT',
+    headers: getHeaders(),
+    body: JSON.stringify({ paymentStatus: status }),
+  });
+  
+  if (response.status === 404) {
+    response = await fetch(`${API_BASE_URL}/api/orders/${orderId}/status`, {
+      method: 'PUT',
+      headers: getHeaders(),
+      body: JSON.stringify({ paymentStatus: status }),
+    });
+  }
+
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error(data.message || data.error?.message || 'Failed to update payment status');
+  }
+  return data;
+};
+
 export const updateHoldDays = async (orderId: string, holdDays: number) => {
   const response = await fetch(`${API_BASE_URL}/api/orders/${orderId}/hold-days`, {
     method: 'PUT',

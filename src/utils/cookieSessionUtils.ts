@@ -117,3 +117,12 @@ export const loadCustomerDetails = (): SavedCustomerDetails | null => {
   }
   return null;
 };
+
+export const clearCustomerDetails = () => {
+  try {
+    document.cookie = 'sarguru_customer_details=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; SameSite=Lax';
+    sessionStorage.removeItem('sarguru_customer_session');
+  } catch (err) {
+    console.error('Failed to clear customer details', err);
+  }
+};

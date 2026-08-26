@@ -43,13 +43,15 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
 function AppContent() {
   const [currentPage, setCurrentPage] = useState<string>(() => {
     const path = window.location.pathname;
-    const hash = window.location.hash;
-    if (hash === '#safety' || path === '/safety') return 'safety';
-    if (hash === '#contact' || path === '/contact') return 'contact';
-    if (hash === '#about' || path === '/about') return 'about';
-    if (hash === '#order' || path === '/order') return 'order';
-    const savedPage = loadActivePage();
-    return savedPage || 'home';
+    if (path.startsWith('/admin')) {
+      return 'home';
+    }
+    // If refreshing any storefront page, redirect to top of home page ('home')
+    saveActivePage('home');
+    if (path !== '/' || window.location.hash !== '') {
+      window.history.replaceState(null, '', '/');
+    }
+    return 'home';
   });
   const [categories, setCategories] = useState<Category[]>([]);
   const [dbProducts, setDbProducts] = useState<Product[]>([]);
@@ -165,6 +167,13 @@ function AppContent() {
 
   React.useEffect(() => {
     fetchProductsAndCategories();
+
+    if (!window.location.pathname.startsWith('/admin')) {
+      if ('scrollRestoration' in window.history) {
+        window.history.scrollRestoration = 'manual';
+      }
+      window.scrollTo(0, 0);
+    }
 
     // Refresh storefront data (incl. discount %) whenever the user returns to this tab/window
     // (e.g. after editing products or content settings in the admin panel)

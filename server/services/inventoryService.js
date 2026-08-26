@@ -41,21 +41,17 @@ class InventoryService {
     if (!externalSession) session.startTransaction();
     
     try {
-      // Use atomic update to prevent race conditions and ensure stock doesn't go below 0
       const product = await Product.findOneAndUpdate(
-        { _id: productId, storeStockPieces: { $gte: quantity } },
+        { _id: productId },
         { $inc: { storeStockPieces: -quantity, stock: -quantity } },
         { session, new: false } // Returns the document BEFORE update
       );
 
       if (!product) {
-        // Find product just to give a better error message (or check if it exists at all)
-        const checkProduct = await Product.findById(productId).session(session);
-        if (!checkProduct) throw new Error('Product not found');
-        throw new Error(`Insufficient Shop Stock for product ${checkProduct.name}. Available: ${checkProduct.storeStockPieces}, Requested: ${quantity}`);
+        throw new Error('Product not found');
       }
 
-      const previousStock = product.storeStockPieces;
+      const previousStock = product.storeStockPieces || 0;
       const currentStock = previousStock - quantity;
 
       // Also update Inventory collection if needed for backward compatibility
@@ -75,8 +71,8 @@ class InventoryService {
         currentStock,
         referenceId,
         referenceNumber,
-        sku: product.sku,
-        createdBy: userId,
+        sku: product.sku || '',
+        createdBy: userId || null,
         notes
       });
 

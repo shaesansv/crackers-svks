@@ -117,7 +117,7 @@ const orderSchema = new mongoose.Schema(
     },
     paymentStatus: {
       type: String,
-      enum: ['pending', 'completed', 'failed'],
+      enum: ['pending', 'completed', 'failed', 'paid', 'unpaid'],
       default: 'pending'
     },
     notes: String,
