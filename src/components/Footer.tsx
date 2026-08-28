@@ -30,6 +30,7 @@ export const Footer: React.FC<FooterProps> = ({
   const phone = siteSettings.contact?.phone || '+91 78680 77818';
   const storeAddress = siteSettings.contact?.address || '3/1321 Paraipatti, Sivakasi, Tamil Nadu';
   const storeEmail = siteSettings.contact?.email || 'info@sargurucrackers.com';
+  const mapEmbedUrl = siteSettings.contact?.mapEmbedUrl || "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d930.4302063343627!2d77.78349094883554!3d9.373263491338452!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3b06c90068db81d5%3A0xabc08d4d2391eff0!2sSarguru%20Crackers!5e1!3m2!1sen!2sin!4v1787846763193!5m2!1sen!2sin";
   return (
     <div className="w-full mt-auto bg-[#FDF5CB]">
       {/* Terms & Conditions Section (Only visible on home page) */}
@@ -132,7 +133,7 @@ export const Footer: React.FC<FooterProps> = ({
             </h3>
             <div className="w-full h-40 bg-white rounded-[18px] overflow-hidden shadow-sm relative group border border-emerald-200/80">
               <iframe 
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3936.568461531776!2d77.8105!3d9.453!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3b06cee4ad2a4cd9%3A0xe21ba24687b8d447!2sParaipatti%2C%20Sivakasi%2C%20Tamil%20Nadu!5e0!3m2!1sen!2sin!4v1700000000000!5m2!1sen!2sin" 
+                src={mapEmbedUrl}
                 className="w-full h-full border-none opacity-90 group-hover:opacity-100 transition-opacity" 
                 allowFullScreen={true}
                 loading="lazy" 

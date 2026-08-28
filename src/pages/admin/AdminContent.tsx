@@ -207,6 +207,16 @@ const AdminContent = () => {
                   rows={3}
                 />
               </div>
+              <div className="space-y-2">
+                <Label className="font-semibold text-gray-700">Google Maps Embed URL</Label>
+                <Input
+                  value={form.contact?.mapEmbedUrl ?? ""}
+                  onChange={(e) => setForm({ ...form, contact: { ...form.contact!, mapEmbedUrl: e.target.value } })}
+                  placeholder="https://www.google.com/maps/embed?pb=..."
+                  className="bg-white text-gray-900 border-gray-300 font-mono text-xs"
+                />
+                <p className="text-[11px] text-gray-400">Embed URL for Sarguru Crackers store location map</p>
+              </div>
             </div>
 
             {/* ── Pricing Settings ── */}

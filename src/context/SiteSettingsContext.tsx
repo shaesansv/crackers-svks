@@ -19,6 +19,7 @@ export interface SiteSettings {
     email?: string;
     phone?: string;
     address?: string;
+    mapEmbedUrl?: string;
   };
   socialLinks?: {
     facebook?: string;
@@ -58,7 +59,8 @@ const defaultSettings: SiteSettings = {
   contact: {
     phone: '+91 78680 77818',
     address: 'Sivakasi, Tamil Nadu',
-    email: 'info@sargurucrackers.com'
+    email: 'info@sargurucrackers.com',
+    mapEmbedUrl: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d930.4302063343627!2d77.78349094883554!3d9.373263491338452!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3b06c90068db81d5%3A0xabc08d4d2391eff0!2sSarguru%20Crackers!5e1!3m2!1sen!2sin!4v1787846763193!5m2!1sen!2sin'
   },
   billing: {
     companyName: 'Sarguru Crackers',

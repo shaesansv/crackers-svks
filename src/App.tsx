@@ -17,6 +17,7 @@ import { SiteSettingsProvider } from './context/SiteSettingsContext';
 import { SettingsProvider } from './context/SettingsContext';
 import { Toaster } from 'sonner';
 import { loadCartData, saveCartData, saveActivePage, loadActivePage } from './utils/cookieSessionUtils';
+import { sortCategories } from './utils/categoryUtils';
 import { API_BASE_URL } from './lib/api';
 
 // Admin imports
@@ -156,7 +157,7 @@ function AppContent() {
             products: matched
           };
         });
-        setCategories(grouped.filter(cat => cat.products.length > 0));
+        setCategories(sortCategories(grouped.filter(cat => cat.products.length > 0)));
       } else {
         setCategories([]);
       }

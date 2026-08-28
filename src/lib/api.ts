@@ -1,4 +1,12 @@
-export const API_BASE_URL = (import.meta.env.VITE_API_URL || 'http://localhost:5000').replace(/\/$/, '').replace(/\/api$/, '');
+const getApiBaseUrl = () => {
+  const envUrl = import.meta.env.VITE_API_URL;
+  if (envUrl && envUrl.trim()) {
+    return envUrl.replace(/\/$/, '').replace(/\/api$/, '');
+  }
+  return import.meta.env.DEV ? 'http://localhost:5000' : 'https://sarguru.onrender.com';
+};
+
+export const API_BASE_URL = getApiBaseUrl();
 
 const getHeaders = () => {
   const headers: Record<string, string> = {

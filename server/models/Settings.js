@@ -49,7 +49,11 @@ const settingsSchema = new mongoose.Schema(
     contact: {
       email: String,
       phone: String,
-      address: String
+      address: String,
+      mapEmbedUrl: {
+        type: String,
+        default: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d930.4302063343627!2d77.78349094883554!3d9.373263491338452!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3b06c90068db81d5%3A0xabc08d4d2391eff0!2sSarguru%20Crackers!5e1!3m2!1sen!2sin!4v1787846763193!5m2!1sen!2sin'
+      }
     },
     socialLinks: {
       facebook: String,

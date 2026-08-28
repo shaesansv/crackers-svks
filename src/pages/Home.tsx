@@ -4,7 +4,9 @@ import { ProductDetailModal } from '../components/ProductDetailModal';
 import { Fireworks } from '@fireworks-js/react';
 import type { Category, Product } from '../types';
 import { toast } from 'sonner';
+import { sortCategories } from '../utils/categoryUtils';
 import sarguruBanner from '../assets/sarguru-banner.png';
+
 
 const TESTIMONIALS = [
   { name: 'Rajesh K.', location: 'Chennai', review: 'Absolutely stunning quality! The colors of the fancy items were incredibly vibrant. Delivered safely to Chennai.', rating: 5 },
@@ -136,8 +138,10 @@ export const Home: React.FC<HomeProps> = ({
 }) => {
   const [selectedProductForModal, setSelectedProductForModal] = useState<Product | null>(null);
 
+  const sortedCategories = sortCategories(categories);
+
   // Filter products by search term (keep all categories visible when category is selected)
-  const filteredCategories = categories
+  const filteredCategories = sortedCategories
     .map((category) => {
       const matchedProducts = category.products.filter((product: Product) => {
         const matchesSearch = !searchTerm || product.name.toLowerCase().includes(searchTerm.toLowerCase()) || category.name.toLowerCase().includes(searchTerm.toLowerCase());
@@ -217,7 +221,7 @@ export const Home: React.FC<HomeProps> = ({
             <div className="w-16 sm:w-24 h-1 bg-primary-blue mx-auto rounded-full"></div>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
-            {categories.slice(0, 8).map(cat => {
+            {sortedCategories.slice(0, 8).map(cat => {
               const catImage = cat.image || cat.imageUrl || cat.products?.[0]?.image || cat.products?.[0]?.imageUrl;
               const imageType = cat.imageType || cat.products?.[0]?.imageType;
 
@@ -283,7 +287,7 @@ export const Home: React.FC<HomeProps> = ({
                   className="w-full py-2 sm:py-3.5 pl-3 sm:pl-4 pr-8 sm:pr-10 border border-border-gray rounded-lg sm:rounded-[14px] text-xs sm:text-sm bg-white text-text-primary font-semibold outline-none transition-all duration-300 focus:border-primary-blue focus:ring-1 focus:ring-primary-blue cursor-pointer appearance-none"
                 >
                   <option value="all">All Categories</option>
-                  {categories.map((cat: Category) => (
+                  {sortedCategories.map((cat: Category) => (
                     <option key={cat.id} value={cat.id}>{cat.name.replace(' (80% DISCOUNT)', '')}</option>
                   ))}
                 </select>

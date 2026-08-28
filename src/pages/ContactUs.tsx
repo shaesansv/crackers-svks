@@ -7,6 +7,7 @@ export const ContactUs: React.FC = () => {
   const address = settings.contact?.address || '3/1321 Paraipatti, Sivakasi, Tamil Nadu, India';
   const email = settings.contact?.email || 'info@sargurucrackers.com';
   const siteName = settings.siteName || 'Sarguru Crackers';
+  const mapEmbedUrl = settings.contact?.mapEmbedUrl || "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d930.4302063343627!2d77.78349094883554!3d9.373263491338452!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3b06c90068db81d5%3A0xabc08d4d2391eff0!2sSarguru%20Crackers!5e1!3m2!1sen!2sin!4v1787846763193!5m2!1sen!2sin";
 
   return (
     <div className="flex-grow bg-bg-light pb-0 flex flex-col">
@@ -100,7 +101,7 @@ export const ContactUs: React.FC = () => {
       <div className="w-full h-[400px] bg-gray-200 mt-auto">
         <iframe
           title="Sarguru Crackers Location"
-          src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d15740.063230674205!2d77.7845!3d9.4534!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3b06cee43b811239%3A0x8e83be6ab31668e1!2sSivakasi%2C%20Tamil%20Nadu!5e0!3m2!1sen!2sin!4v1689332014120!5m2!1sen!2sin"
+          src={mapEmbedUrl}
           className="w-full h-full border-none grayscale hover:grayscale-0 transition-all duration-700"
           allowFullScreen={false}
           loading="lazy"
