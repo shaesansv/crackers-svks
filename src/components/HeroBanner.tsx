@@ -15,12 +15,12 @@ import {
   Award
 } from 'lucide-react';
 
-// Product images for hero showcase cards
-import shot60 from '../assets/sarguru bg removed/60-shot.png';
-import flowerPot from '../assets/sarguru bg removed/flower-pot-deluxe.png';
-import sparkler from '../assets/sarguru bg removed/electric_sparklers.png';
-import chakkar from '../assets/sarguru bg removed/ground-chakkar-deluxe.png';
-import shot30 from '../assets/sarguru bg removed/30-shot.png';
+// Product images for hero showcase cards (served from Cloudinary CDN)
+const shot60 = 'https://res.cloudinary.com/qynsp4om/image/upload/v1787916520/products/60-shot.png';
+const flowerPot = 'https://res.cloudinary.com/qynsp4om/image/upload/v1787916503/products/flower-pot-deluxe.png';
+const sparkler = 'https://res.cloudinary.com/qynsp4om/image/upload/v1787916497/products/electric_sparklers.png';
+const chakkar = 'https://res.cloudinary.com/qynsp4om/image/upload/v1787916500/products/ground-chakkar-deluxe.png';
+const shot30 = 'https://res.cloudinary.com/qynsp4om/image/upload/v1787916519/products/30-shot.png';
 
 interface HeroBannerProps {
   onShopClick?: () => void;
