@@ -1,11 +1,175 @@
 import React, { useState, useEffect } from 'react';
 import { ProductImage, getHighResImageUrl } from '../components/ProductImage';
 import { ProductDetailModal } from '../components/ProductDetailModal';
-import { HeroBanner } from '../components/HeroBanner';
+import { Fireworks } from '@fireworks-js/react';
 import type { Category, Product } from '../types';
 import { toast } from 'sonner';
 import { sortCategories } from '../utils/categoryUtils';
+import banner1 from '../assets/banner-1.png';
+import banner2 from '../assets/banner-2.jpg';
+import banner3 from '../assets/banner3.png';
 import sar1 from '../assets/sar-1.png';
+
+const BANNERS = [
+  { id: 1, src: banner1, alt: 'Sarguru Crackers Banner 1' },
+  { id: 2, src: banner2, alt: 'Sarguru Crackers Banner 2' },
+  { id: 3, src: banner3, alt: 'Sarguru Crackers Banner 3' }
+];
+
+// Append clone of first banner for infinite right-to-left sliding loop
+const EXTENDED_BANNERS = [
+  ...BANNERS,
+  { id: 'clone-1', src: banner1, alt: 'Sarguru Crackers Banner 1 Clone' }
+];
+
+const BannerSlider: React.FC = () => {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isHovered, setIsHovered] = useState(false);
+  const [isTransitioning, setIsTransitioning] = useState(true);
+
+  // Auto slide right-to-left every 4.5 seconds
+  useEffect(() => {
+    if (isHovered) return;
+    const timer = setInterval(() => {
+      handleNext();
+    }, 4500);
+    return () => clearInterval(timer);
+  }, [isHovered, currentIndex, isTransitioning]);
+
+  // When transition to clone (index 3) finishes, snap back to index 0 seamlessly
+  const handleTransitionEnd = () => {
+    if (currentIndex === BANNERS.length) {
+      setIsTransitioning(false);
+      setCurrentIndex(0);
+    }
+  };
+
+  // Re-enable transition after snap back
+  useEffect(() => {
+    if (!isTransitioning) {
+      const timer = setTimeout(() => {
+        setIsTransitioning(true);
+      }, 50);
+      return () => clearTimeout(timer);
+    }
+  }, [isTransitioning]);
+
+  const handleNext = () => {
+    if (currentIndex >= BANNERS.length) return;
+    setIsTransitioning(true);
+    setCurrentIndex((prev) => prev + 1);
+  };
+
+  const handlePrev = () => {
+    if (currentIndex === 0) {
+      setIsTransitioning(false);
+      setCurrentIndex(BANNERS.length);
+      setTimeout(() => {
+        setIsTransitioning(true);
+        setCurrentIndex(BANNERS.length - 1);
+      }, 50);
+    } else {
+      setIsTransitioning(true);
+      setCurrentIndex((prev) => prev - 1);
+    }
+  };
+
+  const activeDotIndex = currentIndex % BANNERS.length;
+
+  return (
+    <section
+      className="relative w-full overflow-hidden bg-bg-light select-none group"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      {/* Sky Fireworks Effect Layer */}
+      <div className="absolute inset-0 z-10 pointer-events-none opacity-40">
+        <Fireworks
+          options={{
+            rocketsPoint: { min: 15, max: 85 },
+            hue: { min: 0, max: 360 },
+            delay: { min: 30, max: 60 },
+            particles: 60,
+            traceLength: 3,
+            intensity: 5,
+            brightness: { min: 70, max: 100 }
+          }}
+          style={{ width: '100%', height: '100%' }}
+        />
+      </div>
+
+      {/* Right to Left Sliding Carousel */}
+      <div className="relative z-20 w-full overflow-hidden shadow-2xl">
+        <div
+          onTransitionEnd={handleTransitionEnd}
+          className={`flex w-full ${isTransitioning ? 'transition-transform duration-700 ease-[cubic-bezier(0.25,1,0.5,1)]' : 'transition-none'}`}
+          style={{ transform: `translateX(-${currentIndex * 100}%)` }}
+        >
+          {EXTENDED_BANNERS.map((banner, index) => (
+            <div key={banner.id + '-' + index} className="w-full flex-shrink-0 relative">
+              <img
+                src={banner.src}
+                alt={banner.alt}
+                className="w-full h-auto object-cover block min-w-full"
+              />
+            </div>
+          ))}
+        </div>
+
+        {/* Prev / Next Navigation Arrows */}
+        <button
+          onClick={handlePrev}
+          aria-label="Previous Banner"
+          className="absolute left-2 sm:left-6 top-1/2 -translate-y-1/2 w-8 h-8 sm:w-12 sm:h-12 rounded-full bg-black/40 hover:bg-primary-blue text-white flex items-center justify-center backdrop-blur-md transition-all duration-300 shadow-xl z-30 cursor-pointer hover:scale-110 active:scale-95 text-lg sm:text-2xl font-bold"
+        >
+          ‹
+        </button>
+        <button
+          onClick={handleNext}
+          aria-label="Next Banner"
+          className="absolute right-2 sm:right-6 top-1/2 -translate-y-1/2 w-8 h-8 sm:w-12 sm:h-12 rounded-full bg-black/40 hover:bg-primary-blue text-white flex items-center justify-center backdrop-blur-md transition-all duration-300 shadow-xl z-30 cursor-pointer hover:scale-110 active:scale-95 text-lg sm:text-2xl font-bold"
+        >
+          ›
+        </button>
+
+        {/* Slide Indicators */}
+        <div className="absolute bottom-3 sm:bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-2 z-30 bg-black/40 backdrop-blur-md px-3 sm:px-4 py-1.5 rounded-full shadow-lg border border-white/20">
+          {BANNERS.map((_, idx) => (
+            <button
+              key={idx}
+              onClick={() => {
+                setIsTransitioning(true);
+                setCurrentIndex(idx);
+              }}
+              aria-label={`Go to slide ${idx + 1}`}
+              className={`h-2 sm:h-2.5 rounded-full transition-all duration-500 cursor-pointer ${activeDotIndex === idx
+                ? 'w-6 sm:w-8 bg-primary-blue shadow-[0_0_8px_rgba(245,184,0,0.8)]'
+                : 'w-2 sm:w-2.5 bg-white/60 hover:bg-white'
+                }`}
+            />
+          ))}
+        </div>
+      </div>
+
+      {/* Action Buttons below banner */}
+      <div className="py-4 sm:py-8 px-4 flex flex-wrap justify-center gap-2 sm:gap-4 relative z-20">
+        <button
+          onClick={() => document.getElementById('shop')?.scrollIntoView({ behavior: 'smooth' })}
+          className="bg-primary-blue text-white px-5 py-2.5 sm:px-10 sm:py-4 rounded-full font-extrabold text-xs sm:text-lg shadow-md hover:bg-primary-hover transition-colors uppercase tracking-wider cursor-pointer"
+        >
+          SHOP NOW
+        </button>
+        <button
+          onClick={() => document.getElementById('categories')?.scrollIntoView({ behavior: 'smooth' })}
+          className="bg-white border-2 border-primary-blue text-text-primary px-5 py-2.5 sm:px-10 sm:py-4 rounded-full font-bold text-xs sm:text-lg hover:bg-primary-blue hover:text-white transition-colors uppercase tracking-wider shadow-sm cursor-pointer"
+        >
+          EXPLORE COLLECTION
+        </button>
+      </div>
+    </section>
+  );
+};
+
 
 
 
@@ -46,13 +210,13 @@ const TestimonialSlider: React.FC = () => {
           <div className="w-16 sm:w-24 h-1 bg-primary-blue mx-auto rounded-full"></div>
         </div>
 
-        <div 
+        <div
           className="relative max-w-3xl mx-auto overflow-hidden"
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => setIsHovered(false)}
         >
           {/* Animated Slide Track */}
-          <div 
+          <div
             className="flex transition-transform duration-700 ease-[cubic-bezier(0.25,1,0.5,1)]"
             style={{ transform: `translateX(-${currentIndex * 100}%)` }}
           >
@@ -102,9 +266,8 @@ const TestimonialSlider: React.FC = () => {
               key={idx}
               onClick={() => setCurrentIndex(idx)}
               aria-label={`Go to slide ${idx + 1}`}
-              className={`h-2 rounded-full transition-all duration-500 ${
-                currentIndex === idx ? 'w-8 bg-primary-blue' : 'w-2 bg-border-gray hover:bg-primary-blue/50'
-              }`}
+              className={`h-2 rounded-full transition-all duration-500 ${currentIndex === idx ? 'w-8 bg-primary-blue' : 'w-2 bg-border-gray hover:bg-primary-blue/50'
+                }`}
             />
           ))}
         </div>
@@ -159,11 +322,8 @@ export const Home: React.FC<HomeProps> = ({
   return (
     <div className="flex-grow flex flex-col bg-bg-light font-sans text-text-primary">
 
-      {/* 1. LUXURY HERO BANNER SECTION */}
-      <HeroBanner 
-        onShopClick={() => document.getElementById('shop')?.scrollIntoView({ behavior: 'smooth' })}
-        onExploreCategories={() => document.getElementById('categories')?.scrollIntoView({ behavior: 'smooth' })}
-      />
+      {/* 1. FRONT BANNER SLIDER SECTION (RIGHT TO LEFT SLIDE) */}
+      <BannerSlider />
 
       {/* 4. SHOP BY CATEGORY */}
       <section id="categories" className="w-full py-8 sm:py-16 bg-section-bg border-y border-border-gray">
@@ -178,7 +338,7 @@ export const Home: React.FC<HomeProps> = ({
               const imageType = cat.imageType || cat.products?.[0]?.imageType;
 
               return (
-                <div 
+                <div
                   key={'cat-' + cat.id}
                   onClick={() => {
                     setSelectedCategory(cat.id);
@@ -192,9 +352,9 @@ export const Home: React.FC<HomeProps> = ({
                   className="bg-white border border-border-gray rounded-lg sm:rounded-2xl p-2 sm:p-4 cursor-pointer group hover:border-primary-blue transition-all duration-300 hover:shadow-md hover:-translate-y-1 relative overflow-hidden flex flex-col items-center"
                 >
                   <div className="w-full aspect-video bg-section-bg rounded-md sm:rounded-xl mb-1.5 sm:mb-4 overflow-hidden relative border border-border-gray/30 flex items-center justify-center">
-                    <ProductImage 
-                      src={catImage} 
-                      type={imageType} 
+                    <ProductImage
+                      src={catImage}
+                      type={imageType}
                       alt={cat.name}
                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                     />
@@ -212,7 +372,7 @@ export const Home: React.FC<HomeProps> = ({
       {/* 5. MAIN PRODUCT LISTING */}
       <section id="shop" className="w-full py-8 sm:py-16 bg-bg-light relative">
         <div className="max-w-[1200px] mx-auto px-4 md:px-6 relative z-40">
-          
+
           <div className="text-center mb-6 sm:mb-12">
             <h2 className="text-2xl sm:text-3xl md:text-5xl font-extrabold text-text-primary uppercase mb-2 sm:mb-4">Discover Our Collection</h2>
             <p className="text-xs sm:text-base text-text-secondary max-w-2xl mx-auto">Explore our wide range of premium fireworks carefully crafted for your celebrations.</p>
@@ -222,8 +382,8 @@ export const Home: React.FC<HomeProps> = ({
           <div className="sticky top-0 z-40 bg-section-bg/95 backdrop-blur-md border border-border-gray rounded-xl sm:rounded-[20px] p-2 sm:p-5 shadow-md mb-4 sm:mb-10 transition-all duration-300">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-4">
               <div className="relative group">
-                <select 
-                  value={selectedCategory} 
+                <select
+                  value={selectedCategory}
                   onChange={(e) => {
                     const catId = e.target.value;
                     setSelectedCategory(catId);
@@ -235,7 +395,7 @@ export const Home: React.FC<HomeProps> = ({
                     } else {
                       document.getElementById('shop')?.scrollIntoView({ behavior: 'smooth' });
                     }
-                  }} 
+                  }}
                   className="w-full py-2 sm:py-3.5 pl-3 sm:pl-4 pr-8 sm:pr-10 border border-border-gray rounded-lg sm:rounded-[14px] text-xs sm:text-sm bg-white text-text-primary font-semibold outline-none transition-all duration-300 focus:border-primary-blue focus:ring-1 focus:ring-primary-blue cursor-pointer appearance-none"
                 >
                   <option value="all">All Categories</option>
@@ -246,12 +406,12 @@ export const Home: React.FC<HomeProps> = ({
                 <div className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400 group-focus-within:text-primary-blue text-xs sm:text-sm">▼</div>
               </div>
               <div className="relative group">
-                <input 
-                  type="text" 
-                  placeholder="Search products..." 
-                  value={searchTerm} 
-                  onChange={(e) => setSearchTerm(e.target.value)} 
-                  className="w-full py-2 sm:py-3.5 pl-9 sm:pl-12 pr-3 sm:pr-4 border border-border-gray rounded-lg sm:rounded-[14px] text-xs sm:text-sm bg-white focus:bg-white text-text-primary outline-none transition-all duration-300 focus:border-primary-blue focus:ring-1 focus:ring-primary-blue font-inter" 
+                <input
+                  type="text"
+                  placeholder="Search products..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full py-2 sm:py-3.5 pl-9 sm:pl-12 pr-3 sm:pr-4 border border-border-gray rounded-lg sm:rounded-[14px] text-xs sm:text-sm bg-white focus:bg-white text-text-primary outline-none transition-all duration-300 focus:border-primary-blue focus:ring-1 focus:ring-primary-blue font-inter"
                 />
                 <div className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-primary-blue">
                   <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
@@ -284,20 +444,20 @@ export const Home: React.FC<HomeProps> = ({
                         <React.Fragment key={product.id}>
                           {/* Mobile View Row */}
                           <div className={`flex md:hidden items-center justify-between py-3 px-2 sm:px-3 border-b border-gray-100 gap-2 w-full bg-white transition-colors ${isOutOfStock ? 'opacity-60' : ''}`}>
-                            <div 
+                            <div
                               onClick={() => setSelectedProductForModal(product)}
                               className="flex items-center gap-2 flex-1 min-w-0 cursor-pointer group active:opacity-80"
                             >
                               {/* 1. Thumbnail Image */}
                               <div className="relative w-11 h-11 flex-shrink-0 flex items-center justify-center bg-slate-50 border border-slate-200 rounded-xl overflow-hidden shadow-2xs group-hover:border-primary-blue transition-colors">
                                 {product.image || product.imageUrl ? (
-                                  <img 
-                                    src={getHighResImageUrl(product.image || product.imageUrl, 300, 90)} 
-                                    alt={product.name} 
+                                  <img
+                                    src={getHighResImageUrl(product.image || product.imageUrl, 300, 90)}
+                                    alt={product.name}
                                     loading="lazy"
                                     decoding="async"
                                     style={{ imageRendering: '-webkit-optimize-contrast' }}
-                                    className="w-full h-full object-contain p-0.5" 
+                                    className="w-full h-full object-contain p-0.5"
                                   />
                                 ) : (
                                   <ProductImage type={product.imageType} />
@@ -318,7 +478,7 @@ export const Home: React.FC<HomeProps> = ({
                             </div>
 
                             {/* 3. Price & Strikethrough Price */}
-                            <div 
+                            <div
                               onClick={() => setSelectedProductForModal(product)}
                               className="flex flex-col items-end shrink-0 text-right min-w-[48px] cursor-pointer"
                             >
@@ -340,7 +500,7 @@ export const Home: React.FC<HomeProps> = ({
                                 </span>
                               ) : (
                                 <div className="flex items-center border border-red-200 rounded-full bg-white px-1 py-0.5 shadow-2xs text-xs font-bold">
-                                  <button 
+                                  <button
                                     type="button"
                                     onClick={(e) => {
                                       e.preventDefault();
@@ -356,7 +516,7 @@ export const Home: React.FC<HomeProps> = ({
                                   <span className="w-5 text-center text-xs font-extrabold text-text-primary leading-none">
                                     {qty || '0'}
                                   </span>
-                                  <button 
+                                  <button
                                     type="button"
                                     onClick={(e) => {
                                       e.preventDefault();
@@ -384,19 +544,19 @@ export const Home: React.FC<HomeProps> = ({
                           {/* Desktop View Row */}
                           <div className={`hidden md:grid md:grid-cols-[3fr_1fr_1fr_1fr_1fr_1fr] items-center px-4 md:px-6 py-5 border-b border-border-gray transition-all duration-300 gap-4 md:gap-0 ${isOutOfStock ? 'bg-bg-light opacity-60 cursor-not-allowed' : 'hover:bg-slate-50 hover:shadow-sm'}`}>
                             {/* Details */}
-                            <div 
+                            <div
                               onClick={() => setSelectedProductForModal(product)}
                               className="flex items-center gap-5 w-full md:w-auto cursor-pointer group"
                             >
                               <div className="relative w-16 h-16 md:w-20 md:h-20 flex-shrink-0 flex items-center justify-center bg-bg-light border border-border-gray rounded-2xl overflow-hidden shadow-sm group-hover:border-primary-blue transition-colors p-1">
                                 {product.image || product.imageUrl ? (
-                                  <img 
-                                    src={getHighResImageUrl(product.image || product.imageUrl, 400, 90)} 
-                                    alt={product.name} 
+                                  <img
+                                    src={getHighResImageUrl(product.image || product.imageUrl, 400, 90)}
+                                    alt={product.name}
                                     loading="lazy"
                                     decoding="async"
                                     style={{ imageRendering: '-webkit-optimize-contrast' }}
-                                    className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300" 
+                                    className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
                                   />
                                 ) : (
                                   <ProductImage type={product.imageType} />
@@ -444,7 +604,7 @@ export const Home: React.FC<HomeProps> = ({
                               <div className="flex justify-center items-center w-1/2 md:w-auto pr-3 md:pr-0 border-r md:border-r-0 border-border-gray">
                                 <span className="text-xs font-bold text-gray-500 mr-2 md:hidden">QTY:</span>
                                 <div className={`flex items-center border rounded-xl overflow-hidden h-10 md:h-11 ${isOutOfStock ? 'bg-bg-light border-border-gray' : 'bg-slate-50 border-border-gray focus-within:border-primary-blue focus-within:ring-1 focus-within:ring-primary-blue'}`}>
-                                  <button 
+                                  <button
                                     type="button"
                                     onClick={(e) => {
                                       e.preventDefault();
@@ -467,7 +627,7 @@ export const Home: React.FC<HomeProps> = ({
                                     }}
                                     className={`w-10 md:w-12 h-full text-center text-[15px] font-bold outline-none transition-colors p-0 ${isOutOfStock ? 'bg-transparent text-gray-400 cursor-not-allowed' : 'bg-transparent text-text-primary'}`}
                                   />
-                                  <button 
+                                  <button
                                     type="button"
                                     onClick={(e) => {
                                       e.preventDefault();
@@ -487,20 +647,19 @@ export const Home: React.FC<HomeProps> = ({
                               </div>
                               <div className="flex justify-center items-center w-1/2 md:w-auto pl-3 md:pl-0">
                                 <button
-                                  onClick={() => { 
+                                  onClick={() => {
                                     if (!qty) {
-                                      handleQtyChange(product.id, '1'); 
+                                      handleQtyChange(product.id, '1');
                                       toast.success(`${product.name} added to cart`, { duration: 2000 });
                                     }
                                   }}
                                   disabled={isOutOfStock}
-                                  className={`w-full md:w-[90px] h-10 md:h-11 flex items-center justify-center text-[13px] font-bold rounded-xl transition-all duration-300 shadow-sm ${
-                                    isOutOfStock 
-                                      ? 'bg-slate-100 text-gray-400 border border-border-gray cursor-not-allowed'
-                                      : qty 
-                                        ? 'bg-success-green text-white shadow-md' 
-                                        : 'bg-primary-blue text-white hover:bg-primary-hover hover:-translate-y-0.5'
-                                  }`}
+                                  className={`w-full md:w-[90px] h-10 md:h-11 flex items-center justify-center text-[13px] font-bold rounded-xl transition-all duration-300 shadow-sm ${isOutOfStock
+                                    ? 'bg-slate-100 text-gray-400 border border-border-gray cursor-not-allowed'
+                                    : qty
+                                      ? 'bg-success-green text-white shadow-md'
+                                      : 'bg-primary-blue text-white hover:bg-primary-hover hover:-translate-y-0.5'
+                                    }`}
                                 >
                                   {isOutOfStock ? 'Sold Out' : qty ? '✓ ADDED' : 'ADD'}
                                 </button>
@@ -567,7 +726,7 @@ export const Home: React.FC<HomeProps> = ({
             <div className="inline-block px-2.5 py-0.5 mb-2 rounded border border-border-gray bg-section-bg text-text-secondary font-bold tracking-wider text-[10px] sm:text-xs uppercase">
               Our Heritage
             </div>
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-text-primary mb-3 uppercase leading-tight">Born in Sivakasi.<br/><span className="text-primary-blue">Made for Celebration.</span></h2>
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-text-primary mb-3 uppercase leading-tight">Born in Sivakasi.<br /><span className="text-primary-blue">Made for Celebration.</span></h2>
             <p className="text-text-secondary text-xs sm:text-sm mb-4 leading-relaxed">
               For generations, Sivakasi has been the heart of India's fireworks industry. At Sarguru Crackers, we carry forward this proud legacy by delivering joy, excitement, and top quality fireworks directly to your home.
             </p>
@@ -588,8 +747,8 @@ export const Home: React.FC<HomeProps> = ({
         <div className="relative z-10 max-w-3xl mx-auto">
           <h2 className="text-2xl sm:text-4xl md:text-5xl font-extrabold text-text-primary mb-3 uppercase tracking-tight">Ready to light up your celebration?</h2>
           <p className="text-xs sm:text-base text-text-secondary mb-6">Discover premium crackers from Sivakasi and make your celebration unforgettable.</p>
-          <button 
-            onClick={() => document.getElementById('shop')?.scrollIntoView({behavior: 'smooth'})} 
+          <button
+            onClick={() => document.getElementById('shop')?.scrollIntoView({ behavior: 'smooth' })}
             className="bg-primary-blue text-white px-6 py-3 sm:px-10 sm:py-4 rounded-full font-extrabold text-sm sm:text-lg shadow-md hover:bg-primary-hover transition-colors uppercase tracking-wider cursor-pointer"
           >
             SHOP NOW

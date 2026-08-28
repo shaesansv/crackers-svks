@@ -3,8 +3,12 @@ const getApiBaseUrl = () => {
   if (envUrl && envUrl.trim()) {
     return envUrl.replace(/\/$/, '').replace(/\/api$/, '');
   }
-  return import.meta.env.DEV ? 'http://localhost:5000' : 'https://sarguru.onrender.com';
+  if (import.meta.env.DEV) {
+    return 'http://localhost:5000';
+  }
+  return typeof window !== 'undefined' ? window.location.origin : '';
 };
+
 
 export const API_BASE_URL = getApiBaseUrl();
 

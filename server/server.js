@@ -23,25 +23,24 @@ dotenv.config();
 const app = express();
 
 // ===== CORS MUST BE FIRST =====
+// Dynamically build list of allowed origins from environment variables
+const envClientUrls = (process.env.CLIENT_URL || '').split(',').map(u => u.trim()).filter(Boolean);
+const envAllowedOrigins = (process.env.ALLOWED_ORIGINS || '').split(',').map(u => u.trim()).filter(Boolean);
+
 const allowedOrigins = [
-  'https://sarguru.onrender.com',
-  'https://sargurucrackers.com',
-  'https://www.sargurucrackers.com',
-  'https://narandiraa-enterprises-web.netlify.app',
-  'https://narandiraa-enterprises.vercel.app',
-  'https://www.narendiraaenterprises.com',
-  'https://narendiraaenterprises.com',
+  ...envClientUrls,
+  ...envAllowedOrigins,
   'http://localhost:5173',
   'http://localhost:5000',
-  'http://localhost:3000',
-  process.env.CLIENT_URL
+  'http://localhost:3000'
 ].filter(Boolean);
 
 const corsOptions = {
   origin: (origin, callback) => {
-    // Check if origin is in allowedOrigins, is a vercel/render/netlify preview, or if it's a development environment
+    // Check if origin is in allowedOrigins, wildcard *, platform previews, or development env
     if (
       !origin || 
+      allowedOrigins.includes('*') ||
       allowedOrigins.includes(origin) || 
       (origin && (origin.endsWith('.vercel.app') || origin.endsWith('.onrender.com') || origin.endsWith('.netlify.app'))) ||
       process.env.NODE_ENV === 'development'
