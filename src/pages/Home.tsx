@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { ProductImage, getHighResImageUrl } from '../components/ProductImage';
 import { ProductDetailModal } from '../components/ProductDetailModal';
-import { Fireworks } from '@fireworks-js/react';
+import { HeroBanner } from '../components/HeroBanner';
 import type { Category, Product } from '../types';
 import { toast } from 'sonner';
 import { sortCategories } from '../utils/categoryUtils';
-import sarguruBanner from '../assets/sarguru-banner.png';
+import sar1 from '../assets/sar-1.png';
+
 
 
 const TESTIMONIALS = [
@@ -158,60 +159,11 @@ export const Home: React.FC<HomeProps> = ({
   return (
     <div className="flex-grow flex flex-col bg-bg-light font-sans text-text-primary">
 
-      {/* 1. HERO SECTION */}
-      <section className="relative w-full overflow-hidden bg-bg-light">
-        {/* Neat & Clean Sky Shot Fireworks Layer (Front of Screen) */}
-        <div className="absolute inset-0 z-30 pointer-events-none">
-          <Fireworks
-            options={{
-              rocketsPoint: { min: 15, max: 85 },
-              hue: { min: 0, max: 360 },
-              delay: { min: 30, max: 60 },
-              acceleration: 1.05,
-              friction: 0.96,
-              gravity: 1.1,
-              particles: 90,
-              traceLength: 4,
-              traceSpeed: 5,
-              explosion: 6,
-              intensity: 8,
-              flickering: 30,
-              lineStyle: 'round',
-              brightness: { min: 80, max: 100 },
-              decay: { min: 0.012, max: 0.025 },
-              mouse: { click: false, move: false, max: 1 }
-            }}
-            style={{ width: '100%', height: '100%' }}
-          />
-        </div>
-
-        <div className="relative z-20 w-full flex flex-col items-center">
-          {/* Full Size Sarguru Banner Image */}
-          <div className="relative w-full overflow-hidden shadow-2xl">
-            <img 
-              src={sarguruBanner} 
-              alt="Sarguru Crackers Banner" 
-              className="w-full h-auto object-cover block min-w-full" 
-            />
-          </div>
-
-          {/* Quick CTA Action buttons below banner */}
-          <div className="py-4 sm:py-8 px-4 flex flex-wrap justify-center gap-2 sm:gap-4">
-            <button 
-              onClick={() => document.getElementById('shop')?.scrollIntoView({behavior: 'smooth'})} 
-              className="bg-primary-blue text-white px-5 py-2.5 sm:px-10 sm:py-4 rounded-full font-extrabold text-xs sm:text-lg shadow-md hover:bg-primary-hover transition-colors uppercase tracking-wider cursor-pointer"
-            >
-              SHOP NOW
-            </button>
-            <button 
-              onClick={() => document.getElementById('categories')?.scrollIntoView({behavior: 'smooth'})} 
-              className="bg-white border-2 border-primary-blue text-text-primary px-5 py-2.5 sm:px-10 sm:py-4 rounded-full font-bold text-xs sm:text-lg hover:bg-primary-blue hover:text-white transition-colors uppercase tracking-wider shadow-sm cursor-pointer"
-            >
-              EXPLORE COLLECTION
-            </button>
-          </div>
-        </div>
-      </section>
+      {/* 1. LUXURY HERO BANNER SECTION */}
+      <HeroBanner 
+        onShopClick={() => document.getElementById('shop')?.scrollIntoView({ behavior: 'smooth' })}
+        onExploreCategories={() => document.getElementById('categories')?.scrollIntoView({ behavior: 'smooth' })}
+      />
 
       {/* 4. SHOP BY CATEGORY */}
       <section id="categories" className="w-full py-8 sm:py-16 bg-section-bg border-y border-border-gray">
@@ -605,7 +557,7 @@ export const Home: React.FC<HomeProps> = ({
         <div className="absolute top-0 right-0 w-72 h-72 bg-primary-blue/5 rounded-full blur-3xl mix-blend-screen pointer-events-none"></div>
         <div className="max-w-[1200px] mx-auto px-4 sm:px-6 grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-10 items-center relative z-10">
           <div className="relative rounded-xl sm:rounded-2xl overflow-hidden shadow-md group aspect-[16/9] lg:aspect-[4/3] bg-white border border-border-gray flex items-center justify-center">
-            <img src={sarguruBanner} alt="Sarguru Crackers Heritage" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 opacity-90 group-hover:opacity-100" />
+            <img src={sar1} alt="Sarguru Crackers Heritage" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 opacity-90 group-hover:opacity-100" />
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
             <div className="absolute bottom-3 left-4 right-4 text-center z-10">
               <h4 className="text-white font-extrabold tracking-wider uppercase text-sm sm:text-base">The Heritage of Sarguru Crackers</h4>
