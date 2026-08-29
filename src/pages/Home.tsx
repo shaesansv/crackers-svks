@@ -93,16 +93,20 @@ const BannerSlider: React.FC = () => {
       onMouseLeave={() => setIsHovered(false)}
     >
       {/* Sky Fireworks Effect Layer (Front side of Banner) */}
-      <div className="absolute inset-0 z-20 pointer-events-none opacity-85 sm:opacity-95 transition-opacity duration-700">
+      <div className="absolute inset-0 z-20 pointer-events-none opacity-80 sm:opacity-90 transition-opacity duration-700">
         <Fireworks
           options={{
-            rocketsPoint: { min: 15, max: 85 },
+            rocketsPoint: { min: 20, max: 80 },
             hue: { min: 0, max: 360 },
-            delay: { min: 25, max: 50 },
-            particles: 80,
-            traceLength: 3,
-            intensity: 8,
-            brightness: { min: 75, max: 100 }
+            delay: { min: 50, max: 90 },
+            acceleration: 1.015,
+            friction: 0.97,
+            particles: 35,
+            traceLength: 2,
+            traceSpeed: 4,
+            explosion: 3,
+            intensity: 3,
+            brightness: { min: 70, max: 95 }
           }}
           style={{ width: '100%', height: '100%' }}
         />
