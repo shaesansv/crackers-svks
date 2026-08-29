@@ -185,18 +185,18 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                 {/* Price Card */}
                 <div className="bg-amber-50/90 p-4 rounded-xl border border-amber-200/80 space-y-1.5 shadow-xs">
                   <div className="text-[11px] font-extrabold uppercase tracking-wider text-amber-900">
-                    Wholesale Price
+                    {isDisplayNetRate ? "Fixed Net Price" : "Wholesale Price"}
                   </div>
                   <div className="flex items-baseline flex-wrap gap-3">
                     <span className="text-3xl sm:text-4xl font-black text-amber-600 tracking-tight">
                       ₹{finalPrice.toFixed(2)}
                     </span>
-                    {(hasDiscount || isDisplayNetRate) && rawPrice > finalPrice && (
+                    {hasDiscount && !isDisplayNetRate && rawPrice > finalPrice && (
                       <span className="text-base line-through text-slate-400 font-semibold">
                         ₹{rawPrice.toFixed(2)}
                       </span>
                     )}
-                    {hasDiscount && rawPrice > finalPrice && (
+                    {hasDiscount && !isDisplayNetRate && rawPrice > finalPrice && (
                       <span className="text-xs font-extrabold text-emerald-700 bg-emerald-100 border border-emerald-300 px-2.5 py-1 rounded-full">
                         Save ₹{(rawPrice - finalPrice).toFixed(2)}
                       </span>
