@@ -22,41 +22,83 @@ dotenv.config();
 
 const app = express();
 
+app.set('trust proxy', 1);
+
 // ===== CORS MUST BE FIRST =====
 // Dynamically build list of allowed origins from environment variables
-const envClientUrls = (process.env.CLIENT_URL || '').split(',').map(u => u.trim()).filter(Boolean);
-const envAllowedOrigins = (process.env.ALLOWED_ORIGINS || '').split(',').map(u => u.trim()).filter(Boolean);
+const envClientUrls = (process.env.CLIENT_URL || '').split(/[\s,]+/).map(u => u.trim()).filter(Boolean);
+const envAllowedOrigins = (process.env.ALLOWED_ORIGINS || '').split(/[\s,]+/).map(u => u.trim()).filter(Boolean);
+
+const defaultAllowedOrigins = [
+  'https://sargurucrackers.com',
+  'https://www.sargurucrackers.com',
+  'http://sargurucrackers.com',
+  'http://www.sargurucrackers.com',
+  'http://187.127.148.51',
+  'http://187.127.148.51:5002',
+  'http://localhost:5173',
+  'http://localhost:5002',
+  'http://localhost:3000'
+];
 
 const allowedOrigins = [
   ...envClientUrls,
   ...envAllowedOrigins,
-  'https://sargurucrackers.com',
-  'https://www.sargurucrackers.com',
-  'http://187.127.148.51',
-  'http://localhost:5173',
-  'http://localhost:5002',
-  'http://localhost:3000'
-].filter(Boolean);
+  ...defaultAllowedOrigins
+].map(u => u.toLowerCase().replace(/\/$/, '')).filter(Boolean);
+
+const isOriginAllowed = (origin) => {
+  if (!origin) return true; // Allow non-browser clients (curl, mobile apps, server-to-server)
+  
+  const cleanOrigin = origin.toLowerCase().replace(/\/$/, '');
+  
+  if (allowedOrigins.includes('*') || allowedOrigins.includes(cleanOrigin)) {
+    return true;
+  }
+  
+  try {
+    const url = new URL(cleanOrigin);
+    const hostname = url.hostname;
+    
+    if (
+      hostname === 'sargurucrackers.com' ||
+      hostname.endsWith('.sargurucrackers.com') ||
+      hostname.endsWith('.onrender.com') ||
+      hostname.endsWith('.vercel.app') ||
+      hostname.endsWith('.netlify.app') ||
+      hostname === 'localhost' ||
+      hostname === '127.0.0.1' ||
+      hostname === '187.127.148.51'
+    ) {
+      return true;
+    }
+  } catch (e) {
+    // Malformed URL, fallback check
+  }
+
+  return process.env.NODE_ENV === 'development';
+};
 
 const corsOptions = {
   origin: (origin, callback) => {
-    // Check if origin is in allowedOrigins, wildcard *, platform previews, or development env
-    if (
-      !origin || 
-      allowedOrigins.includes('*') ||
-      allowedOrigins.includes(origin) || 
-      (origin && (origin.endsWith('.vercel.app') || origin.endsWith('.onrender.com') || origin.endsWith('.netlify.app'))) ||
-      process.env.NODE_ENV === 'development'
-    ) {
+    if (isOriginAllowed(origin)) {
       callback(null, true);
     } else {
       logger.warn('Blocked by CORS', { origin });
-      callback(new Error("Not allowed by CORS"));
+      callback(null, false);
     }
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
+  allowedHeaders: [
+    'Content-Type',
+    'Authorization',
+    'Accept',
+    'X-Requested-With',
+    'Origin',
+    'Access-Control-Request-Method',
+    'Access-Control-Request-Headers'
+  ],
   optionsSuccessStatus: 200,
   preflightContinue: false
 };

@@ -11,6 +11,12 @@ export const errorHandler = (err, req, res, next) => {
     method: req.method
   });
 
+  // Ensure CORS headers are attached on error responses so browsers receive proper JSON errors instead of CORS blocks
+  if (req.headers.origin) {
+    res.setHeader('Access-Control-Allow-Origin', req.headers.origin);
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+  }
+
   res.status(status).json({
     error: {
       status,
