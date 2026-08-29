@@ -5,21 +5,31 @@ import { Fireworks } from '@fireworks-js/react';
 import type { Category, Product } from '../types';
 import { toast } from 'sonner';
 import { sortCategories } from '../utils/categoryUtils';
-import banner1 from '../assets/banner-1.png';
-import banner2 from '../assets/banner-2.jpg';
-import banner3 from '../assets/banner3.png';
+// Commented out previous banner slider images as requested:
+// import banner1 from '../assets/banner-1.png';
+// import banner2 from '../assets/banner-2.jpg';
+// import banner3 from '../assets/banner3.png';
+import sarguruBanner from '../assets/sarguru-banner.png';
 import sar1 from '../assets/sar-1.png';
 
+// Commented out original multi-banner array:
+/*
 const BANNERS = [
   { id: 1, src: banner1, alt: 'Sarguru Crackers Banner 1' },
   { id: 2, src: banner2, alt: 'Sarguru Crackers Banner 2' },
   { id: 3, src: banner3, alt: 'Sarguru Crackers Banner 3' }
 ];
+*/
 
-// Append clone of first banner for infinite right-to-left sliding loop
+// Fixed main banner
+const BANNERS = [
+  { id: 'sarguru-fixed', src: sarguruBanner, alt: 'Sarguru Crackers Fixed Banner' }
+];
+
+// Append clone of first banner for infinite right-to-left sliding loop (if multiple banners)
 const EXTENDED_BANNERS = [
   ...BANNERS,
-  { id: 'clone-1', src: banner1, alt: 'Sarguru Crackers Banner 1 Clone' }
+  ...(BANNERS.length > 1 ? [{ id: 'clone-1', src: BANNERS[0].src, alt: 'Sarguru Crackers Banner Clone' }] : [])
 ];
 
 const BannerSlider: React.FC = () => {
@@ -27,18 +37,18 @@ const BannerSlider: React.FC = () => {
   const [isHovered, setIsHovered] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(true);
 
-  // Auto slide right-to-left every 4.5 seconds
+  // Auto slide right-to-left every 4.5 seconds if multiple banners exist
   useEffect(() => {
-    if (isHovered) return;
+    if (isHovered || BANNERS.length <= 1) return;
     const timer = setInterval(() => {
       handleNext();
     }, 4500);
     return () => clearInterval(timer);
   }, [isHovered, currentIndex, isTransitioning]);
 
-  // When transition to clone (index 3) finishes, snap back to index 0 seamlessly
+  // When transition to clone finishes, snap back to index 0 seamlessly
   const handleTransitionEnd = () => {
-    if (currentIndex === BANNERS.length) {
+    if (currentIndex === BANNERS.length && BANNERS.length > 1) {
       setIsTransitioning(false);
       setCurrentIndex(0);
     }
@@ -82,28 +92,28 @@ const BannerSlider: React.FC = () => {
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      {/* Sky Fireworks Effect Layer */}
-      <div className="absolute inset-0 z-10 pointer-events-none opacity-40">
+      {/* Sky Fireworks Effect Layer (Front side of Banner) */}
+      <div className="absolute inset-0 z-20 pointer-events-none opacity-85 sm:opacity-95 transition-opacity duration-700">
         <Fireworks
           options={{
             rocketsPoint: { min: 15, max: 85 },
             hue: { min: 0, max: 360 },
-            delay: { min: 30, max: 60 },
-            particles: 60,
+            delay: { min: 25, max: 50 },
+            particles: 80,
             traceLength: 3,
-            intensity: 5,
-            brightness: { min: 70, max: 100 }
+            intensity: 8,
+            brightness: { min: 75, max: 100 }
           }}
           style={{ width: '100%', height: '100%' }}
         />
       </div>
 
-      {/* Right to Left Sliding Carousel */}
-      <div className="relative z-20 w-full overflow-hidden shadow-2xl">
+      {/* Fixed Banner Display */}
+      <div className="relative z-10 w-full overflow-hidden shadow-2xl">
         <div
           onTransitionEnd={handleTransitionEnd}
-          className={`flex w-full ${isTransitioning ? 'transition-transform duration-700 ease-[cubic-bezier(0.25,1,0.5,1)]' : 'transition-none'}`}
-          style={{ transform: `translateX(-${currentIndex * 100}%)` }}
+          className={`flex w-full ${isTransitioning && BANNERS.length > 1 ? 'transition-transform duration-700 ease-[cubic-bezier(0.25,1,0.5,1)]' : 'transition-none'}`}
+          style={{ transform: BANNERS.length > 1 ? `translateX(-${currentIndex * 100}%)` : 'none' }}
         >
           {EXTENDED_BANNERS.map((banner, index) => (
             <div key={banner.id + '-' + index} className="w-full flex-shrink-0 relative">
@@ -116,39 +126,43 @@ const BannerSlider: React.FC = () => {
           ))}
         </div>
 
-        {/* Prev / Next Navigation Arrows */}
-        <button
-          onClick={handlePrev}
-          aria-label="Previous Banner"
-          className="absolute left-2 sm:left-6 top-1/2 -translate-y-1/2 w-8 h-8 sm:w-12 sm:h-12 rounded-full bg-black/40 hover:bg-primary-blue text-white flex items-center justify-center backdrop-blur-md transition-all duration-300 shadow-xl z-30 cursor-pointer hover:scale-110 active:scale-95 text-lg sm:text-2xl font-bold"
-        >
-          ‹
-        </button>
-        <button
-          onClick={handleNext}
-          aria-label="Next Banner"
-          className="absolute right-2 sm:right-6 top-1/2 -translate-y-1/2 w-8 h-8 sm:w-12 sm:h-12 rounded-full bg-black/40 hover:bg-primary-blue text-white flex items-center justify-center backdrop-blur-md transition-all duration-300 shadow-xl z-30 cursor-pointer hover:scale-110 active:scale-95 text-lg sm:text-2xl font-bold"
-        >
-          ›
-        </button>
-
-        {/* Slide Indicators */}
-        <div className="absolute bottom-3 sm:bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-2 z-30 bg-black/40 backdrop-blur-md px-3 sm:px-4 py-1.5 rounded-full shadow-lg border border-white/20">
-          {BANNERS.map((_, idx) => (
+        {/* Prev / Next Navigation Arrows (Only when multiple banners exist) */}
+        {BANNERS.length > 1 && (
+          <>
             <button
-              key={idx}
-              onClick={() => {
-                setIsTransitioning(true);
-                setCurrentIndex(idx);
-              }}
-              aria-label={`Go to slide ${idx + 1}`}
-              className={`h-2 sm:h-2.5 rounded-full transition-all duration-500 cursor-pointer ${activeDotIndex === idx
-                ? 'w-6 sm:w-8 bg-primary-blue shadow-[0_0_8px_rgba(245,184,0,0.8)]'
-                : 'w-2 sm:w-2.5 bg-white/60 hover:bg-white'
-                }`}
-            />
-          ))}
-        </div>
+              onClick={handlePrev}
+              aria-label="Previous Banner"
+              className="absolute left-2 sm:left-6 top-1/2 -translate-y-1/2 w-8 h-8 sm:w-12 sm:h-12 rounded-full bg-black/40 hover:bg-primary-blue text-white flex items-center justify-center backdrop-blur-md transition-all duration-300 shadow-xl z-30 cursor-pointer hover:scale-110 active:scale-95 text-lg sm:text-2xl font-bold"
+            >
+              ‹
+            </button>
+            <button
+              onClick={handleNext}
+              aria-label="Next Banner"
+              className="absolute right-2 sm:right-6 top-1/2 -translate-y-1/2 w-8 h-8 sm:w-12 sm:h-12 rounded-full bg-black/40 hover:bg-primary-blue text-white flex items-center justify-center backdrop-blur-md transition-all duration-300 shadow-xl z-30 cursor-pointer hover:scale-110 active:scale-95 text-lg sm:text-2xl font-bold"
+            >
+              ›
+            </button>
+
+            {/* Slide Indicators */}
+            <div className="absolute bottom-3 sm:bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-2 z-30 bg-black/40 backdrop-blur-md px-3 sm:px-4 py-1.5 rounded-full shadow-lg border border-white/20">
+              {BANNERS.map((_, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => {
+                    setIsTransitioning(true);
+                    setCurrentIndex(idx);
+                  }}
+                  aria-label={`Go to slide ${idx + 1}`}
+                  className={`h-2 sm:h-2.5 rounded-full transition-all duration-500 cursor-pointer ${activeDotIndex === idx
+                    ? 'w-6 sm:w-8 bg-primary-blue shadow-[0_0_8px_rgba(245,184,0,0.8)]'
+                    : 'w-2 sm:w-2.5 bg-white/60 hover:bg-white'
+                    }`}
+                />
+              ))}
+            </div>
+          </>
+        )}
       </div>
 
       {/* Action Buttons below banner */}

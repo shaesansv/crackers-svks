@@ -132,25 +132,25 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
   return (
     <div className="relative w-full bg-slate-950 text-white overflow-hidden select-none">
       
-      {/* 1. Dynamic Fireworks Background Layer */}
+      {/* 1. Dynamic Fireworks Front Layer */}
       {showFireworks && (
-        <div className="absolute inset-0 z-10 pointer-events-none opacity-45 sm:opacity-60 transition-opacity duration-700">
+        <div className="absolute inset-0 z-25 pointer-events-none opacity-85 sm:opacity-95 transition-opacity duration-700">
           <Fireworks
             options={{
               rocketsPoint: { min: 20, max: 80 },
               hue: { min: 20, max: 360 },
-              delay: { min: 35, max: 70 },
+              delay: { min: 25, max: 50 },
               acceleration: 1.04,
               friction: 0.96,
               gravity: 1.15,
-              particles: 75,
+              particles: 85,
               traceLength: 3,
               traceSpeed: 6,
-              explosion: 5,
-              intensity: 7,
+              explosion: 6,
+              intensity: 8,
               flickering: 25,
               lineStyle: 'round',
-              brightness: { min: 70, max: 100 },
+              brightness: { min: 75, max: 100 },
               decay: { min: 0.015, max: 0.03 },
               mouse: { click: false, move: false, max: 0 }
             }}
