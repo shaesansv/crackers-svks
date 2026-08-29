@@ -133,7 +133,7 @@ app.use(errorHandler);
 import { exec } from 'child_process';
 import os from 'os';
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5002;
 
 const execCmd = (cmd) => new Promise((resolve, reject) => {
   exec(cmd, { windowsHide: true }, (err, stdout, stderr) => {

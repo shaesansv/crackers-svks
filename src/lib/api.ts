@@ -4,7 +4,7 @@ const getApiBaseUrl = () => {
     return envUrl.replace(/\/$/, '').replace(/\/api$/, '');
   }
   if (import.meta.env.DEV) {
-    return 'http://localhost:5000';
+    return 'http://localhost:5002';
   }
   return typeof window !== 'undefined' ? window.location.origin : '';
 };
