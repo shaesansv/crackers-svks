@@ -63,7 +63,6 @@ const isOriginAllowed = (origin) => {
     if (
       hostname === 'sargurucrackers.com' ||
       hostname.endsWith('.sargurucrackers.com') ||
-      hostname.endsWith('.onrender.com') ||
       hostname.endsWith('.vercel.app') ||
       hostname.endsWith('.netlify.app') ||
       hostname === 'localhost' ||
@@ -127,7 +126,7 @@ logger.info('Server initialized');
 
 // Health Check — must be BEFORE express.static so it isn't intercepted by index.html
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', message: 'Server is running', db: 'mongodb-atlas' });
+  res.json({ success: true, message: 'Sarguru backend is running', status: 'ok' });
 });
 
 app.use('/uploads', express.static(path.join(__dirname, 'public', 'uploads')));
