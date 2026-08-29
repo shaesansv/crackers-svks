@@ -180,75 +180,16 @@ import os from 'os';
 
 const PORT = process.env.PORT || 5002;
 
-const execCmd = (cmd) => new Promise((resolve, reject) => {
-  exec(cmd, { windowsHide: true }, (err, stdout, stderr) => {
-    if (err) return reject({ err, stdout, stderr });
-    resolve({ stdout, stderr });
-  });
-});
-
-const killProcessOnPort = async (port) => {
-  try {
-    const currentPid = process.pid.toString();
-    if (os.platform() === 'win32') {
-      const { stdout } = await execCmd(`netstat -ano -p tcp | findstr :${port}`);
-      const lines = stdout.split(/\r?\n/).filter(Boolean);
-      const pids = new Set();
-      for (const line of lines) {
-        const cols = line.trim().split(/\s+/);
-        const pid = cols[cols.length - 1];
-        if (pid && !isNaN(pid) && pid !== currentPid) pids.add(pid);
-      }
-      for (const pid of pids) {
-        try {
-          await execCmd(`taskkill /PID ${pid} /F`);
-          logger.info(`Killed process ${pid} that was using port ${port}`);
-        } catch (e) {
-          logger.warn(`Failed to kill PID ${pid}`, { error: e.stdout || e.err || e });
-        }
-      }
-    } else {
-      // Unix-like: use lsof (filter out current process PID)
-      const { stdout } = await execCmd(`lsof -i :${port} -t || true`);
-      const pids = stdout.split(/\r?\n/).filter(Boolean).filter(pid => pid.trim() !== currentPid);
-      for (const pid of pids) {
-        try {
-          await execCmd(`kill -9 ${pid}`);
-          logger.info(`Killed process ${pid} that was using port ${port}`);
-        } catch (e) {
-          logger.warn(`Failed to kill PID ${pid}`, { error: e.stdout || e.err || e });
-        }
-      }
-    }
-  } catch (err) {
-    logger.warn('Could not determine process on port', { port, error: err });
-    throw err;
-  }
-};
-
-let retryCount = 0;
 const startServer = () => {
   try {
     const server = app.listen(PORT, () => {
       logger.info(`Server running on http://localhost:${PORT}`);
     });
 
-    server.on('error', async (err) => {
+    server.on('error', (err) => {
       if (err && err.code === 'EADDRINUSE') {
-        if (retryCount >= 2) {
-          logger.error(`Port ${PORT} is already in use after ${retryCount} retries. Exiting.`);
-          process.exit(1);
-        }
-        retryCount++;
-        logger.error(`Port ${PORT} is already in use. Attempting to free it (attempt ${retryCount})...`);
-        try {
-          await killProcessOnPort(PORT);
-          logger.info('Retrying to start the server in 1s...');
-          setTimeout(() => startServer(), 1000);
-        } catch (e) {
-          logger.error('Failed to free port. Exiting.', { error: e });
-          process.exit(1);
-        }
+        logger.error(`Port ${PORT} is already in use by another process. Please stop conflicting processes or change PORT in .env.`);
+        process.exit(1);
       } else {
         logger.error('Server error:', { error: err });
         process.exit(1);
