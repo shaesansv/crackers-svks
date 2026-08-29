@@ -57,7 +57,7 @@ const devFormat = combine(
   })
 );
 
-// Format for production: JSON (best for Render and log aggregators)
+// Format for production: JSON (best for VPS deployment and log aggregators)
 const prodFormat = combine(
   timestamp(),
   errors({ stack: true }),
