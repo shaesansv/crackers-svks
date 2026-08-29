@@ -189,6 +189,7 @@ const execCmd = (cmd) => new Promise((resolve, reject) => {
 
 const killProcessOnPort = async (port) => {
   try {
+    const currentPid = process.pid.toString();
     if (os.platform() === 'win32') {
       const { stdout } = await execCmd(`netstat -ano -p tcp | findstr :${port}`);
       const lines = stdout.split(/\r?\n/).filter(Boolean);
@@ -196,7 +197,7 @@ const killProcessOnPort = async (port) => {
       for (const line of lines) {
         const cols = line.trim().split(/\s+/);
         const pid = cols[cols.length - 1];
-        if (pid && !isNaN(pid)) pids.add(pid);
+        if (pid && !isNaN(pid) && pid !== currentPid) pids.add(pid);
       }
       for (const pid of pids) {
         try {
@@ -207,9 +208,9 @@ const killProcessOnPort = async (port) => {
         }
       }
     } else {
-      // Unix-like: use lsof
+      // Unix-like: use lsof (filter out current process PID)
       const { stdout } = await execCmd(`lsof -i :${port} -t || true`);
-      const pids = stdout.split(/\r?\n/).filter(Boolean);
+      const pids = stdout.split(/\r?\n/).filter(Boolean).filter(pid => pid.trim() !== currentPid);
       for (const pid of pids) {
         try {
           await execCmd(`kill -9 ${pid}`);
@@ -225,6 +226,7 @@ const killProcessOnPort = async (port) => {
   }
 };
 
+let retryCount = 0;
 const startServer = () => {
   try {
     const server = app.listen(PORT, () => {
@@ -233,7 +235,12 @@ const startServer = () => {
 
     server.on('error', async (err) => {
       if (err && err.code === 'EADDRINUSE') {
-        logger.error(`Port ${PORT} is already in use. Attempting to free it...`);
+        if (retryCount >= 2) {
+          logger.error(`Port ${PORT} is already in use after ${retryCount} retries. Exiting.`);
+          process.exit(1);
+        }
+        retryCount++;
+        logger.error(`Port ${PORT} is already in use. Attempting to free it (attempt ${retryCount})...`);
         try {
           await killProcessOnPort(PORT);
           logger.info('Retrying to start the server in 1s...');
