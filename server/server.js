@@ -22,6 +22,7 @@ dotenv.config();
 
 const app = express();
 
+// Set trust proxy
 app.set('trust proxy', 1);
 
 // ===== CORS MUST BE FIRST =====
