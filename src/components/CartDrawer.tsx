@@ -331,7 +331,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
 
                         <div className="text-right">
                           <p className="text-[14px] font-black text-[#A67428]">₹{(product.discountPrice * qty).toLocaleString('en-IN')}</p>
-                          {product.actualPrice > product.discountPrice && (
+                          {product.actualPrice > product.discountPrice && !product.displayNetRate && (
                             <p className="text-[10px] text-slate-400 line-through">₹{(product.actualPrice * qty).toLocaleString('en-IN')}</p>
                           )}
                         </div>
