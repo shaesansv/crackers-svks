@@ -1,8 +1,15 @@
 import logger from '../utils/logger.js';
 
 export const errorHandler = (err, req, res, next) => {
-  const status = err.status || err.statusCode || 500;
-  const message = err.message || 'Internal Server Error';
+  let status = err.status || err.statusCode || 500;
+  let message = err.message || 'Internal Server Error';
+
+  if (err.code === 11000) {
+    status = 400;
+    const field = Object.keys(err.keyValue || {})[0] || 'field';
+    const val = err.keyValue ? err.keyValue[field] : '';
+    message = `Duplicate value '${val}' for ${field}. It must be unique.`;
+  }
 
   logger.error(`Error [${status}]: ${message}`, { 
     error: err,

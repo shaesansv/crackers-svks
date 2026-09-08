@@ -5,6 +5,7 @@ import {
   createOrder,
   updateOrderStatus,
   cancelOrder,
+  deleteOrder,
   getUserOrders,
   approveOrder,
   updatePackingStatus,
@@ -21,6 +22,7 @@ router.get('/user/my-orders', auth, getUserOrders);
 
 router.get('/', auth, adminOnly, getAllOrders);
 router.get('/:id', auth, adminOnly, getOrderById);
+router.delete('/:id', auth, adminOnly, deleteOrder);
 router.put('/:id/status', auth, adminOnly, updateOrderStatus);
 router.put('/:id/cancel', auth, adminOnly, cancelOrder);
 router.put('/:orderId/approve', auth, adminOnly, approveOrder);

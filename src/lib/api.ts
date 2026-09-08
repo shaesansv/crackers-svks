@@ -53,6 +53,18 @@ export const getOrders = async () => {
   return response.json();
 };
 
+export const deleteOrder = async (orderId: string) => {
+  const response = await fetch(`${API_BASE_URL}/api/orders/${orderId}`, {
+    method: 'DELETE',
+    headers: getHeaders(),
+  });
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error(data.message || data.error?.message || 'Failed to delete order');
+  }
+  return data;
+};
+
 export const approveOrder = async (orderId: string) => {
   const response = await fetch(`${API_BASE_URL}/api/orders/${orderId}/approve`, {
     method: 'PUT',

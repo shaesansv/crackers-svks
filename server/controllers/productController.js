@@ -2,6 +2,7 @@ import Product from '../models/Product.js';
 import Category from '../models/Category.js';
 import { AppError } from '../middleware/errorHandler.js';
 import { uploadToBoth, deleteFromBoth } from '../utils/upload-manager.js';
+import { updateProductCount } from './categoryController.js';
 
 export const getAllProducts = async (req, res, next) => {
   try {
@@ -111,30 +112,43 @@ export const createProduct = async (req, res, next) => {
       let maxCode = baseCode;
 
       for (const p of categoryProducts) {
-        const rawStr = (p.code || p.sku || '').toString().trim();
-        if (!rawStr) continue;
-
-        let numVal = parseInt(rawStr, 10);
-        if (!isNaN(numVal)) {
-          // Normalize legacy string concatenation bug (e.g. '10010' -> 1010)
-          if (numVal >= baseCode * 10 && rawStr.startsWith(categoryCode)) {
-            const seqPart = rawStr.substring(categoryCode.length);
-            const seqNum = parseInt(seqPart, 10);
-            if (!isNaN(seqNum)) {
-              numVal = baseCode + seqNum;
+        const candidates = [p.sku, p.code];
+        for (const raw of candidates) {
+          if (!raw) continue;
+          const rawStr = raw.toString().trim();
+          let numVal = parseInt(rawStr, 10);
+          if (!isNaN(numVal)) {
+            // Normalize legacy string concatenation bug (e.g. '10010' -> 1010)
+            if (numVal >= baseCode * 10 && rawStr.startsWith(categoryCode)) {
+              const seqPart = rawStr.substring(categoryCode.length);
+              const seqNum = parseInt(seqPart, 10);
+              if (!isNaN(seqNum)) {
+                numVal = baseCode + seqNum;
+              }
             }
-          }
 
-          if (numVal >= baseCode && numVal < baseCode + 1000) {
-            if (numVal > maxCode) {
-              maxCode = numVal;
+            if (numVal >= baseCode && numVal < baseCode + 100) {
+              if (numVal > maxCode) {
+                maxCode = numVal;
+              }
             }
           }
         }
       }
 
-      const nextCode = maxCode + 1;
+      let nextCode = maxCode + 1;
       newSkuStr = nextCode.toString();
+
+      // Ensure guaranteed uniqueness across the entire database
+      while (await Product.exists({ $or: [{ sku: newSkuStr }, { code: newSkuStr }] })) {
+        nextCode++;
+        newSkuStr = nextCode.toString();
+      }
+    } else {
+      const existing = await Product.findOne({ $or: [{ sku: newSkuStr }, { code: newSkuStr }] });
+      if (existing) {
+        return next(new AppError(`Product with code/SKU "${newSkuStr}" already exists`, 400));
+      }
     }
 
     const newProduct = new Product({
@@ -160,6 +174,7 @@ export const createProduct = async (req, res, next) => {
     });
 
     const savedProduct = await newProduct.save();
+    await updateProductCount(savedProduct.category);
 
     res.status(201).json({
       message: 'Product created successfully',
@@ -175,6 +190,11 @@ export const updateProduct = async (req, res, next) => {
     const { id } = req.params;
     const { name, code, sku, category, price, wholesalePrice, netRate, stock, minimumStock, description, isActive, brand, hasDiscount, displayNetRate, storeStockPieces, godownStockCases, piecesPerCase } = req.body;
     
+    const oldProduct = await Product.findById(id);
+    if (!oldProduct) {
+      return next(new AppError('Product not found', 404));
+    }
+
     let imageUrl = req.body.image;
 
     if (req.file) {
@@ -206,9 +226,8 @@ export const updateProduct = async (req, res, next) => {
     if (godownStockCases !== undefined) updateData.godownStockCases = parseInt(godownStockCases);
     if (piecesPerCase !== undefined) updateData.piecesPerCase = parseInt(piecesPerCase);
     if (godownStockCases !== undefined || piecesPerCase !== undefined) {
-      const existingProduct = await Product.findById(id);
-      const cases = godownStockCases !== undefined ? parseInt(godownStockCases) : (existingProduct?.godownStockCases || 0);
-      const ppc = piecesPerCase !== undefined ? parseInt(piecesPerCase) : (existingProduct?.piecesPerCase || 1);
+      const cases = godownStockCases !== undefined ? parseInt(godownStockCases) : (oldProduct.godownStockCases || 0);
+      const ppc = piecesPerCase !== undefined ? parseInt(piecesPerCase) : (oldProduct.piecesPerCase || 1);
       updateData.godownStockPieces = cases * ppc;
     }
     if (minimumStock !== undefined) updateData.minimumStock = parseInt(minimumStock);
@@ -220,6 +239,13 @@ export const updateProduct = async (req, res, next) => {
     
     if (!updatedProduct) {
       return next(new AppError('Product not found', 404));
+    }
+
+    if (oldProduct.category && oldProduct.category.toString() !== updatedProduct.category?.toString()) {
+      await updateProductCount(oldProduct.category);
+    }
+    if (updatedProduct.category) {
+      await updateProductCount(updatedProduct.category);
     }
 
     res.json({
@@ -239,11 +265,14 @@ export const deleteProduct = async (req, res, next) => {
     }
 
     if (product.image) {
-      // Assuming deleteFromBoth logic can extract publicId or handle URL directly
       await deleteFromBoth(product.image, null).catch(err => console.error("Failed to delete image:", err));
     }
 
+    const categoryId = product.category;
     await Product.findByIdAndDelete(req.params.id);
+    if (categoryId) {
+      await updateProductCount(categoryId);
+    }
 
     res.json({ message: 'Product deleted permanently' });
   } catch (error) {

@@ -1,10 +1,11 @@
 import AdminSidebar from "@/components/layout/AdminSidebar";
 import AdminNavbar from "@/components/layout/AdminNavbar";
 import { useEffect, useState } from "react";
-import { getOrders, approveOrder, updatePackingStatus, updatePaymentStatus } from "@/lib/api";
+import { getOrders, approveOrder, updatePackingStatus, updatePaymentStatus, deleteOrder } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Link } from "react-router-dom";
+import { Trash2, Eye, Loader2 } from "lucide-react";
 import { ProductDetailModal } from "@/components/ProductDetailModal";
 import {
   Dialog,
@@ -51,10 +52,12 @@ const AdminOrders = () => {
   const ITEMS_PER_PAGE = 20;
   const [orderList, setOrderList] = useState<any[]>([]);
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
+  const [orderToDelete, setOrderToDelete] = useState<any | null>(null);
   const [viewingProduct, setViewingProduct] = useState<any>(null);
   const [isApproving, setIsApproving] = useState(false);
   const [isUpdatingPayment, setIsUpdatingPayment] = useState(false);
   const [isUpdatingPacking, setIsUpdatingPacking] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const { settings } = useSiteSettings();
 
   const downloadPDF = (order: any) => {
@@ -69,6 +72,29 @@ const AdminOrders = () => {
   useEffect(() => {
     getOrders().then(setOrderList).catch(() => setOrderList([]));
   }, []);
+
+  const handleDeleteOrder = async () => {
+    if (!orderToDelete) return;
+    
+    try {
+      setIsDeleting(true);
+      await deleteOrder(orderToDelete._id);
+      
+      setOrderList((prev) => prev.filter((o) => o._id !== orderToDelete._id));
+      
+      if (selectedOrder?._id === orderToDelete._id) {
+        setSelectedOrder(null);
+      }
+      
+      toast.success(`Order #${orderToDelete.orderNumber || orderToDelete._id?.slice(-8)} deleted & stock restored successfully!`);
+      setOrderToDelete(null);
+    } catch (error) {
+      console.error("Error deleting order:", error);
+      toast.error(error instanceof Error ? error.message : "Failed to delete order");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   const handleApproveOrder = async () => {
     if (!selectedOrder) return;
@@ -311,14 +337,26 @@ const AdminOrders = () => {
                       {o.createdAt ? new Date(o.createdAt).toLocaleDateString() : "N/A"}
                     </td>
                     <td className="p-3 text-right">
-                      <div className="flex flex-col gap-1 items-end">
+                      <div className="flex items-center justify-end gap-1.5">
                         <Button
                           size="sm"
                           variant="outline"
                           onClick={() => setSelectedOrder(o)}
-                          className="text-xs w-full max-w-[100px]"
+                          className="text-xs h-8 px-2.5 flex items-center gap-1 hover:bg-primary/10"
+                          title="View order details"
                         >
-                          View Details
+                          <Eye className="h-3.5 w-3.5" />
+                          <span>View</span>
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          onClick={() => setOrderToDelete(o)}
+                          className="text-xs h-8 px-2.5 bg-red-600 hover:bg-red-700 text-white flex items-center gap-1 shadow-sm transition-all"
+                          title="Delete dummy/unwanted order and restore cracker stock"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                          <span>Delete</span>
                         </Button>
                       </div>
                     </td>
@@ -488,9 +526,68 @@ const AdminOrders = () => {
                   >
                     {isUpdatingPacking ? "Updating..." : selectedOrder.packingStatus === 'packed' ? '📦 3. Mark Not Shipped' : '🚚 3. Mark Shipped'}
                   </Button>
+
+                  {/* 4. Delete Order Option */}
+                  <Button
+                    variant="destructive"
+                    onClick={() => {
+                      setOrderToDelete(selectedOrder);
+                    }}
+                    className="flex-1 bg-red-600 hover:bg-red-700 text-white flex items-center justify-center gap-1.5"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    Delete Order
+                  </Button>
                 </div>
               </div>
             )}
+          </DialogContent>
+        </Dialog>
+
+        {/* Delete Confirmation Dialog */}
+        <Dialog open={!!orderToDelete} onOpenChange={(open) => !open && !isDeleting && setOrderToDelete(null)}>
+          <DialogContent className="max-w-md bg-white dark:bg-zinc-900 text-gray-900 dark:text-gray-100 border border-red-200 dark:border-red-900/50 shadow-2xl">
+            <DialogHeader>
+              <div className="w-12 h-12 rounded-full bg-red-100 dark:bg-red-950/50 flex items-center justify-center text-red-600 mb-2">
+                <Trash2 className="h-6 w-6" />
+              </div>
+              <DialogTitle className="text-xl font-bold text-red-600">Delete Order #{orderToDelete?.orderNumber || orderToDelete?._id?.slice(-8)}?</DialogTitle>
+              <DialogDescription className="text-sm text-gray-600 dark:text-gray-400 mt-2">
+                Are you sure you want to permanently delete this order for <strong>{orderToDelete?.customerName}</strong> (₹{Number(orderToDelete?.subtotal || 0) + Number(orderToDelete?.packingCharge || 0)})?
+                <br /><br />
+                <span className="text-red-700 dark:text-red-400 font-semibold block bg-red-50 dark:bg-red-950/30 p-2.5 rounded-md border border-red-200 dark:border-red-900/50 text-xs">
+                  ⚠️ This will automatically restore the cracker stock quantities for all items in this order and remove all sales/profit stats across the system. This action cannot be undone.
+                </span>
+              </DialogDescription>
+            </DialogHeader>
+            <div className="flex gap-3 mt-4">
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={() => setOrderToDelete(null)}
+                disabled={isDeleting}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="destructive"
+                className="flex-1 bg-red-600 hover:bg-red-700 text-white flex items-center justify-center gap-2 font-semibold"
+                onClick={handleDeleteOrder}
+                disabled={isDeleting}
+              >
+                {isDeleting ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Deleting & Restoring...
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="h-4 w-4" />
+                    Confirm Delete
+                  </>
+                )}
+              </Button>
+            </div>
           </DialogContent>
         </Dialog>
 

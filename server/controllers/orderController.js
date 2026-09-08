@@ -2,6 +2,8 @@ import Order from '../models/Order.js';
 import Product from '../models/Product.js';
 import Customer from '../models/Customer.js';
 import Settings from '../models/Settings.js';
+import Inventory from '../models/Inventory.js';
+import InventoryTransaction from '../models/InventoryTransaction.js';
 import inventoryService from '../services/inventoryService.js';
 import { AppError } from '../middleware/errorHandler.js';
 import mongoose from 'mongoose';
@@ -370,4 +372,55 @@ export const updatePaymentStatus = async (req, res, next) => {
     next(error);
   }
 };
+
+export const deleteOrder = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const order = await Order.findById(id);
+
+    if (!order) {
+      return next(new AppError('Order not found', 404));
+    }
+
+    // 1. If order was NOT already cancelled, restore product stock & shop stock
+    if (order.status !== 'cancelled') {
+      for (const item of order.items || []) {
+        const productId = item.product?._id || item.product;
+        const qty = Number(item.quantity) || 0;
+        if (productId && qty > 0) {
+          await Product.findByIdAndUpdate(
+            productId,
+            { $inc: { storeStockPieces: qty, stock: qty } }
+          );
+
+          await Inventory.findOneAndUpdate(
+            { productId },
+            { $inc: { shopStock: qty } },
+            { upsert: true }
+          );
+        }
+      }
+    }
+
+    // 2. Delete inventory transaction records linked to this order
+    await InventoryTransaction.deleteMany({
+      $or: [
+        { referenceId: order._id },
+        { referenceNumber: order.orderNumber }
+      ]
+    });
+
+    // 3. Delete the order document itself
+    await Order.findByIdAndDelete(id);
+
+    res.json({
+      message: 'Order deleted successfully and stock restored',
+      deletedOrderId: id,
+      orderNumber: order.orderNumber
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 
