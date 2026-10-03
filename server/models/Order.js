@@ -131,9 +131,11 @@ orderSchema.index({ customerEmail: 1 });
 orderSchema.index({ status: 1 });
 orderSchema.index({ createdAt: -1 });
 
-// Generate order number before saving — uses an atomic counter to avoid
+// Generate order number before validation — uses an atomic counter to avoid
 // duplicate key errors under concurrent requests.
-orderSchema.pre('save', async function() {
+// NOTE: Must be pre('validate'), NOT pre('save'), because Mongoose runs
+// required-field validation BEFORE pre('save') hooks execute.
+orderSchema.pre('validate', async function() {
   if (!this.orderNumber) {
     const seq = await Counter.nextSequence('orderNumber');
     this.orderNumber = seq.toString().padStart(5, '0');
