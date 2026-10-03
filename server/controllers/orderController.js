@@ -73,8 +73,6 @@ export const createOrder = async (req, res, next) => {
     const gst = 0;
     const total = subtotal + packingCharge;
 
-    const count = await Order.countDocuments().session(session);
-    const orderNumber = (count + 1).toString().padStart(5, '0');
 
     // Attempt to link to an existing customer or create a new one
     const searchConditions = [];
@@ -118,7 +116,7 @@ export const createOrder = async (req, res, next) => {
         state: state || '',
         district: district || '',
       },
-      orderNumber,
+      // orderNumber is generated atomically by the pre-save hook
       items: itemsWithNames,
       subtotal,
       packingCharge,
@@ -134,6 +132,7 @@ export const createOrder = async (req, res, next) => {
     const savedOrder = await newOrder.save({ session });
 
     // Use InventoryService to reduce stock inside the transaction
+    const orderNumber = savedOrder.orderNumber;
     for (const item of items) {
       await inventoryService.reduceStock(
         item.product,

@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import Counter from './Counter.js';
 
 const orderSchema = new mongoose.Schema(
   {
@@ -130,11 +131,12 @@ orderSchema.index({ customerEmail: 1 });
 orderSchema.index({ status: 1 });
 orderSchema.index({ createdAt: -1 });
 
-// Generate order number before saving
+// Generate order number before saving — uses an atomic counter to avoid
+// duplicate key errors under concurrent requests.
 orderSchema.pre('save', async function() {
   if (!this.orderNumber) {
-    const count = await mongoose.model('Order').countDocuments();
-    this.orderNumber = (count + 1).toString().padStart(5, '0');
+    const seq = await Counter.nextSequence('orderNumber');
+    this.orderNumber = seq.toString().padStart(5, '0');
   }
 });
 
